@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'firebase_init.dart';
 
 void main() {
+  initFirebase();
   runApp(const MyApp());
 }
 
