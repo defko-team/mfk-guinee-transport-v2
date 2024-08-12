@@ -1,0 +1,19 @@
+### Please use modularity when adding your stuffs  
+
+### Please don't put comment in the code until it is very needed : make your code fully understandable and it will be ok.
+
+### At least add a docstring !
+
+=> create or add your class / file into the appropriate module
+
+### Naming convention
+
+=> Camel case for variable names : example isAuthticated
+
+=> Camel case for function names : example getUserDetails()
+
+=> Pascal case for class names and widgets : example HomeScreen
+
+=> Snake case (Uppercased) for constants : example DEFAULT_TIMEOUT
+
+=> Snake case (Lowercased) for file names : example user_profile.dart
