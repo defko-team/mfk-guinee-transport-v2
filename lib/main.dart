@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'firebase_init.dart';
+import 'package:mfk_guinee_transport/helper/firebase/firebase_init.dart';
 
 void main() {
   initFirebase();
