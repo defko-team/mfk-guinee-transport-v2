@@ -17,3 +17,8 @@
 => Snake case (Uppercased) for constants : example DEFAULT_TIMEOUT
 
 => Snake case (Lowercased) for file names : example user_profile.dart
+
+
+### Check packages and usage here : https://pub.dev/packages
+
+### Note : at the end of the project run flutter clean to remove all unused dependencies
