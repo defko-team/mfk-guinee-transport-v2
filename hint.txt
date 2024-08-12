@@ -22,3 +22,6 @@
 ### Check packages and usage here : https://pub.dev/packages
 
 ### Note : at the end of the project run flutter clean to remove all unused dependencies
+
+
+### To add an image you can now use the assets path like this : "assets/images/myImg.jpeg"
