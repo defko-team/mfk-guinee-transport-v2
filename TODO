@@ -44,3 +44,27 @@ Bonus :
 - Show errors if any
 - show dialog or pop ups
 
+
+
+in login this is the logic : 
+
+ => first we will check if the user is already resgisterd in or not by checking the current user phone number in the firebase database.
+ => if the user is already registered then we will send the otp to the user's phone number and then we will verify the otp and then we will sign in the user.
+ => if he is not registered we will send him to the register page with the message that you are not registered yet please register first.
+
+
+in register this is the logic : 
+
+=> first we will check if the user is already registered or not by checking the current user phone number in the firebase database.
+=> if the user is already registered then we will send the otp to the user's phone number and then we will verify the otp and then we will sign in the user.
+=> if he is not registered we will register the user with the phone number, first name, last name and then we will send the otp to the user's phone number and then we will verify the otp and then we will sign in the user.
+=> By default the user will be registered as a customer.
+=> By default account status will be active.
+=> By default photo_profil will be null.
+=> For date_creation we will use the current date and time.
+
+in signout this is the logic :
+
+=> we will sign out the user from firebase.
+=> we will clear the shared preferences data.
+=> we will send the user to the login page.

@@ -5,7 +5,14 @@ add a .env in the root folder
 
 ### Local config for development
 
-#### => ios : 
+#### For IOS config : 
 
-run pod install from ios folder (note that sometimes yo should increase you git buffer capacity when it fails)
-flutter run
+1. flutter clean
+
+2. rm pubspec.lock
+
+3. flutter pub get
+
+5. flutter run
+
+note that sometimes yo should increase you git buffer capacity when it fails

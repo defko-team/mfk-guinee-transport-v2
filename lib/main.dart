@@ -8,31 +8,26 @@ import 'package:mfk_guinee_transport/views/no_network.dart';
 import 'package:mfk_guinee_transport/views/login.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_init.dart';
 import 'package:mfk_guinee_transport/helper/router/router.dart';
-import 'dart:io';
+import 'package:mfk_guinee_transport/helper/utils/utils.dart';  // Import the utils.dart file
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initFirebase();
 
-  var isConnected = false;
-  try {
-    final result = await InternetAddress.lookup('www.google.com');
-    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-      isConnected = true;
-    }
-  } on SocketException catch (_) {
-    isConnected = false;
-  }
+  bool isConnected = await isConnectedToInternet();  // Use the connectivity check utility function
 
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  var isFirstTime = preferences.getBool("isFirstTime");
+  var isFirstTimeInApp = preferences.getBool("isFirstTimeInApp");
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
+  var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
+
 
   Widget homePage;
+
   // if (!isConnected) {
   //   homePage = NoNetwork(pageToGo: "/");
   // } else if (isFirstTime == null) {
@@ -44,7 +39,7 @@ Future<void> main() async {
   // } else {
   //   homePage = Login();
   // }
-
+  
   if (!isConnected) {
     homePage = NoNetwork(pageToGo: "/login");
   } else{
@@ -63,7 +58,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Guinnea Transport',
+      title: 'Guinea Transport',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
