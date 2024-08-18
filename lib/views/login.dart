@@ -51,7 +51,7 @@ class _LoginState extends State<Login> {
               SizedBox(height: 50),
               FadeInDown(
                 child: Text(
-                  'INSCRIPTION',
+                  'CONNEXION',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.grey.shade900),
                 ),
               ),
@@ -166,7 +166,7 @@ class _LoginState extends State<Login> {
                       onTap: () {
                         Navigator.of(context).pushReplacementNamed('/login');
                       },
-                      child: Text('Se connecter', style: TextStyle(color: AppColors.black)), // Utilisation de la couleur noire définie
+                      child: Text('S\'inscrire', style: TextStyle(color: AppColors.black)), // Utilisation de la couleur noire définie
                     )
                   ],
                 ),

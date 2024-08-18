@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mfk_guinee_transport/views/login.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'dart:io';
 
 class NoNetwork extends StatelessWidget {
   final String pageToGo;
 
-  const NoNetwork({Key key, @required this.pageToGo}) : super(key: key);
+  const NoNetwork({Key? key, required this.pageToGo}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class NoNetwork extends StatelessWidget {
                   height: MediaQuery.of(context).size.height / 54,
                 ),
                 Text(
-                  "No internet connection found. Check your connection or try again.",
+                  "Aucune connexion internet n'a été détectée. Vérifiez votre connexion ou réessayez.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.black,
@@ -50,33 +50,26 @@ class NoNetwork extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height / 13.5,
+                  height: MediaQuery.of(context).size.height / 20,
                 ),
                 MaterialButton(
                   onPressed: () async {
                     try {
                       final result = await InternetAddress.lookup('www.google.com');
                       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => pageToGo == "/customerHome"
-                                ? CustomerHomePage()
-                                : LogInPage(),
-                          ),
-                        );
+                        Navigator.pushReplacementNamed(context, pageToGo);
                       }
                     } on SocketException catch (_) {}
                   },
-                  height: MediaQuery.of(context).size.height / 18,
+                  height: MediaQuery.of(context).size.height / 22,
                   padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 7.5),
+                      horizontal: MediaQuery.of(context).size.width / 8),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
-                  color: Colors.orange.shade400,
+                  color: AppColors.green,
                   child: Text(
-                    "Try Again",
+                    "Reessayer !",
                     style: TextStyle(color: Colors.white),
                   ),
                 )
