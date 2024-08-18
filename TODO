@@ -1,0 +1,46 @@
+[!] generate the project structure and describe each folder purpose
+[!] write Read for the end to end project setup : in dev or prod module
+[!] => @Aliou you should add Firebase configs for android too : gradle
+[!] => add github action code for main branch
+[x] => firebase should be tested on android to see if it works
+[x] => Somebody should generate the proper icons for android and ios
+
+
+=========================== AUTH Functionnality  ===========================
+
+
+Auth main functionnalities details : 
+
+- create the login page with phone number and OTP 
+
+- create the registering page with all user infos
+
+======> Checkpoint log submitted data in console
+
+- create a default admin account with all permissions : Admin Role
+
+- create a controller to handle role creation and account and registration
+
+- create a controller that handle the OTP and log-in
+
+=======> Checkpoint tests
+
+- link all that with the app state when user is logged in
+
+- Create a controller that redirect to home page based on user role
+
+- Create a sign-out method and test local data are cleaned
+
+- We need a model of user, account and role data to better map data
+
+=======> Checkpoint merging
+
+Bonus :
+
+- Test all working in ios
+- Test in android if i have the time
+- Transition animation 
+- Loading animation
+- Show errors if any
+- show dialog or pop ups
+

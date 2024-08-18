@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "923013705052",
+    "project_id": "defko-mfk-guinee-transport",
+    "storage_bucket": "defko-mfk-guinee-transport.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923013705052:android:41ff91c87bd44b3af2e599",
+        "android_client_info": {
+          "package_name": "org.defko.mfk_guinee_transport"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfpm-qJfwpD-FnV6osSvjfGH7vT1UboQE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
