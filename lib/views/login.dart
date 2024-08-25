@@ -17,10 +17,10 @@ class _LoginState extends State<Login> {
   bool _isLoading = false;
   final PhoneNumber _initialNumber = PhoneNumber(isoCode: 'GN');
   final AuthService _authService = AuthService();
-  String? _fullPhoneNumber; // To store the complete phone number including the country code
+  String? _fullPhoneNumber;
 
   void _requestOtp() async {
-    if (_isLoading) return; // Prevent multiple presses
+    if (_isLoading) return;
 
     if (_fullPhoneNumber == null || _fullPhoneNumber!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -34,20 +34,24 @@ class _LoginState extends State<Login> {
     });
 
     try {
-      // Step 1: Send OTP
-      await _authService.sendOtp(_fullPhoneNumber!);
+      String? verificationId = await _authService.sendOtp(_fullPhoneNumber!);
 
-      // Step 2: Navigate to OTP Verification Page
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OtpVerification(
-            firstName: '', // Pass empty if not applicable in login
-            lastName: '', // Pass empty if not applicable in login
-            phoneNumber: _fullPhoneNumber!,
+      if (verificationId != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtpVerification(
+              firstName: '',
+              lastName: '',
+              phoneNumber: _fullPhoneNumber!,
+              verificationId: verificationId,
+              isRegistration: false,
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        throw Exception("Failed to obtain verification ID");
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to send OTP: $e')),
@@ -112,7 +116,7 @@ class _LoginState extends State<Login> {
                     border: Border.all(
                         color: AppColors.black.withOpacity(0.13)),
                     boxShadow: const [
-                    BoxShadow(
+                      BoxShadow(
                         color: AppColors.grey,
                         blurRadius: 10,
                         offset: Offset(0, 4),
@@ -124,15 +128,13 @@ class _LoginState extends State<Login> {
                       InternationalPhoneNumberInput(
                         onInputChanged: (PhoneNumber number) {
                           setState(() {
-                            _fullPhoneNumber = number.phoneNumber; // Get the full phone number with country code
+                            _fullPhoneNumber = number.phoneNumber;
                           });
                         },
                         onInputValidated: (bool value) {
-                          print(value);
                         },
                         selectorConfig: const SelectorConfig(
-                          selectorType:
-                              PhoneInputSelectorType.BOTTOM_SHEET,
+                          selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
                           showFlags: true,
                         ),
                         locale: 'fr',
@@ -145,9 +147,8 @@ class _LoginState extends State<Login> {
                         formatInput: false,
                         maxLength: 9,
                         initialValue: _initialNumber,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(
-                                signed: true, decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            signed: true, decimal: true),
                         cursorColor: AppColors.black,
                         inputDecoration: InputDecoration(
                           contentPadding:
@@ -159,7 +160,6 @@ class _LoginState extends State<Login> {
                               fontSize: 16),
                         ),
                         onSaved: (PhoneNumber number) {
-                          print('On Saved: ${number.phoneNumber}');
                         },
                       ),
                       Positioned(

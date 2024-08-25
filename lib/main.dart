@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mfk_guinee_transport/views/onboarding.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
 import 'package:mfk_guinee_transport/views/provider_home.dart';
 import 'package:mfk_guinee_transport/views/no_network.dart';
@@ -15,35 +14,31 @@ Future<void> main() async {
 
   await initFirebase();
 
-  bool isConnected = await isConnectedToInternet();  // Use the connectivity check utility function
+  bool isConnected = await isConnectedToInternet();
 
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  var isFirstTimeInApp = preferences.getBool("isFirstTimeInApp");
+
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
 
 
   Widget homePage;
 
-  // if (!isConnected) {
-  //   homePage = NoNetwork(pageToGo: "/");
-  // } else if (isFirstTime == null) {
-  //   homePage = OnboardingPage();
-  // } else if (isFirstTime == false && isProviderAuthenticated == true) {
-  //   homePage = ProviderHomePage();
-  // } else if (isFirstTime == false && isProviderAuthenticated == null) {
-  //   homePage = CustomerHomePage();
-  // } else {
-  //   homePage = Login();
-  // }
-  
-  if (!isConnected) {
-    homePage = NoNetwork(pageToGo: "/login");
-  } else{
-    homePage = Login();
+  if (!isConnected && isProviderAuthenticated == true) {
+    homePage = const NoNetwork(pageToGo: "/providerHome");
+  } else if (!isConnected && isCustomerAuthenticated == true) {
+    homePage = const NoNetwork(pageToGo: "/customerHome");
+  } else if (!isConnected) {
+    homePage = const NoNetwork(pageToGo: "/login");
+  } else if (isProviderAuthenticated == true) {
+    homePage = ProviderHomePage();
+  } else if (isCustomerAuthenticated == true) {
+    homePage = CustomerHomePage();
+  } else {
+    homePage = const Login();
   }
 
   runApp(MyApp(homePage: homePage));
@@ -52,7 +47,7 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   final Widget homePage;
 
-  const MyApp({Key? key, required this.homePage}) : super(key: key);
+  const MyApp({super.key, required this.homePage});
 
   @override
   Widget build(BuildContext context) {

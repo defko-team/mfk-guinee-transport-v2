@@ -5,7 +5,6 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/views/otp_verification.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 
-
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
 
@@ -20,6 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _phoneNumberController = TextEditingController();
   PhoneNumber _initialNumber = PhoneNumber(isoCode: 'GN');
   bool _isLoading = false;
+  String? _fullPhoneNumber; // To store the complete phone number including the country code
 
   final AuthService _authService = AuthService();
 
@@ -32,22 +32,41 @@ class _RegisterPageState extends State<RegisterPage> {
       });
 
       try {
-        // Step 1: Send OTP
-        await _authService.sendOtp(_phoneNumberController.text);
+        if (_fullPhoneNumber == null || _fullPhoneNumber!.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Veuillez entrer un numéro de téléphone valide')),
+          );
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
 
-        // Step 2: Navigate to OTP Verification Page
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OtpVerification(
-              firstName: _firstNameController.text,
-              lastName: _lastNameController.text,
-              phoneNumber: _phoneNumberController.text,
+        // Step 1: Send OTP and get the verification ID
+        String? verificationId = await _authService.sendOtp(_fullPhoneNumber!);
+
+        if (verificationId != null) {
+          // Step 2: Navigate to OTP Verification Page with isRegistration flag set to true
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpVerification(
+                firstName: _firstNameController.text,
+                lastName: _lastNameController.text,
+                phoneNumber: _fullPhoneNumber!,
+                verificationId: verificationId,
+                isRegistration: true, // Pass the isRegistration flag as true
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          throw Exception('Failed to obtain verification ID');
+        }
       } catch (e) {
-        print(e); // Handle errors appropriately
+        // Handle other exceptions (including cases where the user already exists or OTP verification fails)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e')),
+        );
       } finally {
         if (mounted) {
           setState(() {
@@ -58,12 +77,10 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.all(30),
@@ -161,7 +178,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   delay: Duration(milliseconds: 400),
                   child: InternationalPhoneNumberInput(
                     onInputChanged: (PhoneNumber number) {
-                      print(number.phoneNumber);
+                      setState(() {
+                        _fullPhoneNumber = number.phoneNumber; // Get the full phone number with country code
+                      });
                     },
                     validator: (value) =>
                         value!.isEmpty ? "Veuillez entrer un numéro de téléphone" : null,
@@ -203,7 +222,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     onSaved: (PhoneNumber number) {
-                      print('On Saved: $number');
                     },
                   ),
                 ),
@@ -216,8 +234,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     color: AppColors.green,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5)),
-                    padding:
-                        EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                     child: _isLoading
                         ? Container(
                             width: 20,

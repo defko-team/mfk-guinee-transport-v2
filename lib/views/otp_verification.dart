@@ -1,19 +1,25 @@
+import 'dart:async';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OtpVerification extends StatefulWidget {
   final String firstName;
   final String lastName;
   final String phoneNumber;
+  final String verificationId;
+  final bool isRegistration; // Ajout de isRegistration
 
   const OtpVerification({
     Key? key,
     required this.firstName,
     required this.lastName,
     required this.phoneNumber,
+    required this.verificationId,
+    required this.isRegistration, // Ajout de isRegistration
   }) : super(key: key);
 
   @override
@@ -57,7 +63,7 @@ class _OtpVerificationState extends State<OtpVerification> {
   }
 
   void verify() async {
-    if (_code.length < 4) return;
+    if (_code.length < 6) return;
 
     setState(() {
       _isLoading = true;
@@ -67,34 +73,67 @@ class _OtpVerificationState extends State<OtpVerification> {
       // Verify the OTP using the AuthService
       await _authService.verifyOtpAndRegisterUser(
         otp: _code,
+        verificationId: widget.verificationId,
         prenom: widget.firstName,
         nom: widget.lastName,
         telephone: widget.phoneNumber,
+        isRegistration: widget.isRegistration,
+        context: context,
       );
 
-      setState(() {
-        _isLoading = false;
-        _isVerified = true;
-      });
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+      
+      String roleId = userDoc['id_role'];
+      DocumentSnapshot roleDoc = await FirebaseFirestore.instance.collection('roles').doc(roleId).get();
+      String role = roleDoc['nom'];
 
-      // Navigate to the desired page after successful verification
-      Navigator.pushReplacementNamed(context, '/desiredPage');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isVerified = true;
+        });
+
+      if (role == 'Client') {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/customerHome',
+          (Route<dynamic> route) => false,
+        );
+      } else if (role == 'Provider') {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/providerHome',
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (Route<dynamic> route) => false,
+        );
+      }
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
 
       // Handle verification failure, maybe show a snackbar or dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Verification failed: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Verification failed: $e')),
+        );
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    Timer.periodic(Duration(seconds: 5), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       if (mounted) {
         setState(() {
           _currentIndex++;
@@ -108,7 +147,7 @@ class _OtpVerificationState extends State<OtpVerification> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    _timer?.cancel(); // Annuler le timer lors de la suppression du widget
     super.dispose();
   }
 
