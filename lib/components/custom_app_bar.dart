@@ -18,9 +18,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.green,
+            color: Color.fromRGBO(26, 188, 0, 1),
           ),
-          padding: EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 20),
+          padding: EdgeInsets.only(left: 16, right: 16, top: 75, bottom: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -29,7 +29,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   // Avatar
                   CircleAvatar(
                     backgroundImage: NetworkImage(avatarUrl),
-                    radius: 25,
+                    radius: 30,
                   ),
                   SizedBox(width: 12),
                   // Greeting and name
@@ -41,7 +41,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         "Bonjour 👋",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
+                          fontSize: 25,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -49,7 +49,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         userName,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 25,
                         ),
                       ),
                     ],
@@ -91,5 +91,5 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(120);
+  Size get preferredSize => Size.fromHeight(135);
 }

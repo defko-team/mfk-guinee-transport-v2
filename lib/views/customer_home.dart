@@ -48,7 +48,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        userName: "$_firstName ${_lastName?[0].toUpperCase()}",
+        userName: "$_firstName ${_lastName?[0].toUpperCase()}.",
         avatarUrl: "https://avatar.iran.liara.run/public/48",
       ),
       body: Center(
