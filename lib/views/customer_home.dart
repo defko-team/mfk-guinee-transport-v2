@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -46,6 +47,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: CustomAppBar(
+        userName: "$_firstName ${_lastName?[0].toUpperCase()}",
+        avatarUrl: "https://avatar.iran.liara.run/public/48",
+      ),
       body: Center(
         child: _userId == null
             ? CircularProgressIndicator()
@@ -82,6 +87,30 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   ],
                 ),
               ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 0,
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Accueil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Gares',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Historique',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.more_horiz),
+            label: 'Plus',
+          ),
+        ],
       ),
     );
   }
