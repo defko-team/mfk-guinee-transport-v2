@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -54,39 +55,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       body: Center(
         child: _userId == null
             ? CircularProgressIndicator()
-            : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ID Utilisateur: $_userId',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Prénom: $_firstName',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Nom: $_lastName',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Téléphone: $_phoneNumber',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Rôle: $_role',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ],
-                ),
-              ),
+            : LocationForm(),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
