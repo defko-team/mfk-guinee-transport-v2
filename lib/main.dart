@@ -34,9 +34,9 @@ Future<void> main() async {
   } else if (!isConnected) {
     homePage = const NoNetwork(pageToGo: "/login");
   } else if (isProviderAuthenticated == true) {
-    homePage = ProviderHomePage();
+    homePage = const ProviderHomePage();
   } else if (isCustomerAuthenticated == true) {
-    homePage = CustomerHomePage();
+    homePage = const CustomerHomePage();
   } else {
     homePage = const Login();
   }

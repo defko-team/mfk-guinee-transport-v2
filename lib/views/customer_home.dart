@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
+// TODO : move all firestore calls to user_service.dart
+
+// TODO : move all functions to auth_controller.dart
+
 class CustomerHomePage extends StatefulWidget {
+  const CustomerHomePage({super.key});
+
   @override
-  _CustomerHomePageState createState() => _CustomerHomePageState();
+  State<CustomerHomePage> createState() => _CustomerHomePageState();
 }
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
@@ -36,9 +43,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         _role = roleDoc['nom'];
       });
     } else {
-      // Gérer le cas où l'utilisateur n'est pas trouvé
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Utilisateur non trouvé')),
+        const SnackBar(content: Text('Utilisateur non trouvé')),
       );
     }
   }
@@ -48,7 +54,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     return Scaffold(
       body: Center(
         child: _userId == null
-            ? CircularProgressIndicator()
+            ? const CircularProgressIndicator()
             : Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -57,27 +63,27 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   children: [
                     Text(
                       'ID Utilisateur: $_userId',
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       'Prénom: $_firstName',
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       'Nom: $_lastName',
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       'Téléphone: $_phoneNumber',
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       'Rôle: $_role',
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ],
                 ),

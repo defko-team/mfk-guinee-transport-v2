@@ -6,10 +6,10 @@ import 'package:mfk_guinee_transport/views/otp_verification.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  const RegisterPage({super.key});
 
   @override
-  _RegisterPageState createState() => _RegisterPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
@@ -17,9 +17,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  PhoneNumber _initialNumber = PhoneNumber(isoCode: 'GN');
+  final PhoneNumber _initialNumber = PhoneNumber(isoCode: 'GN');
   bool _isLoading = false;
-  String? _fullPhoneNumber; // To store the complete phone number including the country code
+  String? _fullPhoneNumber; 
 
   final AuthService _authService = AuthService();
 
@@ -83,7 +83,7 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: AppColors.white,
       body: SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.all(30),
+          padding: const EdgeInsets.all(30),
           width: double.infinity,
           height: MediaQuery.of(context).size.height,
           child: Form(
@@ -96,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   fit: BoxFit.cover,
                   width: 280,
                 ),
-                SizedBox(height: 50),
+                const SizedBox(height: 50),
                 FadeInDown(
                   child: Text(
                     'INSCRIPTION',
@@ -107,9 +107,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 FadeInDown(
-                  delay: Duration(milliseconds: 200),
+                  delay: const Duration(milliseconds: 200),
                   child: TextFormField(
                     controller: _firstNameController,
                     validator: (value) =>
@@ -134,15 +134,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(color: Colors.black, width: 1.5),
+                            const BorderSide(color: Colors.black, width: 1.5),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 FadeInDown(
-                  delay: Duration(milliseconds: 300),
+                  delay: const Duration(milliseconds: 300),
                   child: TextFormField(
                     controller: _lastNameController,
                     validator: (value) =>
@@ -167,15 +167,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(color: Colors.black, width: 1.5),
+                            const BorderSide(color: Colors.black, width: 1.5),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 FadeInDown(
-                  delay: Duration(milliseconds: 400),
+                  delay: const Duration(milliseconds: 400),
                   child: InternationalPhoneNumberInput(
                     onInputChanged: (PhoneNumber number) {
                       setState(() {
@@ -184,18 +184,18 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                     validator: (value) =>
                         value!.isEmpty ? "Veuillez entrer un numéro de téléphone" : null,
-                    selectorConfig: SelectorConfig(
+                    selectorConfig: const SelectorConfig(
                       selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
                       showFlags: true,
                     ),
                     ignoreBlank: false,
                     autoValidateMode: AutovalidateMode.disabled,
-                    selectorTextStyle: TextStyle(color: AppColors.black),
+                    selectorTextStyle: const TextStyle(color: AppColors.black),
                     textFieldController: _phoneNumberController,
                     formatInput: false,
                     maxLength: 9,
                     initialValue: _initialNumber,
-                    keyboardType: TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                         signed: true, decimal: true),
                     cursorColor: AppColors.black,
                     inputDecoration: InputDecoration(
@@ -217,7 +217,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide:
-                            BorderSide(color: Colors.black, width: 1.5),
+                            const BorderSide(color: Colors.black, width: 1.5),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
@@ -225,16 +225,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                   ),
                 ),
-                SizedBox(height: 75),
+                const SizedBox(height: 75),
                 FadeInDown(
-                  delay: Duration(milliseconds: 500),
+                  delay: const Duration(milliseconds: 500),
                   child: MaterialButton(
                     minWidth: double.infinity,
                     onPressed: _registerUser,
                     color: AppColors.green,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5)),
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                     child: _isLoading
                         ? Container(
                             width: 20,
@@ -245,7 +245,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               strokeWidth: 2,
                             ),
                           )
-                        : Text(
+                        : const Text(
                             "S'inscrire",
                             style: TextStyle(color: AppColors.white),
                           ),

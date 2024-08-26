@@ -5,7 +5,7 @@ import 'dart:io';
 class NoNetwork extends StatelessWidget {
   final String pageToGo;
 
-  const NoNetwork({Key? key, required this.pageToGo}) : super(key: key);
+  const NoNetwork({super.key, required this.pageToGo});
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +24,14 @@ class NoNetwork extends StatelessWidget {
                 vertical: MediaQuery.of(context).size.height / 16),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(60),
                 topRight: Radius.circular(60),
               ),
             ),
             child: Column(
               children: [
-                Text(
+                const Text(
                   "Ooops! 😓",
                   style: TextStyle(
                       fontSize: 32,
@@ -68,7 +68,7 @@ class NoNetwork extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
                   color: AppColors.green,
-                  child: Text(
+                  child: const Text(
                     "Reessayer !",
                     style: TextStyle(color: Colors.white),
                   ),
