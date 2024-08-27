@@ -19,6 +19,7 @@ class AuthService {
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential);
+          // ignore: null_argument_to_non_null_type
           completer.complete(null); // Signifie que la vérification automatique a réussi
         },
         verificationFailed: (FirebaseAuthException e) {
