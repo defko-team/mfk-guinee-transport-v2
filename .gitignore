@@ -14,6 +14,7 @@ migrate_working_dir/
 *.orig
 *.bak
 *.old
+*.gradle
 
 # IntelliJ related
 *.iml
