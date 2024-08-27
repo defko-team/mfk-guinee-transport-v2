@@ -92,3 +92,5 @@ app.*.symbols
 .flutter-plugins-dependencies
 .packages
 .flutter-settings
+
+.env
