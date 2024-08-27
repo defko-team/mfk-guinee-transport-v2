@@ -7,7 +7,7 @@ import 'package:mfk_guinee_transport/views/no_network.dart';
 import 'package:mfk_guinee_transport/views/login.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_init.dart';
 import 'package:mfk_guinee_transport/helper/router/router.dart';
-import 'package:mfk_guinee_transport/helper/utils/utils.dart';  // Import the utils.dart file
+import 'package:mfk_guinee_transport/helper/utils/utils.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +23,8 @@ Future<void> main() async {
 
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
+
+  // preferences.clear();
 
 
   Widget homePage;

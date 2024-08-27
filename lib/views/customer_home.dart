@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+import 'package:mfk_guinee_transport/components/location_form.dart';
+import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-
-// TODO : move all firestore calls to user_service.dart
-
-// TODO : move all functions to auth_controller.dart
 
 class CustomerHomePage extends StatefulWidget {
   const CustomerHomePage({super.key});
@@ -15,6 +13,8 @@ class CustomerHomePage extends StatefulWidget {
 }
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
+  static const Color lightGrey = Color(0xFFF2F2F2);
+
   String? _userId;
   String? _firstName;
   String? _lastName;
@@ -52,42 +52,63 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _userId == null
-            ? const CircularProgressIndicator()
-            : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ID Utilisateur: $_userId',
-                      style: const TextStyle(fontSize: 20),
+      backgroundColor: lightGrey, // Set the background color to lightGrey
+      appBar: CustomAppBar(
+        userName: "$_firstName ${_lastName?[0].toUpperCase()}.",
+        avatarUrl: "https://avatar.iran.liara.run/public/48", // TODO: Change this to a default avatar
+      ),
+      body: _userId == null
+          ? const Center(child: CircularProgressIndicator())
+          : const SingleChildScrollView( // Use SingleChildScrollView to make the content scrollable if needed
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Où allez-vous aujourd'hui ?",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Prénom: $_firstName',
-                      style: const TextStyle(fontSize: 20),
+                  ),
+                  SizedBox(height: 5), // Add space between the text and the LocationForm
+                  LocationForm(), // The location form component
+                  SizedBox(height: 16), // Add spacing between components
+                  Text(
+                    "Quel moyen de transport ?",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Nom: $_lastName',
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Téléphone: $_phoneNumber',
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Rôle: $_role',
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                  ],
-                ),
+                  ),
+                  SizedBox(height: 10), // Add space between the text and the LocationType
+                  LocationType(), // The location type component
+                ],
               ),
+            ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 0,
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Accueil',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Gares',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Historique',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.more_horiz),
+            label: 'Plus',
+          ),
+        ],
       ),
     );
   }
