@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
 import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -20,6 +21,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   String? _lastName;
   String? _phoneNumber;
   String? _role;
+
+  String? selectedDeparture;
+  String? selectedArrival;
+  int selectedType = -1;
 
   @override
   void initState() {
@@ -49,66 +54,125 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     }
   }
 
+  void _onSearch() {
+    if (selectedDeparture != null && selectedArrival != null && selectedType != -1) {
+      // Here you can handle the search logic
+      print("Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $selectedType");
+      // You might want to navigate to another page or make a request with the gathered data
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: lightGrey, // Set the background color to lightGrey
-      appBar: CustomAppBar(
-        userName: "$_firstName ${_lastName?[0].toUpperCase()}.",
-        avatarUrl: "https://avatar.iran.liara.run/public/48", // TODO: Change this to a default avatar
-      ),
-      body: _userId == null
-          ? const Center(child: CircularProgressIndicator())
-          : const SingleChildScrollView( // Use SingleChildScrollView to make the content scrollable if needed
-              padding: EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Où allez-vous aujourd'hui ?",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus(); // Unfocus the text fields when tapping outside
+      },
+      child: Scaffold(
+        backgroundColor: lightGrey,
+        appBar: CustomAppBar(
+          userName: "$_firstName ${_lastName?[0].toUpperCase()}.",
+          avatarUrl: "https://avatar.iran.liara.run/public/48",
+        ),
+        body: _userId == null
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Où allez-vous aujourd'hui ?",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 5), // Add space between the text and the LocationForm
-                  LocationForm(), // The location form component
-                  SizedBox(height: 16), // Add spacing between components
-                  Text(
-                    "Quel moyen de transport ?",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 5),
+                    LocationForm(
+                      onDepartureChanged: (departure) {
+                        setState(() {
+                          selectedDeparture = departure;
+                        });
+                      },
+                      onArrivalChanged: (arrival) {
+                        setState(() {
+                          selectedArrival = arrival;
+                        });
+                      },
                     ),
-                  ),
-                  SizedBox(height: 10), // Add space between the text and the LocationType
-                  LocationType(), // The location type component
-                ],
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Quel moyen de transport ?",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    LocationType(
+                      onTypeSelected: (type) {
+                        setState(() {
+                          selectedType = type;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _onSearch,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedType != -1 ? AppColors.green : Colors.grey,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Rechercher les voitures',
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Votre dernier voyage",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: 0,
+          selectedItemColor: Colors.green,
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Accueil',
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 0,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Gares',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Historique',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Plus',
-          ),
-        ],
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map),
+              label: 'Gares',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history),
+              label: 'Historique',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.more_horiz),
+              label: 'Plus',
+            ),
+          ],
+        ),
       ),
     );
   }

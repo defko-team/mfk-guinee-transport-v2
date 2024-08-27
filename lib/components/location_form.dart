@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/helper/utils/line_painter.dart';
 
 class LocationForm extends StatefulWidget {
-  const LocationForm({super.key});
+  final ValueChanged<String> onDepartureChanged;
+  final ValueChanged<String> onArrivalChanged;
+
+  const LocationForm({
+    super.key,
+    required this.onDepartureChanged,
+    required this.onArrivalChanged,
+  });
 
   @override
   State<LocationForm> createState() => _LocationFormState();
@@ -9,6 +17,41 @@ class LocationForm extends StatefulWidget {
 
 class _LocationFormState extends State<LocationForm> {
   final List<String> locations = [
+    'Dakar, Ville',
+    'Keur Massar',
+    'Pikine',
+    'Guediawaye',
+    'Rufisque',
+    'Dakar, Ville',
+    'Keur Massar',
+    'Pikine',
+    'Guediawaye',
+    'Rufisque',
+    'Dakar, Ville',
+    'Keur Massar',
+    'Pikine',
+    'Guediawaye',
+    'Rufisque',
+    'Dakar, Ville',
+    'Keur Massar',
+    'Pikine',
+    'Guediawaye',
+    'Rufisque',
+    'Dakar, Ville',
+    'Keur Massar',
+    'Pikine',
+    'Guediawaye',
+    'Rufisque',
+    'Dakar, Ville',
+    'Keur Massar',
+    'Pikine',
+    'Guediawaye',
+    'Rufisque',
+    'Dakar, Ville',
+    'Keur Massar',
+    'Pikine',
+    'Guediawaye',
+    'Rufisque',
     'Dakar, Ville',
     'Keur Massar',
     'Pikine',
@@ -29,7 +72,7 @@ class _LocationFormState extends State<LocationForm> {
         screenWidth * 0.01,
         screenHeight * 0.01,
         screenWidth * 0.01,
-        screenHeight * 0.02,  // Reduce bottom padding
+        screenHeight * 0.02,
       ),
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -72,11 +115,13 @@ class _LocationFormState extends State<LocationForm> {
                       _buildAutocompleteField(
                         controller: departureController,
                         hintText: 'Départ',
+                        onChanged: widget.onDepartureChanged,
                         isArrival: false,
                       ),
                       _buildAutocompleteField(
                         controller: arrivalController,
                         hintText: 'Arrivée',
+                        onChanged: widget.onArrivalChanged,
                         isArrival: true,
                       ),
                     ],
@@ -90,141 +135,133 @@ class _LocationFormState extends State<LocationForm> {
     );
   }
 
-  Widget _buildAutocompleteField({
-    required TextEditingController controller,
-    required String hintText,
-    bool isArrival = false,
-  }) {
-    return Autocomplete<String>(
-      optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isEmpty) {
-          return const Iterable<String>.empty();
-        }
-        final suggestions = locations.where((String option) {
-          return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
-        }).toList();
-        return suggestions;
-      },
-      onSelected: (String selection) {
-        controller.text = selection;
-        setState(() {});
-      },
-      fieldViewBuilder: (BuildContext context,
-          TextEditingController textEditingController,
-          FocusNode focusNode,
-          VoidCallback onFieldSubmitted) {
-        return TextField(
-          controller: textEditingController,
-          focusNode: focusNode,
-          decoration: InputDecoration(
-            hintText: hintText,
-            border: OutlineInputBorder(
-              borderRadius: isArrival
-                  ? const BorderRadius.only(
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(8),
-                    )
-                  : const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                    ),
-              borderSide: const BorderSide(
-                color: Colors.black,
-                width: 1.0,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: isArrival
-                  ? const BorderRadius.only(
-                      bottomLeft: Radius.circular(8),
-                      bottomRight: Radius.circular(8),
-                    )
-                  : const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                    ),
-              borderSide: const BorderSide(
-                color: Colors.black,
-                width: 1.0,
-              ),
-            ),
-            suffixIcon: controller.text.isNotEmpty
-                ? IconButton(
-                    icon: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey.shade300,
+
+Widget _buildAutocompleteField({
+  required TextEditingController controller,
+  required String hintText,
+  required ValueChanged<String> onChanged,
+  bool isArrival = false,
+}) {
+  return Stack(
+    children: [
+      Autocomplete<String>(
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text.isEmpty) {
+            return const Iterable<String>.empty();
+          }
+          final suggestions = locations.where((String option) {
+            return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+          }).toList();
+          return suggestions;
+        },
+        onSelected: (String selection) {
+          setState(() {
+            controller.text = selection;
+          });
+          onChanged(selection);
+        },
+        fieldViewBuilder: (BuildContext context,
+            TextEditingController textEditingController,
+            FocusNode focusNode,
+            VoidCallback onFieldSubmitted) {
+          return TextField(
+            controller: textEditingController,
+            focusNode: focusNode,
+            decoration: InputDecoration(
+              hintText: hintText,
+              border: OutlineInputBorder(
+                borderRadius: isArrival
+                    ? const BorderRadius.only(
+                        bottomLeft: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
+                      )
+                    : const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
                       ),
-                      child: const Icon(
-                        Icons.clear,
-                        color: Colors.white,
-                        size: 20,
+                borderSide: const BorderSide(
+                  color: Colors.black,
+                  width: 1.0,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: isArrival
+                    ? const BorderRadius.only(
+                        bottomLeft: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
+                      )
+                    : const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
                       ),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        controller.clear();
-                      });
-                    },
-                  )
-                : null,
-          ),
-          keyboardType: TextInputType.text,
-          onChanged: (value) {
-            setState(() {}); // Trigger rebuild to update the clear button visibility
-          },
-        );
-      },
-      optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Material(
-            color: Colors.white,
-            elevation: 4.0,
-            child: Container(
-              width: MediaQuery.of(context).size.width - 80,
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: options.length,
-                shrinkWrap: true,
-                itemBuilder: (BuildContext context, int index) {
-                  final String option = options.elementAt(index);
-                  return ListTile(
-                    title: Text(option),
-                    onTap: () {
-                      onSelected(option);
-                    },
-                  );
-                },
+                borderSide: const BorderSide(
+                  color: Colors.black,
+                  width: 1.0,
+                ),
+              ),
+              suffixIcon: controller.text.isNotEmpty
+                  ? IconButton(
+                      icon: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey.shade300,
+                        ),
+                        child: const Icon(
+                          Icons.clear,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          controller.clear();
+                          textEditingController.clear();
+                        });
+                        onChanged(''); // Clear the corresponding value
+                      },
+                    )
+                  : null,
+            ),
+            keyboardType: TextInputType.text,
+            onChanged: (value) {
+              setState(() {});
+              onChanged(value);
+            },
+          );
+        },
+        optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+          return Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              color: Colors.white, // Set background color to white
+              elevation: 4.0,
+              child: Container(
+                width: MediaQuery.of(context).size.width - 80,
+                constraints: const BoxConstraints(
+                  maxHeight: 200.0, // Limit the height to make it scrollable if more than 5 items
+                ),
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: options.length,
+                  shrinkWrap: true,
+                  itemBuilder: (BuildContext context, int index) {
+                    final String option = options.elementAt(index);
+                    return ListTile(
+                      title: Text(option),
+                      onTap: () {
+                        onSelected(option);
+                      },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        );
-      },
-    );
-  }
+          );
+        },
+      ),
+    ],
+  );
 }
 
-class DottedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    var paint = Paint()
-      ..color = Colors.grey
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
 
-    var max = size.height;
-    var dashWidth = 4.0;
-    var dashSpace = 4.0;
-    double startY = 0;
-    while (startY <= max) {
-      canvas.drawLine(Offset(0, startY), Offset(0, startY + dashWidth), paint);
-      startY += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
 }
