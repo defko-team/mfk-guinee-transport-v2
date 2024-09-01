@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:mfk_guinee_transport/services/auth_service.dart';
+
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -48,7 +50,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   size: 16,
                 ),
                 onPressed: () {
-                  Navigator.of(context).pop(true); // Pass 'true' to indicate the back action
+                  Navigator.of(context).pop(true);
                 },
               ),
             ),
@@ -245,13 +247,25 @@ class _ProfileOptionTileState extends State<ProfileOptionTile> {
 class LogoutButton extends StatelessWidget {
   const LogoutButton({super.key});
 
+  Future<void> _signOut(BuildContext context) async {
+    try {
+      AuthService authService = AuthService();
+      await authService.signOut();
+      Navigator.of(context).pushReplacementNamed('/login');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.all(20.0),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () => _signOut(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFF4D4D),
           foregroundColor: Colors.white,
