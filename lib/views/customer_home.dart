@@ -18,53 +18,24 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   static const Color lightGrey = Color(0xFFF2F2F2);
 
   String? _userId;
-  String? _firstName;
-  String? _lastName;
-  String? _phoneNumber;
-  String? _role;
-
-  String? selectedDeparture;
-  String? selectedArrival;
   int selectedType = -1;
-
   int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadUserInfo();
+    _loadUserId();
   }
 
-  Future<void> _loadUserInfo() async {
+  Future<void> _loadUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString("userId");
-
-    if (userId != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-      DocumentSnapshot roleDoc = await FirebaseFirestore.instance.collection('roles').doc(userDoc['id_role']).get();
-
-      setState(() {
-        _userId = userId;
-        _firstName = userDoc['prenom'];
-        _lastName = userDoc['nom'];
-        _phoneNumber = userDoc['telephone'];
-        _role = roleDoc['nom'];
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Utilisateur non trouvé')),
-      );
-    }
+    setState(() {
+      _userId = prefs.getString("userId");
+    });
   }
 
   void _onSearch() {
-    if (selectedDeparture != null && selectedArrival != null && selectedType != -1) {
-      print("Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $selectedType");
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez remplir tous les champs')),
-      );
-    }
+    // Logique de recherche
   }
 
   void _onItemTapped(int index) async {
@@ -74,8 +45,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         MaterialPageRoute(builder: (context) => const UserProfilePage()),
       );
       if (result == true) {
+        setState(() {});
+      } else {
         setState(() {
-          _selectedIndex = 0; // Reset to home tab
+          _selectedIndex = 0;
         });
       }
     } else {
@@ -89,14 +62,38 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus(); // Unfocus the text fields when tapping outside
+        FocusScope.of(context).unfocus();
       },
       child: Scaffold(
         backgroundColor: lightGrey,
-        appBar: CustomAppBar(
-          userName: "$_firstName ${_lastName?[0].toUpperCase()}.",
-          avatarUrl: "https://avatar.iran.liara.run/public/48",
-        ),
+        appBar: _userId == null
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(135),
+                child: StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Users')
+                      .doc(_userId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+                      return const Center(child: Text("Erreur lors du chargement des données"));
+                    }
+                    
+                    var userData = snapshot.data!.data() as Map<String, dynamic>;
+                    String userName = "${userData['prenom']} ${userData['nom'][0].toUpperCase()}.";
+                    String avatarUrl = userData['photo_profil'] ?? 'assets/images/default_avatar.png';
+
+                    return CustomAppBar(
+                      userName: userName,
+                      avatarUrl: avatarUrl,
+                    );
+                  },
+                ),
+              ),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
@@ -115,12 +112,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationForm(
                       onDepartureChanged: (departure) {
                         setState(() {
-                          selectedDeparture = departure;
+                          // Logique de gestion du départ
                         });
                       },
                       onArrivalChanged: (arrival) {
                         setState(() {
-                          selectedArrival = arrival;
+                          // Logique de gestion de l'arrivée
                         });
                       },
                     ),
@@ -165,34 +162,37 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    // Ajouter le contenu du dernier voyage ici
                   ],
                 ),
               ),
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          selectedItemColor: Colors.green,
-          unselectedItemColor: Colors.grey,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Accueil',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Gares',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history),
-              label: 'Historique',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.more_horiz),
-              label: 'Plus',
-            ),
-          ],
-        ),
+        bottomNavigationBar: _userId == null
+            ? null
+            : BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                currentIndex: _selectedIndex,
+                onTap: _onItemTapped,
+                selectedItemColor: Colors.green,
+                unselectedItemColor: Colors.grey,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home),
+                    label: 'Accueil',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.map),
+                    label: 'Gares',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.history),
+                    label: 'Historique',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.more_horiz),
+                    label: 'Plus',
+                  ),
+                ],
+              ),
       ),
     );
   }

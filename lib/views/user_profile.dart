@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:animate_do/animate_do.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/components/user_details.dart';
 import 'package:mfk_guinee_transport/components/notifications_page.dart';
 import 'package:mfk_guinee_transport/components/security_page.dart';
@@ -18,35 +17,29 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  String? _firstName;
-  String? _lastName;
-  String? _role;
-  String? _phoneNumber;
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
-    _loadUserInfo();
+    _loadUserId();
   }
 
-  Future<void> _loadUserInfo() async {
+  Future<void> _loadUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString("userId");
+    setState(() {
+      _userId = prefs.getString("userId");
+    });
+  }
 
-    if (userId != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-      DocumentSnapshot roleDoc = await FirebaseFirestore.instance.collection('roles').doc(userDoc['id_role']).get();
+  Future<void> _navigateToUserDetails() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const UserDetailsPage()),
+    );
 
-      setState(() {
-        _firstName = userDoc['prenom'];
-        _lastName = userDoc['nom'];
-        _phoneNumber = userDoc['telephone'];
-        _role = roleDoc['nom'];
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Utilisateur non trouvé')),
-      );
+    if (result == true) {
+      setState(() {}); // Reload the data if user details were updated
     }
   }
 
@@ -55,168 +48,123 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green,
-        title: FadeInDown(
-          child: const Text(
-            'Profil',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(2, 2),
-                ),
-              ],
-            ),
-            child: Center(
-              child: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios,
-                  color: Colors.black,
-                  size: 16,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-              ),
-            ),
+        title: const Text(
+          'Profil',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Colors.white,
           ),
         ),
       ),
       backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 20),
-          ProfileHeader(
-            firstName: _firstName,
-            lastName: _lastName,
-            role: _role,
-            phoneNumber: _phoneNumber,
-          ),
-          const SizedBox(height: 20),
-          const ProfileOptions(),
-          const SizedBox(height: 20),
-          const LogoutButton(),
-        ],
-      ),
+      body: _userId == null
+          ? const Center(child: CircularProgressIndicator())
+          : StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('Users')
+                  .doc(_userId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+                  return const Center(child: Text("Erreur lors du chargement des données"));
+                }
+                
+                var userData = snapshot.data!.data() as Map<String, dynamic>;
+                String firstName = userData['prenom'] ?? 'Prénom';
+                String lastName = userData['nom'] ?? 'Nom';
+                String role = userData['role'] ?? 'Utilisateur';
+                String profileImageUrl = userData['photo_profil'] ?? 'assets/images/default_avatar.png';
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: _navigateToUserDetails,  // Navigate to UserDetailsPage
+                      child: ProfileHeader(
+                        firstName: firstName,
+                        lastName: lastName,
+                        role: role,
+                        profileImageUrl: profileImageUrl,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const ProfileOptions(),
+                    const SizedBox(height: 20),
+                    const LogoutButton(),
+                  ],
+                );
+              },
+            ),
     );
   }
 }
 
-class ProfileHeader extends StatefulWidget {
-  final String? firstName;
-  final String? lastName;
-  final String? role;
-  final String? phoneNumber;
+class ProfileHeader extends StatelessWidget {
+  final String firstName;
+  final String lastName;
+  final String role;
+  final String profileImageUrl;
 
   const ProfileHeader({
     super.key,
-    this.firstName,
-    this.lastName,
-    this.role,
-    this.phoneNumber,
+    required this.firstName,
+    required this.lastName,
+    required this.role,
+    required this.profileImageUrl,
   });
-
-  @override
-  State<ProfileHeader> createState() => _ProfileHeaderState();
-}
-
-class _ProfileHeaderState extends State<ProfileHeader> {
-  bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: GestureDetector(
-        onTapDown: (_) {
-          setState(() {
-            _isPressed = true;
-          });
-        },
-        onTapUp: (_) {
-          setState(() {
-            _isPressed = false;
-          });
-        },
-        onTapCancel: () {
-          setState(() {
-            _isPressed = false;
-          });
-        },
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const UserDetailsPage()),
-          );
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            color: _isPressed ? Colors.grey.shade200 : Colors.white,
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            children: [
-              const CircleAvatar(
-                radius: 28,
-                child: CircleAvatar(
-                  radius: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${widget.firstName ?? ''} ${widget.lastName?.substring(0, 1).toUpperCase() ?? ''}.',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundImage: profileImageUrl.startsWith('assets/')
+                  ? AssetImage(profileImageUrl) as ImageProvider
+                  : NetworkImage(profileImageUrl),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$firstName ${lastName[0].toUpperCase()}.',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.role  ?? '',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    role,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.phoneNumber ?? '',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.grey,
-              ),
-            ],
-          ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: Colors.grey,
+            ),
+          ],
         ),
       ),
     );
@@ -318,14 +266,18 @@ class _ProfileOptionTileState extends State<ProfileOptionTile> {
         });
       },
       onTapUp: (_) {
-        setState(() {
-          _isPressed = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isPressed = false;
+          });
+        }
       },
       onTapCancel: () {
-        setState(() {
-          _isPressed = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isPressed = false;
+          });
+        }
       },
       onTap: () {
         _navigateToPage(context);
@@ -355,9 +307,11 @@ class LogoutButton extends StatelessWidget {
       await authService.signOut();
       Navigator.of(context).pushReplacementNamed('/login');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
+        );
+      }
     }
   }
 

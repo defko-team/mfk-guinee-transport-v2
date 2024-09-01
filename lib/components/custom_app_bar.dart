@@ -4,7 +4,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String userName;
   final String avatarUrl;
 
-  const CustomAppBar({super.key, required this.userName, required this.avatarUrl});
+  const CustomAppBar({
+    super.key,
+    required this.userName,
+    required this.avatarUrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +32,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 children: [
                   // Avatar
                   CircleAvatar(
-                    backgroundImage: NetworkImage(avatarUrl),
+                    backgroundImage: avatarUrl.startsWith('assets/')
+                        ? AssetImage(avatarUrl) as ImageProvider
+                        : NetworkImage(avatarUrl),
                     radius: 30,
                   ),
                   const SizedBox(width: 12),

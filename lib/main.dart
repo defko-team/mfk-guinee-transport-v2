@@ -24,9 +24,6 @@ Future<void> main() async {
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
 
-  // preferences.clear();
-
-
   Widget homePage;
 
   if (!isConnected && isProviderAuthenticated == true) {
