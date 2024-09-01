@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
@@ -24,7 +25,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   String? selectedDeparture;
   String? selectedArrival;
-  int selectedType = -1;
+  int isTransportTypeSelected = -1;
 
   @override
   void initState() {
@@ -35,10 +36,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Future<void> _loadUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
-    
+
     if (userId != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-      DocumentSnapshot roleDoc = await FirebaseFirestore.instance.collection('roles').doc(userDoc['id_role']).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .get();
+      DocumentSnapshot roleDoc = await FirebaseFirestore.instance
+          .collection('roles')
+          .doc(userDoc['id_role'])
+          .get();
 
       setState(() {
         _userId = userId;
@@ -55,9 +62,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   }
 
   void _onSearch() {
-    if (selectedDeparture != null && selectedArrival != null && selectedType != -1) {
+    if (selectedDeparture != null &&
+        selectedArrival != null &&
+        isTransportTypeSelected != -1) {
       // Here you can handle the search logic
-      print("Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $selectedType");
+      print(
+          "Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $isTransportTypeSelected");
       Navigator.of(context).pushNamed('/availableCars');
       // You might want to navigate to another page or make a request with the gathered data
     } else {
@@ -71,7 +81,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus(); // Unfocus the text fields when tapping outside
+        FocusScope.of(context)
+            .unfocus(); // Unfocus the text fields when tapping outside
       },
       child: Scaffold(
         backgroundColor: lightGrey,
@@ -118,30 +129,21 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationType(
                       onTypeSelected: (type) {
                         setState(() {
-                          selectedType = type;
+                          isTransportTypeSelected = type;
                         });
                       },
                     ),
                     const Spacer(),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: ElevatedButton(
-                        onPressed: _onSearch,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: selectedType != -1 ? AppColors.green : Colors.grey,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Rechercher les voitures',
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
-                        ),
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: CustomElevatedButton(
+                          onSearch: _onSearch,
+                          backgroundColor: isTransportTypeSelected != -1
+                              ? AppColors.green
+                              : AppColors.grey,
+                          text: "Rechercher",
+                        )
                       ),
-                    ),
                   ],
                 ),
               ),

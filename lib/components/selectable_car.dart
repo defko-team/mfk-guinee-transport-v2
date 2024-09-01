@@ -8,6 +8,7 @@ class SelectableCarWidget extends StatefulWidget {
   final bool isClimatised;
   final int seats;
   final Function(bool) onSelected;
+  final bool isSelected;
 
   const SelectableCarWidget({
     super.key,
@@ -18,6 +19,7 @@ class SelectableCarWidget extends StatefulWidget {
     required this.isClimatised,
     required this.seats,
     required this.onSelected,
+    required this.isSelected,
   });
 
   @override
