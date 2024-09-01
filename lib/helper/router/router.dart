@@ -13,6 +13,6 @@ Map<String, WidgetBuilder> getAppRoutes() {
     '/providerHome': (BuildContext context) => const ProviderHomePage(),
     '/noNetwork': (BuildContext context) => const NoNetwork(pageToGo: '/login'),
     '/register': (BuildContext context) => const RegisterPage(),
-    '/availableCars': (BuildContext context) => const AvailableCarsPage(),
+    // '/availableCars': (BuildContext context) => const AvailableCarsPage(),
   };
 }

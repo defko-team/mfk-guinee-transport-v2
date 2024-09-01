@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
-class SelectableCarWidget extends StatefulWidget {
+class SelectableCarWidget extends StatelessWidget {
+  final int index;
   final String carName;
   final String driverName;
   final String departureTime;
   final String price;
   final bool isClimatised;
   final int seats;
-  final Function(bool) onSelected;
   final bool isSelected;
+  final Function(bool, int) onSelected;
 
   const SelectableCarWidget({
     super.key,
+    required this.index,
     required this.carName,
     required this.driverName,
     required this.departureTime,
@@ -22,18 +25,8 @@ class SelectableCarWidget extends StatefulWidget {
     required this.isSelected,
   });
 
-  @override
-  _SelectableCarWidgetState createState() => _SelectableCarWidgetState();
-}
-
-class _SelectableCarWidgetState extends State<SelectableCarWidget> {
-  bool _isSelected = false;
-
   void _toggleSelection() {
-    setState(() {
-      _isSelected = !_isSelected;
-      widget.onSelected(_isSelected);
-    });
+    onSelected(!isSelected, index);
   }
 
   @override
@@ -47,7 +40,7 @@ class _SelectableCarWidgetState extends State<SelectableCarWidget> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: _isSelected ? Colors.green : Colors.grey.shade300,
+            color: isSelected ? Colors.green : Colors.grey.shade300,
             width: 2,
           ),
           boxShadow: [
@@ -64,39 +57,60 @@ class _SelectableCarWidgetState extends State<SelectableCarWidget> {
           children: [
             Row(
               children: [
-                const Icon(Icons.local_taxi, color: Colors.yellow, size: 40),
+                //Create Image component from svg image taxi.svg from assets/images/taxi.svg into component
+                // const Icon(Icons.local_taxi, color: Colors.yellow, size: 40),
+                // const SizedBox(width: 10),
+                Image.asset("assets/images/taxi.jpeg", width: 80, height: 80),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.carName,
+                      carName,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(widget.driverName),
+                    Row(children: [
+                      const Icon(Icons.person_pin_circle_rounded, color: AppColors.grey),
+                      Text(driverName),
+                    ]),
                     const SizedBox(height: 4),
-                    Text('${widget.seats} places'),
-                    Text(widget.isClimatised ? 'Climatisé' : 'Non Climatisé'),
+                    Row(children: [
+                      const Icon(Icons.chair_alt, color: AppColors.grey),
+                      Text('$seats places'),
+                    ]),
+                    const SizedBox(height: 4),
+                    Row(children: [
+                      Icon(color: AppColors.grey, isClimatised ? Icons.ac_unit: Icons.sunny),
+                      Text(isClimatised ? 'Climatisé' : 'Non Climatisé'),
+                    ]),
                   ],
                 ),
               ],
             ),
             Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  widget.departureTime,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightGrey,
+                    borderRadius: BorderRadius.circular(17)
+                  ),
+                  child: Text(
+                    departureTime,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  widget.price,
+                  price,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
@@ -8,7 +7,12 @@ import '../components/base_app_bar.dart';
 import '../components/selectable_car.dart';
 
 class AvailableCarsPage extends StatefulWidget {
-  const AvailableCarsPage({super.key});
+  final Map<String, dynamic> reservationInfo;
+
+  const AvailableCarsPage({
+    super.key,
+    required this.reservationInfo,
+  });
 
   @override
   _AvailableCarsPageState createState() => _AvailableCarsPageState();
@@ -17,15 +21,29 @@ class AvailableCarsPage extends StatefulWidget {
 class _AvailableCarsPageState extends State<AvailableCarsPage> {
   int selectedCarIndex = -1;
 
-  final List<Map<String, dynamic>> cars = mock_cars;
+  List<Map<String, dynamic>> cars = mock_cars;
 
-  void _onCarSelected(bool isSelected, int index) {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize 'isSelected' flag for each car
+    for (var car in cars) {
+      car['isSelected'] = false;
+    }
+  }
+
+  void _setOnSelectedCarState(bool isSelected, int index) {
     setState(() {
       if (isSelected) {
-        // Si une voiture est sélectionnée, mettez à jour l'index sélectionné
+        // Désélectionner toutes les autres voitures
+        for (int i = 0; i < cars.length; i++) {
+          cars[i]['isSelected'] = i == index;
+        }
         selectedCarIndex = index;
-      } else if (selectedCarIndex == index) {
-        // Si la voiture sélectionnée est cliquée à nouveau, désélectionnez-la
+        widget.reservationInfo['car'] = cars[index];
+      } else {
+        // Désélectionner la voiture si elle est cliquée à nouveau
+        cars[index]['isSelected'] = false;
         selectedCarIndex = -1;
       }
     });
@@ -45,16 +63,15 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
                 itemCount: cars.length,
                 itemBuilder: (context, index) {
                   return SelectableCarWidget(
+                    index: index,
                     carName: cars[index]['carName'],
                     driverName: cars[index]['driverName'],
                     departureTime: cars[index]['departureTime'],
                     price: cars[index]['price'],
                     isClimatised: cars[index]['isClimatised'],
                     seats: cars[index]['seats'],
-                    isSelected: selectedCarIndex == index,
-                    onSelected: (isSelected) {
-                      _onCarSelected(isSelected, index);
-                    },
+                    isSelected: cars[index]['isSelected'] ?? false,
+                    onSelected: _setOnSelectedCarState,
                   );
                 },
               ),
@@ -65,9 +82,8 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
               padding: const EdgeInsets.all(10.0),
               child: CustomElevatedButton(
                 onSearch: _onSearch,
-                backgroundColor: selectedCarIndex != -1
-                    ? AppColors.green
-                    : AppColors.grey,
+                backgroundColor:
+                    selectedCarIndex != -1 ? AppColors.green : AppColors.grey,
                 text: "Rechercher",
               ),
             ),
@@ -103,5 +119,6 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
 
   void _onSearch() {
     // Action lors de la recherche
+    print("Réservation : ${widget.reservationInfo}");
   }
 }

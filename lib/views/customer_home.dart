@@ -5,6 +5,7 @@ import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:mfk_guinee_transport/views/available_cars.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -25,7 +26,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   String? selectedDeparture;
   String? selectedArrival;
-  int isTransportTypeSelected = -1;
+  int selectedTransportTypeIndex = -1;
 
   @override
   void initState() {
@@ -64,11 +65,21 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   void _onSearch() {
     if (selectedDeparture != null &&
         selectedArrival != null &&
-        isTransportTypeSelected != -1) {
+        selectedTransportTypeIndex != -1) {
+          
       // Here you can handle the search logic
-      print(
-          "Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $isTransportTypeSelected");
-      Navigator.of(context).pushNamed('/availableCars');
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (content) => AvailableCarsPage(
+              reservationInfo: {
+                'selectedDeparture': selectedDeparture,
+                'selectedArrival': selectedArrival,
+                'type': selectedTransportTypeIndex,
+                'userId': _userId,
+              },
+            ),
+          ));
       // You might want to navigate to another page or make a request with the gathered data
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -129,7 +140,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationType(
                       onTypeSelected: (type) {
                         setState(() {
-                          isTransportTypeSelected = type;
+                          selectedTransportTypeIndex = type;
                         });
                       },
                     ),
@@ -138,12 +149,11 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                         padding: const EdgeInsets.only(bottom: 10),
                         child: CustomElevatedButton(
                           onSearch: _onSearch,
-                          backgroundColor: isTransportTypeSelected != -1
+                          backgroundColor: selectedTransportTypeIndex != -1
                               ? AppColors.green
                               : AppColors.grey,
                           text: "Rechercher",
-                        )
-                      ),
+                        )),
                   ],
                 ),
               ),
