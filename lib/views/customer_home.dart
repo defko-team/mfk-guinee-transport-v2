@@ -5,6 +5,7 @@ import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mfk_guinee_transport/views/user_profile.dart';
 
 class CustomerHomePage extends StatefulWidget {
   const CustomerHomePage({super.key});
@@ -26,6 +27,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   String? selectedArrival;
   int selectedType = -1;
 
+  int _selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -35,7 +38,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Future<void> _loadUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
-    
+
     if (userId != null) {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
       DocumentSnapshot roleDoc = await FirebaseFirestore.instance.collection('roles').doc(userDoc['id_role']).get();
@@ -56,13 +59,29 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   void _onSearch() {
     if (selectedDeparture != null && selectedArrival != null && selectedType != -1) {
-      // Here you can handle the search logic
       print("Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $selectedType");
-      // You might want to navigate to another page or make a request with the gathered data
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez remplir tous les champs')),
       );
+    }
+  }
+
+  void _onItemTapped(int index) async {
+    if (index == 3) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const UserProfilePage()),
+      );
+      if (result == true) {
+        setState(() {
+          _selectedIndex = 0; // Reset to home tab
+        });
+      }
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
     }
   }
 
@@ -151,7 +170,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               ),
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          currentIndex: 0,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
           selectedItemColor: Colors.green,
           unselectedItemColor: Colors.grey,
           items: const [
