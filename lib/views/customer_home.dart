@@ -58,6 +58,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     if (selectedDeparture != null && selectedArrival != null && selectedType != -1) {
       // Here you can handle the search logic
       print("Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $selectedType");
+      Navigator.of(context).pushNamed('/availableCars');
       // You might want to navigate to another page or make a request with the gathered data
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,7 +81,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         ),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
+            : Container(
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,29 +122,24 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                         });
                       },
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _onSearch,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedType != -1 ? AppColors.green : Colors.grey,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: ElevatedButton(
+                        onPressed: _onSearch,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedType != -1 ? AppColors.green : Colors.grey,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Rechercher les voitures',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        child: const Center(
+                          child: Text(
+                            'Rechercher les voitures',
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Votre dernier voyage",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
