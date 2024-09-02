@@ -1,51 +1,51 @@
-class TrajetModel {
-  final String idTrajet;
-  final String idGareDepart;
-  final String idGareArrivee;
-  final String lieuDepart;
-  final String lieuArrivee;
-  final DateTime dateHeureDepart;
-  final DateTime dateHeureArrivee;
-  final int placesRestantes;
-  final double prix;
+class TravelModel {
+  final String id;
+  final String departureStationId;
+  final String destinationStationId;
+  final String departureLocation;
+  final String arrivalLocation;
+  final DateTime startTime;
+  final DateTime arrivalTime;
+  final int remainingSeats;
+  final double ticketPrice;
 
-  TrajetModel({
-    required this.idTrajet,
-    required this.idGareDepart,
-    required this.idGareArrivee,
-    required this.lieuDepart,
-    required this.lieuArrivee,
-    required this.dateHeureDepart,
-    required this.dateHeureArrivee,
-    required this.placesRestantes,
-    required this.prix,
+  TravelModel({
+    required this.id,
+    required this.departureStationId,
+    required this.destinationStationId,
+    required this.departureLocation,
+    required this.arrivalLocation,
+    required this.startTime,
+    required this.arrivalTime,
+    required this.remainingSeats,
+    required this.ticketPrice,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'id_trajet': idTrajet,
-      'id_gare_depart': idGareDepart,
-      'id_gare_arrivee': idGareArrivee,
-      'lieu_depart': lieuDepart,
-      'lieu_arrivee': lieuArrivee,
-      'date_heure_depart': dateHeureDepart.toIso8601String(),
-      'date_heure_arrivee': dateHeureArrivee.toIso8601String(),
-      'places_restantes': placesRestantes,
-      'prix': prix,
+      'id': id,
+      'departure_station_id': departureStationId,
+      'destination_station_id': destinationStationId,
+      'departure_location': departureLocation,
+      'arrival_location': arrivalLocation,
+      'start_time': startTime.toIso8601String(),
+      'arrival_time': arrivalTime.toIso8601String(),
+      'remaining_seats': remainingSeats,
+      'ticket_price': ticketPrice,
     };
   }
 
-  factory TrajetModel.fromMap(Map<String, dynamic> map) {
-    return TrajetModel(
-      idTrajet: map['id_trajet'],
-      idGareDepart: map['id_gare_depart'],
-      idGareArrivee: map['id_gare_arrivee'],
-      lieuDepart: map['lieu_depart'],
-      lieuArrivee: map['lieu_arrivee'],
-      dateHeureDepart: DateTime.parse(map['date_heure_depart']),
-      dateHeureArrivee: DateTime.parse(map['date_heure_arrivee']),
-      placesRestantes: map['places_restantes'],
-      prix: map['prix'],
+  factory TravelModel.fromMap(Map<String, dynamic> map) {
+    return TravelModel(
+      id: map['id'],
+      departureStationId: map['departure_station_id'],
+      destinationStationId: map['destination_station_id'],
+      departureLocation: map['departure_location'],
+      arrivalLocation: map['arrival_location'],
+      startTime: DateTime.parse(map['start_time']),
+      arrivalTime: DateTime.parse(map['arrival_time']),
+      remainingSeats: map['remaining_seats'],
+      ticketPrice: map['ticket_price'],
     );
   }
 }
