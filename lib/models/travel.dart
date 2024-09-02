@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class TravelModel {
   final String id;
-  final String departureStationId;
-  final String destinationStationId;
-  final String departureLocation;
-  final String arrivalLocation;
+  final String? departureStationId;
+  final String? destinationStationId;
+  final String? departureLocation;
+  final String? arrivalLocation;
   final DateTime startTime;
   final DateTime arrivalTime;
   final int remainingSeats;
@@ -36,16 +38,17 @@ class TravelModel {
   }
 
   factory TravelModel.fromMap(Map<String, dynamic> map) {
+    print(map.toString());
     return TravelModel(
       id: map['id'],
       departureStationId: map['departure_station_id'],
       destinationStationId: map['destination_station_id'],
       departureLocation: map['departure_location'],
       arrivalLocation: map['arrival_location'],
-      startTime: DateTime.parse(map['start_time']),
-      arrivalTime: DateTime.parse(map['arrival_time']),
-      remainingSeats: map['remaining_seats'],
-      ticketPrice: map['ticket_price'],
+      startTime: (map['start_time'] as Timestamp).toDate(), // Convert Timestamp to DateTime
+      arrivalTime: (map['arrival_time'] as Timestamp).toDate(), // Convert Timestamp to DateTime
+      remainingSeats: int.tryParse(map['remaining_seats']) ?? 0, // Parse as int, default to 0
+      ticketPrice: double.tryParse(map['ticket_price']) ?? 0.0, // Parse as double, default to 0.0
     );
   }
 }

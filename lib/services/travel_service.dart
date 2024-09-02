@@ -6,27 +6,44 @@ class TravelService {
 
   Future<List<TravelModel>> getAllTravels() async {
     List<TravelModel> travels = [];
-    QuerySnapshot querySnapshot = await _firestore.collection('travels').get();
+    QuerySnapshot querySnapshot = await _firestore.collection('Travel').get();
     for (var doc in querySnapshot.docs) {
       travels.add(TravelModel.fromMap(doc.data() as Map<String, dynamic>));
     }
     return travels;
   }
 
+  // Get travel by departureStationId and destinationStationId
+  Future<List<TravelModel>> getTravelsByStations(String departureStationId, String destinationStationId) async {
+    List<TravelModel> travels = [];
+
+    QuerySnapshot querySnapshot = await _firestore.collection('Travel')
+    .where('departure_station_id', isEqualTo: departureStationId)
+    .where('destination_station_id', isEqualTo: destinationStationId)
+    .get();
+
+    for (var doc in querySnapshot.docs) {
+      travels.add(TravelModel.fromMap(doc.data() as Map<String, dynamic>));
+    }
+    return travels;
+  }
+
+  // Get travel by id
+
   Future<TravelModel> getTravelById(String travelId) async {
-    DocumentSnapshot travelDoc = await _firestore.collection('travels').doc(travelId).get();
+    DocumentSnapshot travelDoc = await _firestore.collection('Travel').doc(travelId).get();
     return TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>);
   }
 
   Future<void> createTravel(TravelModel travel) async {
-    await _firestore.collection('travels').doc(travel.id).set(travel.toMap());
+    await _firestore.collection('Travel').doc(travel.id).set(travel.toMap());
   }
 
   Future<void> updateTravel(TravelModel travel) async {
-    await _firestore.collection('travels').doc(travel.id).update(travel.toMap());
+    await _firestore.collection('Travel').doc(travel.id).update(travel.toMap());
   }
 
   Future<void> deleteTravel(String travelId) async {
-    await _firestore.collection('travels').doc(travelId).delete();
+    await _firestore.collection('Travel').doc(travelId).delete();
   }
 }

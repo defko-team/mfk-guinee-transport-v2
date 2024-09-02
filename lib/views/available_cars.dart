@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/helper/constants/mock_data.dart';
+import 'package:mfk_guinee_transport/models/travel.dart';
+import 'package:mfk_guinee_transport/services/travel_service.dart';
 
 import '../components/base_app_bar.dart';
 import '../components/selectable_car.dart';
@@ -22,6 +24,10 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   int selectedCarIndex = -1;
 
   List<Map<String, dynamic>> cars = mock_cars;
+  List<TravelModel> travels = [];
+
+  TravelService travelService = TravelService();
+
 
   @override
   void initState() {
@@ -30,8 +36,21 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
     for (var car in cars) {
       car['isSelected'] = false;
     }
+
+    _loadTravels();
+    print(travels);
   }
 
+  Future<void> _loadTravels() async {
+    var diaf =  await travelService.getAllTravels();
+    print(diaf);
+    var travels_data =  await travelService
+    .getTravelsByStations(widget.reservationInfo['selectedDeparture'], widget.reservationInfo['selectedArrival']);
+
+    setState(() {
+      travels = travels_data;
+    });
+  }
   void _setOnSelectedCarState(bool isSelected, int index) {
     setState(() {
       if (isSelected) {

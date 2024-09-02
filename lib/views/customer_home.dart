@@ -89,8 +89,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           MaterialPageRoute(
             builder: (content) => AvailableCarsPage(
               reservationInfo: {
-                'selectedDeparture': selectedDeparture,
-                'selectedArrival': selectedArrival,
+                'selectedDeparture': selectedDeparture?.id,
+                'selectedArrival': selectedArrival?.id,
                 'type': selectedTransportTypeIndex,
                 'userId': _userId,
               },
