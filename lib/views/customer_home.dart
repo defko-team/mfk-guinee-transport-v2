@@ -5,6 +5,8 @@ import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:mfk_guinee_transport/models/station.dart';
+import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,11 +29,23 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   String? selectedDeparture;
   String? selectedArrival;
   int selectedTransportTypeIndex = -1;
+  List<StationModel> locations = [];
+
+  final StationService _stationService = StationService();
 
   @override
   void initState() {
     super.initState();
     _loadUserInfo();
+    _loadingStation();
+  }
+
+  Future<void> _loadingStation() async {
+    List<StationModel> data = await _stationService.getAllStations();
+
+    setState(() {
+      locations = data;
+    });
   }
 
   Future<void> _loadUserInfo() async {
@@ -127,6 +141,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           selectedArrival = arrival;
                         });
                       },
+                      locations: locations,
                     ),
                     const SizedBox(height: 16),
                     const Text(

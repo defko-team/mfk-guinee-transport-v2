@@ -1,9 +1,9 @@
 class StationModel {
   final String id;
   final String name;
-  final double latitude;
-  final double longitude;
-  final String address;
+  final double? latitude;
+  final double? longitude;
+  final String? address;
 
   StationModel({
     required this.id,

@@ -6,7 +6,7 @@ class StationService {
 
   Future<List<StationModel>> getAllStations() async {
     List<StationModel> stations = [];
-    QuerySnapshot querySnapshot = await _firestore.collection('stations').get();
+    QuerySnapshot querySnapshot = await _firestore.collection('Station').get();
     for (var doc in querySnapshot.docs) {
       stations.add(StationModel.fromMap(doc.data() as Map<String, dynamic>));
     }
