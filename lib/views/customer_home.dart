@@ -7,6 +7,7 @@ import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
+import 'package:mfk_guinee_transport/services/travel_service.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,12 +27,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   String? _phoneNumber;
   String? _role;
 
-  String? selectedDeparture;
-  String? selectedArrival;
+  StationModel? selectedDeparture;
+  StationModel? selectedArrival;
   int selectedTransportTypeIndex = -1;
   List<StationModel> locations = [];
 
   final StationService _stationService = StationService();
+
 
   @override
   void initState() {
@@ -104,6 +106,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    
+    bool formIsValid = selectedDeparture != null && selectedArrival != null && selectedTransportTypeIndex != -1;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context)
@@ -133,12 +138,17 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationForm(
                       onDepartureChanged: (departure) {
                         setState(() {
-                          selectedDeparture = departure;
+                          
+                          var selectedDepartureFound = locations.where((location) => location.name.toLowerCase() == departure.toLowerCase());
+                          
+                          selectedDeparture = selectedDepartureFound.isNotEmpty ? selectedDepartureFound.first : null;
                         });
                       },
                       onArrivalChanged: (arrival) {
                         setState(() {
-                          selectedArrival = arrival;
+                          var selectedArrivalFound = locations.where((location) => location.name.toLowerCase() == arrival.toLowerCase());
+                          
+                          selectedArrival = selectedArrivalFound.isNotEmpty ? selectedArrivalFound.first : null;
                         });
                       },
                       locations: locations,
@@ -163,8 +173,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: CustomElevatedButton(
-                          onSearch: _onSearch,
-                          backgroundColor: selectedTransportTypeIndex != -1
+                          onSearch: formIsValid ? _onSearch : () {},
+                          backgroundColor: formIsValid
                               ? AppColors.green
                               : AppColors.grey,
                           text: "Rechercher",
