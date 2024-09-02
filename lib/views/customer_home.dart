@@ -7,7 +7,6 @@ import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
-import 'package:mfk_guinee_transport/services/travel_service.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

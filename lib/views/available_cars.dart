@@ -42,8 +42,6 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   }
 
   Future<void> _loadTravels() async {
-    var diaf =  await travelService.getAllTravels();
-    print(diaf);
     var travels_data =  await travelService
     .getTravelsByStations(widget.reservationInfo['selectedDeparture'], widget.reservationInfo['selectedArrival']);
 
