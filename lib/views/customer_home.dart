@@ -35,10 +35,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Future<void> _loadUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
-    
+
     if (userId != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-      DocumentSnapshot roleDoc = await FirebaseFirestore.instance.collection('roles').doc(userDoc['id_role']).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .get();
+      DocumentSnapshot roleDoc = await FirebaseFirestore.instance
+          .collection('roles')
+          .doc(userDoc['id_role'])
+          .get();
 
       setState(() {
         _userId = userId;
@@ -55,9 +61,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   }
 
   void _onSearch() {
-    if (selectedDeparture != null && selectedArrival != null && selectedType != -1) {
+    if (selectedDeparture != null &&
+        selectedArrival != null &&
+        selectedType != -1) {
       // Here you can handle the search logic
-      print("Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $selectedType");
+      print(
+          "Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $selectedType");
       // You might want to navigate to another page or make a request with the gathered data
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +79,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus(); // Unfocus the text fields when tapping outside
+        FocusScope.of(context)
+            .unfocus(); // Unfocus the text fields when tapping outside
       },
       child: Scaffold(
         backgroundColor: lightGrey,
@@ -125,7 +135,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     ElevatedButton(
                       onPressed: _onSearch,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedType != -1 ? AppColors.green : Colors.grey,
+                        backgroundColor:
+                            selectedType != -1 ? AppColors.green : Colors.grey,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -149,30 +160,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   ],
                 ),
               ),
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: 0,
-          selectedItemColor: Colors.green,
-          unselectedItemColor: Colors.grey,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Accueil',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Gares',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history),
-              label: 'Historique',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.more_horiz),
-              label: 'Plus',
-            ),
-          ],
-        ),
       ),
     );
   }
