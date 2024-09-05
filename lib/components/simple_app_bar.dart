@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
-import 'package:mfk_guinee_transport/views/home_page.dart';
+import 'package:mfk_guinee_transport/views/customer_home.dart';
 
 class CustomSimpleAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -17,7 +17,7 @@ class CustomSimpleAppBar extends StatelessWidget
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => const CustomerHomePage()),
           );
           // Implement notification action
         },

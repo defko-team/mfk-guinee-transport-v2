@@ -11,6 +11,7 @@ import 'package:mfk_guinee_transport/views/available_cars.dart';
 import 'package:mfk_guinee_transport/views/user_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 class CustomerHomePage extends StatefulWidget {
   const CustomerHomePage({super.key});
 
@@ -86,7 +87,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         selectedArrival != null &&
         selectedTransportTypeIndex != -1) {
           
-      // Here you can handle the search logic
       Navigator.push(
           context,
           MaterialPageRoute(
@@ -99,7 +99,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               },
             ),
           ));
-      // You might want to navigate to another page or make a request with the gathered data
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez remplir tous les champs')),
@@ -136,7 +135,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     return GestureDetector(
       onTap: () {
         FocusScope.of(context)
-            .unfocus(); // Unfocus the text fields when tapping outside
+            .unfocus();
       },
       child: Scaffold(
         backgroundColor: lightGrey,
@@ -212,6 +211,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     const SizedBox(height: 10),
                     LocationType(
                       onTypeSelected: (type) {
+                        selectedTransportTypeIndex = type;
                         setState(() {
                           selectedTransportTypeIndex = type;
                         });
