@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/helper/utils/line_painter.dart';
+import 'package:mfk_guinee_transport/models/station.dart';
 
 class LocationForm extends StatefulWidget {
   final ValueChanged<String> onDepartureChanged;
   final ValueChanged<String> onArrivalChanged;
+  final List<StationModel> locations;
+
 
   const LocationForm({
     super.key,
     required this.onDepartureChanged,
     required this.onArrivalChanged,
+    required this.locations,
   });
 
   @override
@@ -16,48 +20,6 @@ class LocationForm extends StatefulWidget {
 }
 
 class _LocationFormState extends State<LocationForm> {
-  final List<String> locations = [
-    'Dakar, Ville',
-    'Keur Massar',
-    'Pikine',
-    'Guediawaye',
-    'Rufisque',
-    'Dakar, Ville',
-    'Keur Massar',
-    'Pikine',
-    'Guediawaye',
-    'Rufisque',
-    'Dakar, Ville',
-    'Keur Massar',
-    'Pikine',
-    'Guediawaye',
-    'Rufisque',
-    'Dakar, Ville',
-    'Keur Massar',
-    'Pikine',
-    'Guediawaye',
-    'Rufisque',
-    'Dakar, Ville',
-    'Keur Massar',
-    'Pikine',
-    'Guediawaye',
-    'Rufisque',
-    'Dakar, Ville',
-    'Keur Massar',
-    'Pikine',
-    'Guediawaye',
-    'Rufisque',
-    'Dakar, Ville',
-    'Keur Massar',
-    'Pikine',
-    'Guediawaye',
-    'Rufisque',
-    'Dakar, Ville',
-    'Keur Massar',
-    'Pikine',
-    'Guediawaye',
-    'Rufisque',
-  ];
 
   TextEditingController departureController = TextEditingController();
   TextEditingController arrivalController = TextEditingController();
@@ -149,10 +111,10 @@ Widget _buildAutocompleteField({
           if (textEditingValue.text.isEmpty) {
             return const Iterable<String>.empty();
           }
-          final suggestions = locations.where((String option) {
-            return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+          final suggestions = widget.locations.where((StationModel option) {
+            return option.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
           }).toList();
-          return suggestions;
+          return suggestions.map((station) => station.name);
         },
         onSelected: (String selection) {
           setState(() {
