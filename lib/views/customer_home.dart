@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mfk_guinee_transport/models/station.dart';
+import 'package:mfk_guinee_transport/services/station_service.dart';
+import 'package:mfk_guinee_transport/views/available_cars.dart';
 import 'package:mfk_guinee_transport/views/user_profile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
   const CustomerHomePage({super.key});
@@ -18,25 +22,91 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   static const Color lightGrey = Color(0xFFF2F2F2);
 
   String? _userId;
-  int selectedType = -1;
+  String? _firstName;
+  String? _lastName;
+  String? _phoneNumber;
+  String? _role;
+
+  StationModel? selectedDeparture;
+  StationModel? selectedArrival;
+
   int _selectedIndex = 0;
+
+  int selectedTransportTypeIndex = -1;
+  List<StationModel> locations = [];
+
+  final StationService _stationService = StationService();
+
 
   @override
   void initState() {
     super.initState();
-    _loadUserId();
+    _loadUserInfo();
+    _loadingStation();
   }
 
-  Future<void> _loadUserId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  Future<void> _loadingStation() async {
+    List<StationModel> data = await _stationService.getAllStations();
+
     setState(() {
-      _userId = prefs.getString("userId");
+      locations = data;
     });
   }
 
-  void _onSearch() {
-    // Logique de recherche
+  Future<void> _loadUserInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .get();
+      DocumentSnapshot roleDoc = await FirebaseFirestore.instance
+          .collection('roles')
+          .doc(userDoc['id_role'])
+          .get();
+
+      setState(() {
+        _userId = userId;
+        _firstName = userDoc['prenom'];
+        _lastName = userDoc['nom'];
+        _phoneNumber = userDoc['telephone'];
+        _role = roleDoc['nom'];
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Utilisateur non trouvé')),
+      );
+    }
   }
+
+  void _onSearch() {
+    if (selectedDeparture != null &&
+        selectedArrival != null &&
+        selectedTransportTypeIndex != -1) {
+          
+      // Here you can handle the search logic
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (content) => AvailableCarsPage(
+              reservationInfo: {
+                'selectedDeparture': selectedDeparture?.id,
+                'selectedArrival': selectedArrival?.id,
+                'type': selectedTransportTypeIndex,
+                'userId': _userId,
+              },
+            ),
+          ));
+      // You might want to navigate to another page or make a request with the gathered data
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+      );
+    }
+  }
+
 
   void _onItemTapped(int index) async {
     if (index == 3) {
@@ -60,9 +130,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    
+    bool formIsValid = selectedDeparture != null && selectedArrival != null && selectedTransportTypeIndex != -1;
+
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus();
+        FocusScope.of(context)
+            .unfocus(); // Unfocus the text fields when tapping outside
       },
       child: Scaffold(
         backgroundColor: lightGrey,
@@ -93,10 +167,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     );
                   },
                 ),
-              ),
+        ),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
+            : Container(
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,14 +186,20 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationForm(
                       onDepartureChanged: (departure) {
                         setState(() {
-                          // Logique de gestion du départ
+                          
+                          var selectedDepartureFound = locations.where((location) => location.name.toLowerCase() == departure.toLowerCase());
+                          
+                          selectedDeparture = selectedDepartureFound.isNotEmpty ? selectedDepartureFound.first : null;
                         });
                       },
                       onArrivalChanged: (arrival) {
                         setState(() {
-                          // Logique de gestion de l'arrivée
+                          var selectedArrivalFound = locations.where((location) => location.name.toLowerCase() == arrival.toLowerCase());
+                          
+                          selectedArrival = selectedArrivalFound.isNotEmpty ? selectedArrivalFound.first : null;
                         });
                       },
+                      locations: locations,
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -133,66 +213,49 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationType(
                       onTypeSelected: (type) {
                         setState(() {
-                          selectedType = type;
+                          selectedTransportTypeIndex = type;
                         });
                       },
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _onSearch,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedType != -1 ? AppColors.green : Colors.grey,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Rechercher les voitures',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ),
+                    const Spacer(),
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: CustomElevatedButton(
+                          onSearch: formIsValid ? _onSearch : () {},
+                          backgroundColor: formIsValid
+                              ? AppColors.green
+                              : AppColors.grey,
+                          text: "Rechercher",
+                        )
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Votre dernier voyage",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    // Ajouter le contenu du dernier voyage ici
                   ],
                 ),
               ),
-        bottomNavigationBar: _userId == null
-            ? null
-            : BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: _selectedIndex,
-                onTap: _onItemTapped,
-                selectedItemColor: Colors.green,
-                unselectedItemColor: Colors.grey,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home),
-                    label: 'Accueil',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.map),
-                    label: 'Gares',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.history),
-                    label: 'Historique',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.more_horiz),
-                    label: 'Plus',
-                  ),
-                ],
-              ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          selectedItemColor: Colors.green,
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Accueil',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map),
+              label: 'Gares',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history),
+              label: 'Historique',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.more_horiz),
+              label: 'Plus',
+            ),
+          ],
+        ),
       ),
     );
   }

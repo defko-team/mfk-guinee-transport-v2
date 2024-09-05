@@ -9,9 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mfk_guinee_transport/main.dart';
+import 'package:mfk_guinee_transport/views/customer_home.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp(homePage: SizedBox(),));
 
