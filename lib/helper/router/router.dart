@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/views/available_cars.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
 import 'package:mfk_guinee_transport/views/home_page.dart';
 import 'package:mfk_guinee_transport/views/login.dart';
@@ -13,5 +14,6 @@ Map<String, WidgetBuilder> getAppRoutes() {
     '/providerHome': (BuildContext context) => const ProviderHomePage(),
     '/noNetwork': (BuildContext context) => const NoNetwork(pageToGo: '/login'),
     '/register': (BuildContext context) => const RegisterPage(),
+    // '/availableCars': (BuildContext context) => const AvailableCarsPage(),
   };
 }

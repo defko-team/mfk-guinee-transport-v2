@@ -60,5 +60,12 @@
 	</dict>
 	</array>
 
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Nous avons besoin d'accéder à votre bibliothèque pour sélectionner une photo de profil.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Nous avons besoin d'accéder à votre caméra pour capturer une photo de profil.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Nous avons besoin d'accéder à votre microphone pour enregistrer des vidéos.</string>
+
 </dict>
 </plist>

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mfk_guinee_transport/views/home_page.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
 import 'package:mfk_guinee_transport/views/provider_home.dart';
@@ -25,8 +25,6 @@ Future<void> main() async {
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
 
-  // preferences.clear();
-
   Widget homePage;
 
   if (!isConnected && isProviderAuthenticated == true) {
@@ -38,7 +36,7 @@ Future<void> main() async {
   } else if (isProviderAuthenticated == true) {
     homePage = const ProviderHomePage();
   } else if (isCustomerAuthenticated == true) {
-    homePage = HomePage();
+    homePage = const CustomerHomePage();
   } else {
     homePage = const Login();
   }
@@ -57,7 +55,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Guinea Transport',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.green),
+        iconTheme: const IconThemeData(size: 18.0),
         useMaterial3: true,
       ),
       home: homePage,
