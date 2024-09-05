@@ -8,6 +8,7 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';
+import 'package:mfk_guinee_transport/views/user_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -28,6 +29,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   StationModel? selectedDeparture;
   StationModel? selectedArrival;
+
+  int _selectedIndex = 0;
+
   int selectedTransportTypeIndex = -1;
   List<StationModel> locations = [];
 
@@ -103,6 +107,27 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     }
   }
 
+
+  void _onItemTapped(int index) async {
+    if (index == 3) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const UserProfilePage()),
+      );
+      if (result == true) {
+        setState(() {});
+      } else {
+        setState(() {
+          _selectedIndex = 0;
+        });
+      }
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     
@@ -115,9 +140,33 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       },
       child: Scaffold(
         backgroundColor: lightGrey,
-        appBar: CustomAppBar(
-          userName: "$_firstName ${_lastName?[0].toUpperCase()}.",
-          avatarUrl: "https://avatar.iran.liara.run/public/48",
+        appBar: _userId == null
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(135),
+                child: StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Users')
+                      .doc(_userId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+                      return const Center(child: Text("Erreur lors du chargement des données"));
+                    }
+                    
+                    var userData = snapshot.data!.data() as Map<String, dynamic>;
+                    String userName = "${userData['prenom']} ${userData['nom'][0].toUpperCase()}.";
+                    String avatarUrl = userData['photo_profil'] ?? 'assets/images/default_avatar.png';
+
+                    return CustomAppBar(
+                      userName: userName,
+                      avatarUrl: avatarUrl,
+                    );
+                  },
+                ),
         ),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())
@@ -177,13 +226,15 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                               ? AppColors.green
                               : AppColors.grey,
                           text: "Rechercher",
-                        )),
+                        )
+                    ),
                   ],
                 ),
               ),
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          currentIndex: 0,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
           selectedItemColor: Colors.green,
           unselectedItemColor: Colors.grey,
           items: const [
