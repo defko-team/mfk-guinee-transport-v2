@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/components/simple_app_bar.dart';
 import 'package:mfk_guinee_transport/components/trip_card.dart';
 import 'package:mfk_guinee_transport/components/trip_card_detail.dart';
@@ -151,7 +152,17 @@ class HistoryPage extends StatelessWidget {
   }
 }
 
-class FilterBar extends StatelessWidget {
+class FilterBar extends StatefulWidget {
+  @override
+  _FilterBarState createState() => _FilterBarState();
+}
+
+class _FilterBarState extends State<FilterBar> {
+  // For storing the selected date, status, and vehicle
+  DateTime? selectedDate;
+  String? selectedStatus;
+  String? selectedVehicle;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -159,31 +170,78 @@ class FilterBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          FilterDropdown(label: 'Date'),
-          FilterDropdown(label: 'Status'),
-          FilterDropdown(label: 'Vehicule'),
+          _buildDatePicker(context),
+          _buildStatusDropdown(),
+          _buildVehicleDropdown(),
         ],
       ),
     );
   }
-}
 
-class FilterDropdown extends StatelessWidget {
-  final String label;
+  Widget _buildDatePicker(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        DateTime? picked = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2101),
+        );
+        if (picked != null && picked != selectedDate) {
+          setState(() {
+            selectedDate = picked;
+          });
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          selectedDate != null
+              ? DateFormat('dd/MM/yyyy').format(selectedDate!)
+              : 'Date',
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
 
-  FilterDropdown({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildStatusDropdown() {
     return DropdownButton<String>(
-      hint: Text(label),
-      items: <String>['Option 1', 'Option 2', 'Option 3'].map((String value) {
+      hint: Text('Status'),
+      value: selectedStatus,
+      items: ['Confirmé', 'Completé', 'Annulé'].map((String value) {
         return DropdownMenuItem<String>(
           value: value,
           child: Text(value),
         );
       }).toList(),
-      onChanged: (_) {},
+      onChanged: (newValue) {
+        setState(() {
+          selectedStatus = newValue;
+        });
+      },
+    );
+  }
+
+  Widget _buildVehicleDropdown() {
+    return DropdownButton<String>(
+      hint: Text('Véhicule'),
+      value: selectedVehicle,
+      items: ['Voiture X1', 'Voiture X2'].map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      onChanged: (newValue) {
+        setState(() {
+          selectedVehicle = newValue;
+        });
+      },
     );
   }
 }

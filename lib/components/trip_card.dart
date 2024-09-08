@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
 class TripCard extends StatelessWidget {
   final String origin;
@@ -32,7 +33,7 @@ class TripCard extends StatelessWidget {
                 crossAxisAlignment:
                     CrossAxisAlignment.start, // Ensure vertical alignment
                 children: [
-                  Icon(Icons.radio_button_checked, color: Colors.green),
+                  Icon(Icons.radio_button_checked, color: AppColors.green),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(origin,

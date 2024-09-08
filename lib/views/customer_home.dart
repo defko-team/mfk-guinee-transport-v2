@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:mfk_guinee_transport/models/station.dart';
+import 'package:mfk_guinee_transport/services/station_service.dart';
+import 'package:mfk_guinee_transport/views/available_cars.dart';
+import 'package:mfk_guinee_transport/views/user_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -22,14 +27,29 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   String? _phoneNumber;
   String? _role;
 
-  String? selectedDeparture;
-  String? selectedArrival;
-  int selectedType = -1;
+  StationModel? selectedDeparture;
+  StationModel? selectedArrival;
+
+  int _selectedIndex = 0;
+
+  int selectedTransportTypeIndex = -1;
+  List<StationModel> locations = [];
+
+  final StationService _stationService = StationService();
 
   @override
   void initState() {
     super.initState();
     _loadUserInfo();
+    _loadingStation();
+  }
+
+  Future<void> _loadingStation() async {
+    List<StationModel> data = await _stationService.getAllStations();
+
+    setState(() {
+      locations = data;
+    });
   }
 
   Future<void> _loadUserInfo() async {
@@ -63,10 +83,20 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   void _onSearch() {
     if (selectedDeparture != null &&
         selectedArrival != null &&
-        selectedType != -1) {
+        selectedTransportTypeIndex != -1) {
       // Here you can handle the search logic
-      print(
-          "Departure: $selectedDeparture, Arrival: $selectedArrival, Type: $selectedType");
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (content) => AvailableCarsPage(
+              reservationInfo: {
+                'selectedDeparture': selectedDeparture?.id,
+                'selectedArrival': selectedArrival?.id,
+                'type': selectedTransportTypeIndex,
+                'userId': _userId,
+              },
+            ),
+          ));
       // You might want to navigate to another page or make a request with the gathered data
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -77,6 +107,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    bool formIsValid = selectedDeparture != null &&
+        selectedArrival != null &&
+        selectedTransportTypeIndex != -1;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context)
@@ -84,13 +118,43 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       },
       child: Scaffold(
         backgroundColor: lightGrey,
-        appBar: CustomAppBar(
-          userName: "$_firstName ${_lastName?[0].toUpperCase()}.",
-          avatarUrl: "https://avatar.iran.liara.run/public/48",
-        ),
+        appBar: _userId == null
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(135),
+                child: StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Users')
+                      .doc(_userId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError ||
+                        !snapshot.hasData ||
+                        !snapshot.data!.exists) {
+                      return const Center(
+                          child: Text("Erreur lors du chargement des données"));
+                    }
+
+                    var userData =
+                        snapshot.data!.data() as Map<String, dynamic>;
+                    String userName =
+                        "${userData['prenom']} ${userData['nom'][0].toUpperCase()}.";
+                    String avatarUrl = userData['photo_profil'] ??
+                        'assets/images/default_avatar.png';
+
+                    return CustomAppBar(
+                      userName: userName,
+                      avatarUrl: avatarUrl,
+                    );
+                  },
+                ),
+              ),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
+            : Container(
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,14 +170,29 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationForm(
                       onDepartureChanged: (departure) {
                         setState(() {
-                          selectedDeparture = departure;
+                          var selectedDepartureFound = locations.where(
+                              (location) =>
+                                  location.name.toLowerCase() ==
+                                  departure.toLowerCase());
+
+                          selectedDeparture = selectedDepartureFound.isNotEmpty
+                              ? selectedDepartureFound.first
+                              : null;
                         });
                       },
                       onArrivalChanged: (arrival) {
                         setState(() {
-                          selectedArrival = arrival;
+                          var selectedArrivalFound = locations.where(
+                              (location) =>
+                                  location.name.toLowerCase() ==
+                                  arrival.toLowerCase());
+
+                          selectedArrival = selectedArrivalFound.isNotEmpty
+                              ? selectedArrivalFound.first
+                              : null;
                         });
                       },
+                      locations: locations,
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -127,36 +206,19 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationType(
                       onTypeSelected: (type) {
                         setState(() {
-                          selectedType = type;
+                          selectedTransportTypeIndex = type;
                         });
                       },
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _onSearch,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            selectedType != -1 ? AppColors.green : Colors.grey,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Rechercher les voitures',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Votre dernier voyage",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    const Spacer(),
+                    Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: CustomElevatedButton(
+                          onSearch: formIsValid ? _onSearch : () {},
+                          backgroundColor:
+                              formIsValid ? AppColors.green : AppColors.grey,
+                          text: "Rechercher",
+                        )),
                   ],
                 ),
               ),
