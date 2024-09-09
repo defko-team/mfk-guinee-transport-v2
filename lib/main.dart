@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mfk_guinee_transport/views/home_page.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
@@ -36,7 +37,7 @@ Future<void> main() async {
   } else if (isProviderAuthenticated == true) {
     homePage = const ProviderHomePage();
   } else if (isCustomerAuthenticated == true) {
-    homePage = const CustomerHomePage();
+    homePage = HomePage();
   } else {
     homePage = const Login();
   }

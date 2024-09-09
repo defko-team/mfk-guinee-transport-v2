@@ -37,7 +37,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   final StationService _stationService = StationService();
 
-
   @override
   void initState() {
     super.initState();
@@ -85,7 +84,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     if (selectedDeparture != null &&
         selectedArrival != null &&
         selectedTransportTypeIndex != -1) {
-          
       // Here you can handle the search logic
       Navigator.push(
           context,
@@ -107,31 +105,11 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     }
   }
 
-
-  void _onItemTapped(int index) async {
-    if (index == 3) {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const UserProfilePage()),
-      );
-      if (result == true) {
-        setState(() {});
-      } else {
-        setState(() {
-          _selectedIndex = 0;
-        });
-      }
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    
-    bool formIsValid = selectedDeparture != null && selectedArrival != null && selectedTransportTypeIndex != -1;
+    bool formIsValid = selectedDeparture != null &&
+        selectedArrival != null &&
+        selectedTransportTypeIndex != -1;
 
     return GestureDetector(
       onTap: () {
@@ -153,13 +131,19 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
-                    if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-                      return const Center(child: Text("Erreur lors du chargement des données"));
+                    if (snapshot.hasError ||
+                        !snapshot.hasData ||
+                        !snapshot.data!.exists) {
+                      return const Center(
+                          child: Text("Erreur lors du chargement des données"));
                     }
-                    
-                    var userData = snapshot.data!.data() as Map<String, dynamic>;
-                    String userName = "${userData['prenom']} ${userData['nom'][0].toUpperCase()}.";
-                    String avatarUrl = userData['photo_profil'] ?? 'assets/images/default_avatar.png';
+
+                    var userData =
+                        snapshot.data!.data() as Map<String, dynamic>;
+                    String userName =
+                        "${userData['prenom']} ${userData['nom'][0].toUpperCase()}.";
+                    String avatarUrl = userData['photo_profil'] ??
+                        'assets/images/default_avatar.png';
 
                     return CustomAppBar(
                       userName: userName,
@@ -167,7 +151,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     );
                   },
                 ),
-        ),
+              ),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())
             : Container(
@@ -186,17 +170,26 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     LocationForm(
                       onDepartureChanged: (departure) {
                         setState(() {
-                          
-                          var selectedDepartureFound = locations.where((location) => location.name.toLowerCase() == departure.toLowerCase());
-                          
-                          selectedDeparture = selectedDepartureFound.isNotEmpty ? selectedDepartureFound.first : null;
+                          var selectedDepartureFound = locations.where(
+                              (location) =>
+                                  location.name.toLowerCase() ==
+                                  departure.toLowerCase());
+
+                          selectedDeparture = selectedDepartureFound.isNotEmpty
+                              ? selectedDepartureFound.first
+                              : null;
                         });
                       },
                       onArrivalChanged: (arrival) {
                         setState(() {
-                          var selectedArrivalFound = locations.where((location) => location.name.toLowerCase() == arrival.toLowerCase());
-                          
-                          selectedArrival = selectedArrivalFound.isNotEmpty ? selectedArrivalFound.first : null;
+                          var selectedArrivalFound = locations.where(
+                              (location) =>
+                                  location.name.toLowerCase() ==
+                                  arrival.toLowerCase());
+
+                          selectedArrival = selectedArrivalFound.isNotEmpty
+                              ? selectedArrivalFound.first
+                              : null;
                         });
                       },
                       locations: locations,
@@ -222,40 +215,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                         padding: const EdgeInsets.only(bottom: 10),
                         child: CustomElevatedButton(
                           onSearch: formIsValid ? _onSearch : () {},
-                          backgroundColor: formIsValid
-                              ? AppColors.green
-                              : AppColors.grey,
+                          backgroundColor:
+                              formIsValid ? AppColors.green : AppColors.grey,
                           text: "Rechercher",
-                        )
-                    ),
+                        )),
                   ],
                 ),
               ),
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          selectedItemColor: Colors.green,
-          unselectedItemColor: Colors.grey,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Accueil',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Gares',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history),
-              label: 'Historique',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.more_horiz),
-              label: 'Plus',
-            ),
-          ],
-        ),
       ),
     );
   }
