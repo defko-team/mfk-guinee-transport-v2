@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/components/simple_app_bar.dart';
 import 'package:mfk_guinee_transport/components/trip_card.dart';
 import 'package:mfk_guinee_transport/components/trip_card_detail.dart';
@@ -10,7 +11,7 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomSimpleAppBar(title: "Historique"),
+      appBar: const BaseAppBar(title: "Historique"),
       body: Column(
         children: [
           FilterBar(),

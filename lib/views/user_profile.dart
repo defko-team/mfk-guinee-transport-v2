@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/components/user_details.dart';
@@ -46,17 +48,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: const Text(
-          'Profil',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-            color: Colors.white,
-          ),
-        ),
-      ),
+      appBar: const BaseAppBar(title: "Profil"),
       backgroundColor: const Color(0xFFF5F5F5),
       body: _userId == null
           ? const Center(child: CircularProgressIndicator())
@@ -162,7 +154,7 @@ class ProfileHeader extends StatelessWidget {
             ),
             const Icon(
               Icons.chevron_right,
-              color: Colors.grey,
+              color: Colors.white,
             ),
           ],
         ),

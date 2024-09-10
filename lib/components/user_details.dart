@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserDetailsPage extends StatefulWidget {
@@ -128,10 +130,7 @@ void _updateProfile() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Détails de l\'utilisateur'),
-        backgroundColor: Colors.green,
-      ),
+      appBar: const BaseAppBar(title: 'Détails de l\'utilisateur'),
       body: _isLoading || _isInfoLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -216,7 +215,7 @@ void _updateProfile() async {
                   ElevatedButton(
                     onPressed: _toggleEditing,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppColors.green,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

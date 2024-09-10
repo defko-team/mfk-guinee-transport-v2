@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/components/notifications_page.dart';
 
 class NotificationBell extends StatelessWidget {
   const NotificationBell({
@@ -17,7 +17,11 @@ class NotificationBell extends StatelessWidget {
             size: 30,
           ),
           onPressed: () {
-            // Handle notification icon press
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const NotificationsPage()),
+            );
           },
         ),
         Positioned(
