@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/components/gare_page.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
 import 'package:mfk_guinee_transport/views/history.dart';
 import 'package:mfk_guinee_transport/views/user_profile.dart';
@@ -11,17 +12,36 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final List<Widget> _widgetOptions = [
-    CustomerHomePage(),
-    CustomerHomePage(),
-    HistoryPage(),
-    HistoryPage(),
+    const CustomerHomePage(),
+    const GarePage(),
+    const HistoryPage(),
+    const UserProfilePage(),
   ];
 
+  // Future<void> _onItemTapped(int index) async {
+  //   if (index == 3) {
+  //     final result = await Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const UserProfilePage()),
+  //     );
+  //     if (result == true) {
+  //       setState(() {});
+  //     } else {
+  //       setState(() {
+  //         _selectedIndex = 0;
+  //       });
+  //     }
+  //   } else {
+  //     setState(() {
+  //       _selectedIndex = index;
+  //     });
+  //   }
+  // }
+
   Future<void> _onItemTapped(int index) async {
-    if (index == 3) {
-      final result = await Navigator.push(
+    final result = await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const UserProfilePage()),
+        MaterialPageRoute(builder: (context) =>  _widgetOptions.elementAt(index)),
       );
       if (result == true) {
         setState(() {});
@@ -30,11 +50,6 @@ class _HomePageState extends State<HomePage> {
           _selectedIndex = 0;
         });
       }
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
   }
 
   @override

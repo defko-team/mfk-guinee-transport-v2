@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
-import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
-import 'package:mfk_guinee_transport/components/location_form.dart';
-import 'package:mfk_guinee_transport/components/location_type.dart';
-import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:mfk_guinee_transport/components/customer_home_page.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';
-import 'package:mfk_guinee_transport/views/user_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -107,9 +103,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    bool formIsValid = selectedDeparture != null &&
-        selectedArrival != null &&
-        selectedTransportTypeIndex != -1;
 
     return GestureDetector(
       onTap: () {
@@ -154,74 +147,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               ),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())
-            : Container(
-                padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Où allez-vous aujourd'hui ?",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    LocationForm(
-                      onDepartureChanged: (departure) {
-                        setState(() {
-                          var selectedDepartureFound = locations.where(
-                              (location) =>
-                                  location.name.toLowerCase() ==
-                                  departure.toLowerCase());
-
-                          selectedDeparture = selectedDepartureFound.isNotEmpty
-                              ? selectedDepartureFound.first
-                              : null;
-                        });
-                      },
-                      onArrivalChanged: (arrival) {
-                        setState(() {
-                          var selectedArrivalFound = locations.where(
-                              (location) =>
-                                  location.name.toLowerCase() ==
-                                  arrival.toLowerCase());
-
-                          selectedArrival = selectedArrivalFound.isNotEmpty
-                              ? selectedArrivalFound.first
-                              : null;
-                        });
-                      },
-                      locations: locations,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Quel moyen de transport ?",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    LocationType(
-                      onTypeSelected: (type) {
-                        setState(() {
-                          selectedTransportTypeIndex = type;
-                        });
-                      },
-                    ),
-                    const Spacer(),
-                    Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: CustomElevatedButton(
-                          onSearch: formIsValid ? _onSearch : () {},
-                          backgroundColor:
-                              formIsValid ? AppColors.green : AppColors.grey,
-                          text: "Rechercher",
-                        )),
-                  ],
-                ),
-              ),
+            : CustomerHome(
+                userId: _userId,
+                locations: locations,
+            ),
       ),
     );
   }
