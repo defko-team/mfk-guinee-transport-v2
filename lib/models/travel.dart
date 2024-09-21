@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/models/station.dart';
 
 class TravelModel {
   final String id;
-  final String? departureStationId;
-  final String? destinationStationId;
+  final StationModel? departureStation;
+  final StationModel? destinationStation;
   final String? departureLocation;
   final String? arrivalLocation;
   final DateTime startTime;
@@ -13,8 +14,8 @@ class TravelModel {
 
   TravelModel({
     required this.id,
-    required this.departureStationId,
-    required this.destinationStationId,
+    required this.departureStation,
+    required this.destinationStation,
     required this.departureLocation,
     required this.arrivalLocation,
     required this.startTime,
@@ -26,8 +27,8 @@ class TravelModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'departure_station_id': departureStationId,
-      'destination_station_id': destinationStationId,
+      'departure_station': departureStation?.toMap(),
+      'destination_station': destinationStation?.toMap(),
       'departure_location': departureLocation,
       'arrival_location': arrivalLocation,
       'start_time': startTime.toIso8601String(),
@@ -37,12 +38,11 @@ class TravelModel {
     };
   }
 
-  factory TravelModel.fromMap(Map<String, dynamic> map) {
-    print(map.toString());
+  factory TravelModel.fromMap(Map<String, dynamic> map, StationModel departure, StationModel destination) {
     return TravelModel(
       id: map['id'],
-      departureStationId: map['departure_station_id'],
-      destinationStationId: map['destination_station_id'],
+      departureStation: departure,
+      destinationStation: destination,
       departureLocation: map['departure_location'],
       arrivalLocation: map['arrival_location'],
       startTime: (map['start_time'] as Timestamp).toDate(), // Convert Timestamp to DateTime
