@@ -11,7 +11,7 @@ class BaseAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(
         title,
-        style: const TextStyle(color: AppColors.white),
+        style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
       ),
       backgroundColor: AppColors.green,
       leading: IconButton(
