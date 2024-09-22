@@ -11,6 +11,9 @@ class TravelModel {
   final DateTime arrivalTime;
   final int remainingSeats;
   final double ticketPrice;
+  final bool airConditioned;
+  final String driverName;
+  final String carName;
 
   TravelModel({
     required this.id,
@@ -22,6 +25,9 @@ class TravelModel {
     required this.arrivalTime,
     required this.remainingSeats,
     required this.ticketPrice,
+    required this.airConditioned,
+    required this.driverName,
+    required this.carName
   });
 
   Map<String, dynamic> toMap() {
@@ -35,10 +41,14 @@ class TravelModel {
       'arrival_time': arrivalTime.toIso8601String(),
       'remaining_seats': remainingSeats,
       'ticket_price': ticketPrice,
+      'air_conditioned': airConditioned,
+      'driver_name': driverName,
+      'car_name': carName
     };
   }
 
   factory TravelModel.fromMap(Map<String, dynamic> map, StationModel departure, StationModel destination) {
+    print('Map: $map');
     return TravelModel(
       id: map['id'],
       departureStation: departure,
@@ -49,6 +59,9 @@ class TravelModel {
       arrivalTime: (map['arrival_time'] as Timestamp).toDate(), // Convert Timestamp to DateTime
       remainingSeats: int.tryParse(map['remaining_seats']) ?? 0, // Parse as int, default to 0
       ticketPrice: double.tryParse(map['ticket_price']) ?? 0.0, // Parse as double, default to 0.0
+      airConditioned: map['air_conditioned'] ?? false, // Parse as bool
+      driverName: map['driver_name'], // Parse as string
+      carName: map['car_name'], // Parse as string
     );
   }
 }

@@ -5,7 +5,6 @@ import 'package:mfk_guinee_transport/services/station_service.dart';
 
 class TravelService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final StationService _stationService = StationService();
 
 
   Future<List<TravelModel>> getAllTravels() async {
@@ -40,15 +39,11 @@ class TravelService {
     for (QueryDocumentSnapshot travelDoc in travelQuerySnapshot.docs) {
         // Get Travel data
         Map<String, dynamic> travelData = travelDoc.data() as Map<String, dynamic>;
-
         TravelModel travel = TravelModel.fromMap(travelData, departureStation, destinationStation);
 
         // Now you have both travel and station data
         travels.add(travel);
     }
-
-    print('Travels: ');
-    print(travels);
 
     return travels;
   }

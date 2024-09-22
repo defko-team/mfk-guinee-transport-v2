@@ -33,7 +33,7 @@ class _CustomerHomeState extends State<CustomerHome> {
           context,
           MaterialPageRoute(
             builder: (content) => AvailableCarsPage(
-              reservationInfo: {
+              travelSearchInfo: {
                 'selectedDeparture': selectedDeparture?.id,
                 'selectedArrival': selectedArrival?.id,
                 'type': selectedTransportTypeIndex,
