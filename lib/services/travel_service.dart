@@ -24,12 +24,10 @@ class TravelService {
     DocumentReference destinationStationRef = _firestore.collection('Station').doc(destinationStationId);
 
     DocumentSnapshot departureStationSnapshot = await departureStationRef.get();
-    Map<String, dynamic>? departureStationData = departureStationSnapshot.data() as Map<String, dynamic>?;
-    StationModel departureStation = StationModel.fromMap(departureStationData!);
+    StationModel departureStation = StationModel.fromMap(departureStationSnapshot);
 
     DocumentSnapshot destinationStationSnapshot = await destinationStationRef.get();
-    Map<String, dynamic>? destinationStationData = destinationStationSnapshot.data() as Map<String, dynamic>?;
-    StationModel destinationStation = StationModel.fromMap(destinationStationData!);
+    StationModel destinationStation = StationModel.fromMap(destinationStationSnapshot);
 
     QuerySnapshot travelQuerySnapshot = await _firestore.collection('Travel')
       .where('departure_station', isEqualTo: departureStationRef)
@@ -56,7 +54,7 @@ class TravelService {
   //}
 
   Future<void> createTravel(TravelModel travel) async {
-    await _firestore.collection('Travel').doc(travel.id).set(travel.toMap());
+    await _firestore.collection('Travel').doc('n2jdSm5KhvJSFymyvdUf').set(travel.toMap());
   }
 
   Future<void> updateTravel(TravelModel travel) async {

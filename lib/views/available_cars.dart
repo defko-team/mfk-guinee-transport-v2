@@ -83,7 +83,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
                 onSearch: _onSearch,
                 backgroundColor:
                     selectedCarIndex != -1 ? AppColors.green : AppColors.grey,
-                text: "Réserver",
+                text: "Continuer",
               ),
             ),
           ],

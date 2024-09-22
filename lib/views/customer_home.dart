@@ -26,8 +26,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   StationModel? selectedDeparture;
   StationModel? selectedArrival;
 
-  int _selectedIndex = 0;
-
   int selectedTransportTypeIndex = -1;
   List<StationModel> locations = [];
 
