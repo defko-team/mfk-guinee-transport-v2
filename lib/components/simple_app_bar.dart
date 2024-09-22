@@ -13,7 +13,7 @@ class CustomSimpleAppBar extends StatelessWidget
     return AppBar(
       backgroundColor: AppColors.green,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back),
+        icon: const Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.push(
             context,
@@ -24,11 +24,11 @@ class CustomSimpleAppBar extends StatelessWidget
       ),
       title: Text(
         title,
-        style: TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white),
       ),
       actions: [
         IconButton(
-          icon: Stack(
+          icon: const Stack(
             children: [
               Icon(Icons.notifications),
               Positioned(
@@ -47,5 +47,5 @@ class CustomSimpleAppBar extends StatelessWidget
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

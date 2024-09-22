@@ -28,7 +28,6 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
 
   TravelService travelService = TravelService();
 
-
   @override
   void initState() {
     super.initState();
@@ -42,13 +41,15 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   }
 
   Future<void> _loadTravels() async {
-    var travels_data =  await travelService
-    .getTravelsByStations(widget.reservationInfo['selectedDeparture'], widget.reservationInfo['selectedArrival']);
+    var travelsData = await travelService.getTravelsByStations(
+        widget.reservationInfo['selectedDeparture'],
+        widget.reservationInfo['selectedArrival']);
 
     setState(() {
-      travels = travels_data;
+      travels = travelsData;
     });
   }
+
   void _setOnSelectedCarState(bool isSelected, int index) {
     setState(() {
       if (isSelected) {

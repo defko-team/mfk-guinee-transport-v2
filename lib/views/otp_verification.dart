@@ -22,9 +22,8 @@ class OtpVerification extends StatefulWidget {
     required this.isRegistration,
   });
 
-
   @override
-  State <OtpVerification> createState() => _OtpVerificationState();
+  State<OtpVerification> createState() => _OtpVerificationState();
 }
 
 class _OtpVerificationState extends State<OtpVerification> {
@@ -81,10 +80,16 @@ class _OtpVerificationState extends State<OtpVerification> {
       );
 
       String userId = FirebaseAuth.instance.currentUser!.uid;
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
-      
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .get();
+
       String roleId = userDoc['id_role'];
-      DocumentSnapshot roleDoc = await FirebaseFirestore.instance.collection('roles').doc(roleId).get();
+      DocumentSnapshot roleDoc = await FirebaseFirestore.instance
+          .collection('roles')
+          .doc(roleId)
+          .get();
       String role = roleDoc['nom'];
 
       if (mounted) {
@@ -93,25 +98,25 @@ class _OtpVerificationState extends State<OtpVerification> {
           _isVerified = true;
         });
 
-      if (role == 'Client') {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/customerHome',
-          (Route<dynamic> route) => false,
-        );
-      } else if (role == 'Provider') {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/providerHome',
-          (Route<dynamic> route) => false,
-        );
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/login',
-          (Route<dynamic> route) => false,
-        );
-      }
+        if (role == 'Client') {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/customerHome',
+            (Route<dynamic> route) => false,
+          );
+        } else if (role == 'Provider') {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/providerHome',
+            (Route<dynamic> route) => false,
+          );
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (Route<dynamic> route) => false,
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -162,7 +167,7 @@ class _OtpVerificationState extends State<OtpVerification> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
+              SizedBox(
                 height: 250,
                 child: Stack(
                   children: [
@@ -234,7 +239,6 @@ class _OtpVerificationState extends State<OtpVerification> {
                 ),
               ),
               const SizedBox(height: 30),
-
               FadeInDown(
                 delay: const Duration(milliseconds: 600),
                 duration: const Duration(milliseconds: 500),
@@ -262,7 +266,8 @@ class _OtpVerificationState extends State<OtpVerification> {
                     Flexible(
                       child: Text(
                         "Vous n'avez pas reçu l'OTP ?",
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                        style: TextStyle(
+                            fontSize: 14, color: Colors.grey.shade500),
                       ),
                     ),
                     const SizedBox(width: 2),
@@ -272,9 +277,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                         resend();
                       },
                       child: Text(
-                        _isResendAgain
-                            ? "Réessayez dans $_start"
-                            : "Renvoyer",
+                        _isResendAgain ? "Réessayez dans $_start" : "Renvoyer",
                         style: const TextStyle(color: Colors.blueAccent),
                       ),
                     ),
@@ -292,7 +295,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                   minWidth: MediaQuery.of(context).size.width * 0.8,
                   height: 50,
                   child: _isLoading
-                      ? Container(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: const CircularProgressIndicator(
