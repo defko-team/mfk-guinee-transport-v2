@@ -1,32 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:mfk_guinee_transport/models/travel.dart';
 
 class SelectableCarWidget extends StatelessWidget {
-  final int index;
-  final String carName;
-  final String driverName;
-  final String departureTime;
-  final String price;
-  final bool isClimatised;
-  final int seats;
+  final TravelModel travel;
   final bool isSelected;
-  final Function(bool, int) onSelected;
+  final int index;
+  final Function(int index) onToggled;
 
   const SelectableCarWidget({
     super.key,
-    required this.index,
-    required this.carName,
-    required this.driverName,
-    required this.departureTime,
-    required this.price,
-    required this.isClimatised,
-    required this.seats,
-    required this.onSelected,
+    required this.travel,
+    required this.onToggled,
     required this.isSelected,
+    required this.index
   });
 
   void _toggleSelection() {
-    onSelected(!isSelected, index);
+    onToggled(index);
   }
 
   @override
@@ -66,7 +58,7 @@ class SelectableCarWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      carName,
+                      travel.carName,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -75,17 +67,17 @@ class SelectableCarWidget extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(children: [
                       const Icon(Icons.person_pin_circle_rounded, color: AppColors.grey),
-                      Text(driverName),
+                      Text(travel.driverName),
                     ]),
                     const SizedBox(height: 4),
                     Row(children: [
                       const Icon(Icons.chair_alt, color: AppColors.grey),
-                      Text('$seats places'),
+                      Text('${travel.remainingSeats} places'),
                     ]),
                     const SizedBox(height: 4),
                     Row(children: [
-                      Icon(color: AppColors.grey, isClimatised ? Icons.ac_unit: Icons.sunny),
-                      Text(isClimatised ? 'Climatisé' : 'Non Climatisé'),
+                      Icon(color: AppColors.grey, travel.airConditioned ? Icons.ac_unit: Icons.sunny),
+                      Text(travel.airConditioned ? 'Climatisé' : 'Non Climatisé'),
                     ]),
                   ],
                 ),
@@ -101,7 +93,7 @@ class SelectableCarWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(17)
                   ),
                   child: Text(
-                    departureTime,
+                    DateFormat('HH\'h\' mm').format(travel.startTime),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -110,7 +102,7 @@ class SelectableCarWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  price,
+                  travel.ticketPrice.toString() + ' F CFA',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
