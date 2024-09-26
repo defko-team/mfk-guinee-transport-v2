@@ -45,10 +45,14 @@ class TravelModel {
       destinationStationId: map['destination_station_id'],
       departureLocation: map['departure_location'],
       arrivalLocation: map['arrival_location'],
-      startTime: (map['start_time'] as Timestamp).toDate(), // Convert Timestamp to DateTime
-      arrivalTime: (map['arrival_time'] as Timestamp).toDate(), // Convert Timestamp to DateTime
-      remainingSeats: int.tryParse(map['remaining_seats']) ?? 0, // Parse as int, default to 0
-      ticketPrice: double.tryParse(map['ticket_price']) ?? 0.0, // Parse as double, default to 0.0
+      startTime: (map['start_time'] as Timestamp)
+          .toDate(), // Convert Timestamp to DateTime
+      arrivalTime: (map['arrival_time'] as Timestamp)
+          .toDate(), // Convert Timestamp to DateTime
+      remainingSeats: int.tryParse(map['remaining_seats']) ??
+          0, // Parse as int, default to 0
+      ticketPrice: double.tryParse(map['ticket_price']) ??
+          0.0, // Parse as double, default to 0.0
     );
   }
 }
