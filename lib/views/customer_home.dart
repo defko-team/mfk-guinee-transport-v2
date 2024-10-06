@@ -26,8 +26,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   StationModel? selectedDeparture;
   StationModel? selectedArrival;
 
-  int _selectedIndex = 0;
-
   int selectedTransportTypeIndex = -1;
   List<StationModel> locations = [];
 
@@ -85,7 +83,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           context,
           MaterialPageRoute(
             builder: (content) => AvailableCarsPage(
-              reservationInfo: {
+              travelSearchInfo: {
                 'selectedDeparture': selectedDeparture?.id,
                 'selectedArrival': selectedArrival?.id,
                 'type': selectedTransportTypeIndex,
