@@ -78,7 +78,6 @@ class AddCarForm extends StatefulWidget {
 class _AddCarFormState extends State<AddCarForm> {
   final TextEditingController _marqueController = TextEditingController();
   final TextEditingController _nombrePlaceController = TextEditingController();
-  final TextEditingController _chauffeurSearchController = TextEditingController(); // Champ de recherche pour chauffeur
   File? _imageFile;
   String? _selectedChauffeurId;
   List<UserModel> chauffeurs = [];
@@ -93,37 +92,50 @@ class _AddCarFormState extends State<AddCarForm> {
     }
   }
 
-  Future<void> _loadChauffeurs() async {
+  Future<String?> _getChauffeurRoleId() async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('id_role', isEqualTo: 'Chauffeur')
+      QuerySnapshot roleSnapshot = await FirebaseFirestore.instance
+          .collection('roles')
+          .where('nom', isEqualTo: 'Chauffeur')
+          .limit(1)
           .get();
 
-      setState(() {
-        chauffeurs = querySnapshot.docs.map((doc) {
-          return UserModel.fromMap(doc.data() as Map<String, dynamic>);
-        }).toList();
-        filteredChauffeurs = chauffeurs;
-      });
+      if (roleSnapshot.docs.isNotEmpty) {
+        return roleSnapshot.docs.first.id;
+      }
     } catch (e) {
-      print('Erreur lors de la récupération des chauffeurs: $e');
+      print('Erreur lors de la récupération du rôle Chauffeur: $e');
+    }
+    return null;
+  }
+
+  Future<void> _loadChauffeurs() async {
+    final chauffeurRoleId = await _getChauffeurRoleId();
+    if (chauffeurRoleId != null) {
+      try {
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('Users')
+            .where('id_role', isEqualTo: chauffeurRoleId) // Utiliser l'ID du rôle Chauffeur
+            .get();
+
+        setState(() {
+          chauffeurs = querySnapshot.docs.map((doc) {
+            return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+          }).toList();
+          filteredChauffeurs = chauffeurs;
+        });
+      } catch (e) {
+        print('Erreur lors de la récupération des chauffeurs: $e');
+      }
+    } else {
+      print('Le rôle chauffeur n\'a pas été trouvé.');
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _loadChauffeurs();
-  }
-
-  void _filterChauffeurs(String query) {
-    setState(() {
-      filteredChauffeurs = chauffeurs.where((chauffeur) {
-        final fullName = '${chauffeur.prenom} ${chauffeur.nom}'.toLowerCase();
-        return fullName.contains(query.toLowerCase());
-      }).toList();
-    });
+    _loadChauffeurs(); // Charger la liste des chauffeurs
   }
 
   void _submitCar() {
@@ -171,6 +183,73 @@ class _AddCarFormState extends State<AddCarForm> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
+          // Autocomplete pour le chauffeur (placé en premier)
+          Autocomplete<UserModel>(
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              if (textEditingValue.text.isEmpty) {
+                return const Iterable<UserModel>.empty();
+              }
+              return chauffeurs.where((UserModel option) {
+                return '${option.prenom} ${option.nom}'
+                    .toLowerCase()
+                    .contains(textEditingValue.text.toLowerCase());
+              });
+            },
+            displayStringForOption: (UserModel option) => '${option.prenom} ${option.nom}',
+            onSelected: (UserModel selection) {
+              setState(() {
+                _selectedChauffeurId = selection.idUser;
+              });
+            },
+            fieldViewBuilder: (BuildContext context,
+                TextEditingController textEditingController,
+                FocusNode focusNode,
+                VoidCallback onFieldSubmitted) {
+              return TextField(
+                controller: textEditingController,
+                focusNode: focusNode,
+                decoration: InputDecoration(
+                  labelText: 'Chauffeur',
+                  prefixIcon: const Icon(Icons.person, color: Colors.black, size: 18),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(color: Colors.black),
+                  ),
+                  hintText: 'Tapez pour rechercher...',
+                ),
+              );
+            },
+            optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<UserModel> onSelected, Iterable<UserModel> options) {
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 4.0,
+                  child: Container(
+                    width: MediaQuery.of(context).size.width - 80,
+                    constraints: const BoxConstraints(
+                      maxHeight: 200.0, // Fixer une limite de hauteur
+                    ),
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: options.length,
+                      shrinkWrap: true,
+                      itemBuilder: (BuildContext context, int index) {
+                        final UserModel option = options.elementAt(index);
+                        return ListTile(
+                          title: Text('${option.prenom} ${option.nom}'),
+                          onTap: () {
+                            onSelected(option);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          // Choix de l'image
           GestureDetector(
             onTap: _pickImage,
             child: Center(
@@ -206,7 +285,7 @@ class _AddCarFormState extends State<AddCarForm> {
             ),
           ),
           const SizedBox(height: 20),
-          // Champ Marque
+          // Champ Marque (placé après le champ chauffeur)
           TextField(
             controller: _marqueController,
             cursorColor: Colors.black,
@@ -258,45 +337,6 @@ class _AddCarFormState extends State<AddCarForm> {
                 fontSize: 14.0,
               ),
               prefixIcon: const Icon(Icons.event_seat, color: Colors.black, size: 18),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey.shade200, width: 2),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              floatingLabelStyle: const TextStyle(
-                color: Colors.black,
-                fontSize: 18.0,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.black, width: 1.5),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Dropdown pour sélectionner le chauffeur avec filtrage en temps réel
-          DropdownButtonFormField<String>(
-            value: _selectedChauffeurId,
-            hint: const Text('Sélectionnez un chauffeur'),
-            items: filteredChauffeurs.map((chauffeur) {
-              return DropdownMenuItem<String>(
-                value: chauffeur.idUser,
-                child: Text('${chauffeur.prenom} ${chauffeur.nom}'),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedChauffeurId = value;
-              });
-            },
-            isExpanded: true,
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.all(0.0),
-              labelText: 'Chauffeur',
-              labelStyle: const TextStyle(
-                color: Colors.black,
-                fontSize: 14.0,
-                fontWeight: FontWeight.w400,
-              ),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey.shade200, width: 2),
                 borderRadius: BorderRadius.circular(10.0),
