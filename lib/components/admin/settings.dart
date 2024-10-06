@@ -256,7 +256,7 @@ class _AdminOptionTileState extends State<AdminOptionTile> {
       case 'Gérer Voitures':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AdminCarsManagementPage()),
+          MaterialPageRoute(builder: (context) => const AdminCarManagementPage()),
         );
         break;
       default:

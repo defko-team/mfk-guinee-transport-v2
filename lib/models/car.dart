@@ -1,13 +1,13 @@
 class VoitureModel {
   final String idVoiture;
-  final String photo;
+  final String? photo;
   final String marque;
   final int nombreDePlace;
   final String idChauffeur;
 
   VoitureModel({
     required this.idVoiture,
-    required this.photo,
+    this.photo,
     required this.marque,
     required this.nombreDePlace,
     required this.idChauffeur,
