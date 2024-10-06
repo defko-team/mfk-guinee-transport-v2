@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class StationModel {
   final String id;
   final String name;
-  final double? latitude;
-  final double? longitude;
+  final int? latitude;
+  final int? longitude;
   final String? address;
   final String docId;
 

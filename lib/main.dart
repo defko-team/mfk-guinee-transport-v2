@@ -4,7 +4,7 @@ import 'package:mfk_guinee_transport/views/home_page.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
-import 'package:mfk_guinee_transport/views/provider_home.dart';
+import 'package:mfk_guinee_transport/views/admin_home_page.dart';
 import 'package:mfk_guinee_transport/views/no_network.dart';
 import 'package:mfk_guinee_transport/views/login.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_init.dart';
@@ -35,7 +35,7 @@ Future<void> main() async {
   } else if (!isConnected) {
     homePage = const NoNetwork(pageToGo: "/login");
   } else if (isProviderAuthenticated == true) {
-    homePage = const ProviderHomePage();
+    homePage = const AdminHomePage();
   } else if (isCustomerAuthenticated == true) {
     homePage = HomePage();
   } else {

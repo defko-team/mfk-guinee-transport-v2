@@ -99,7 +99,7 @@ class _OtpVerificationState extends State<OtpVerification> {
           '/customerHome',
           (Route<dynamic> route) => false,
         );
-      } else if (role == 'Provider') {
+      } else if (role == 'Admin') {
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/providerHome',

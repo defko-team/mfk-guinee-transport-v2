@@ -26,5 +26,7 @@
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:923013705052:ios:17a1601967750225f2e599</string>
+	<key>DATABASE_URL</key>
+	<string>https://defko-mfk-guinee-transport-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>
