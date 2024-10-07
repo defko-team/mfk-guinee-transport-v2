@@ -52,8 +52,8 @@ Future<void> main() async {
   } else if (isCustomerAuthenticated == true) {
     homePage = HomePage();
   } else {
-    //homePage = const Login();
-    homePage = const TrajetManagementPage();
+    homePage = const Login();
+    //homePage = const TrajetManagementPage();
   }
 
   runApp(MyApp(homePage: homePage));

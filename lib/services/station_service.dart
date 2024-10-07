@@ -14,16 +14,23 @@ class StationService {
   }
 
   Future<StationModel> getStationById(String stationId) async {
-    DocumentSnapshot stationDoc = await _firestore.collection('stations').doc(stationId).get();
+    DocumentSnapshot stationDoc =
+        await _firestore.collection('Station').doc(stationId).get();
     return StationModel.fromMap(stationDoc.data() as Map<String, dynamic>);
   }
 
   Future<void> createStation(StationModel station) async {
-    await _firestore.collection('stations').doc(station.id).set(station.toMap());
+    await _firestore
+        .collection('stations')
+        .doc(station.id)
+        .set(station.toMap());
   }
 
   Future<void> updateStation(StationModel station) async {
-    await _firestore.collection('stations').doc(station.id).update(station.toMap());
+    await _firestore
+        .collection('stations')
+        .doc(station.id)
+        .update(station.toMap());
   }
 
   Future<void> deleteStation(String stationId) async {
