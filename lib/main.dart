@@ -9,9 +9,10 @@ import 'package:mfk_guinee_transport/views/login.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_init.dart';
 import 'package:mfk_guinee_transport/helper/router/router.dart';
 import 'package:mfk_guinee_transport/helper/utils/utils.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart'; // Assurez-vous d'importer firebase_core
+import 'package:firebase_core/firebase_core.dart'; 
 
 import 'package:flutter/scheduler.dart';
 
@@ -30,6 +31,8 @@ Future<void> main() async {
   ]);
 
   SharedPreferences preferences = await SharedPreferences.getInstance();
+
+  // preferences.clear();
 
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
@@ -163,29 +166,20 @@ Future<bool> isConnectedToInternet() async {
 class MyApp extends StatelessWidget {
   final Widget homePage;
 
-  MyApp({required this.homePage});
+  const MyApp({super.key, required this.homePage});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Guinea Transport',
-      navigatorKey: navigatorKey, // Use the global navigator key
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.green),
+        iconTheme: const IconThemeData(size: 18.0),
+        useMaterial3: true,
       ),
-      home: homePage, // Utilisez la page d'accueil déterminée
-    );
-  }
-}
-
-// Replace with your actual home page
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Home Page')),
-      body: Center(child: Text('Welcome to the app!')),
+      home: homePage,
+      routes: getAppRoutes(),
     );
   }
 }
