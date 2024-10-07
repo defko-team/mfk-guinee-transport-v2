@@ -8,7 +8,7 @@ class ReservationModel {
   final DateTime startTime;
   final DateTime arrivalTime;
   final int remainingSeats;
-  final int ticketPrice;
+  final double ticketPrice;
   final bool airConditioned;
   final String driverName;
   final String carName;
