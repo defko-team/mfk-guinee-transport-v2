@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
+import 'package:mfk_guinee_transport/components/reservation_info.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
 
@@ -38,8 +40,6 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
 
     setState(() {
       travels = travels_data;
-      print("Travels: ");
-      print(travels);
     });
   }
   void _setOnSelectedCarState(int index) {
@@ -93,6 +93,27 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
 
   void _onSearch() {
     // Action lors de la recherche
-    print("Réservation : ${widget.travelSearchInfo}");
+    if (selectedCarIndex != -1) {
+      TravelModel selectedTravel = travels[selectedCarIndex];
+
+      ReservationModel reservation = ReservationModel(
+        departureStation: selectedTravel.departureStation?.address, 
+        destinationStation: selectedTravel.destinationStation?.address, 
+        departureLocation: selectedTravel.departureLocation, 
+        arrivalLocation: selectedTravel.arrivalLocation, 
+        startTime: selectedTravel.startTime, 
+        arrivalTime: selectedTravel.arrivalTime, 
+        remainingSeats: selectedTravel.remainingSeats, 
+        ticketPrice: selectedTravel.ticketPrice, 
+        airConditioned: selectedTravel.airConditioned, 
+        driverName: selectedTravel.driverName, 
+        carName: selectedTravel.carName, 
+        status: ReservationStatus.completed, 
+        userId: widget.travelSearchInfo['userId'], 
+        distance: '2'
+        );
+
+        showReservationDialog(context, reservation);
+    }
   }
 }
