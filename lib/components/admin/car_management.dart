@@ -2,19 +2,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';  // Pour l'authentification
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
-import 'package:mfk_guinee_transport/models/user_model.dart'; // Import du modèle UserModel
+import 'package:mfk_guinee_transport/models/user_model.dart';
 
 class AdminCarManagementPage extends StatefulWidget {
   const AdminCarManagementPage({super.key});
 
   @override
-  _AdminCarManagementPageState createState() => _AdminCarManagementPageState();
+  State<AdminCarManagementPage> createState() => _AdminCarManagementPageState();
 }
 
 class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
-  void _openAddCarBottomSheet() {
+  void _openAddCarBottomSheet({VoitureModel? voiture}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -28,7 +30,7 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
           right: 20,
           top: 20,
         ),
-        child: const AddCarForm(),
+        child: AddCarForm(voiture: voiture), // Pass the voiture for edit mode
       ),
     );
   }
@@ -46,14 +48,80 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
           },
         ),
       ),
-      body: Center(
-        child: const Text(
-          'Aucune voiture pour l’instant',
-          style: TextStyle(fontSize: 18),
-        ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('Car').snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final voitures = snapshot.data!.docs.map((doc) {
+            return VoitureModel.fromMap(doc.data() as Map<String, dynamic>);
+          }).toList();
+
+          if (voitures.isEmpty) {
+            return const Center(
+              child: Text(
+                'Aucune voiture pour l’instant',
+                style: TextStyle(fontSize: 18),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: voitures.length,
+            itemBuilder: (context, index) {
+              final voiture = voitures[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                child: Card(
+                  elevation: 4,
+                  child: ListTile(
+                    leading: Image.network(
+                      voiture.photo ?? 'assets/images/default_car.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.car_rental, size: 50, color: Colors.grey),
+                    ),
+                    title: Text(
+                      'Voiture ${voiture.marque}',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${voiture.marque}, ${voiture.nombreDePlace} places',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.black),
+                          onPressed: () {
+                            _openAddCarBottomSheet(voiture: voiture);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            FirebaseFirestore.instance
+                                .collection('Car')
+                                .doc(voiture.idVoiture)
+                                .delete();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _openAddCarBottomSheet,
+        onPressed: () => _openAddCarBottomSheet(),
         backgroundColor: AppColors.green,
         shape: const CircleBorder(),
         elevation: 6.0,
@@ -69,10 +137,12 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
 }
 
 class AddCarForm extends StatefulWidget {
-  const AddCarForm({super.key});
+  final VoitureModel? voiture; // Nullable voiture object for edit mode
+
+  const AddCarForm({super.key, this.voiture});
 
   @override
-  _AddCarFormState createState() => _AddCarFormState();
+  State<AddCarForm> createState() => _AddCarFormState();
 }
 
 class _AddCarFormState extends State<AddCarForm> {
@@ -80,14 +150,34 @@ class _AddCarFormState extends State<AddCarForm> {
   final TextEditingController _nombrePlaceController = TextEditingController();
   File? _imageFile;
   String? _selectedChauffeurId;
+  String? _imageUrl;
+  bool _isLoading = false;
+
   List<UserModel> chauffeurs = [];
   List<UserModel> filteredChauffeurs = [];
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+  @override
+  void initState() {
+    super.initState();
+    _loadChauffeurs();
+    if (widget.voiture != null) {
+      _initializeForEdit(widget.voiture!);
+    }
+  }
+
+  Future<void> _loadChauffeurs() async {
+    final chauffeurRoleId = await _getChauffeurRoleId();
+    if (chauffeurRoleId != null) {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('id_role', isEqualTo: chauffeurRoleId)
+          .get();
+
       setState(() {
-        _imageFile = File(pickedFile.path);
+        chauffeurs = querySnapshot.docs.map((doc) {
+          return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+        }).toList();
+        filteredChauffeurs = chauffeurs;
       });
     }
   }
@@ -99,7 +189,6 @@ class _AddCarFormState extends State<AddCarForm> {
           .where('nom', isEqualTo: 'Chauffeur')
           .limit(1)
           .get();
-
       if (roleSnapshot.docs.isNotEmpty) {
         return roleSnapshot.docs.first.id;
       }
@@ -109,56 +198,93 @@ class _AddCarFormState extends State<AddCarForm> {
     return null;
   }
 
-  Future<void> _loadChauffeurs() async {
-    final chauffeurRoleId = await _getChauffeurRoleId();
-    if (chauffeurRoleId != null) {
-      try {
-        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection('Users')
-            .where('id_role', isEqualTo: chauffeurRoleId) // Utiliser l'ID du rôle Chauffeur
-            .get();
-
-        setState(() {
-          chauffeurs = querySnapshot.docs.map((doc) {
-            return UserModel.fromMap(doc.data() as Map<String, dynamic>);
-          }).toList();
-          filteredChauffeurs = chauffeurs;
-        });
-      } catch (e) {
-        print('Erreur lors de la récupération des chauffeurs: $e');
-      }
-    } else {
-      print('Le rôle chauffeur n\'a pas été trouvé.');
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _loadChauffeurs(); // Charger la liste des chauffeurs
+  Future<void> _uploadImage(String carId) async {
+    if (_imageFile != null) {
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          throw 'L\'utilisateur n\'est pas authentifié';
+        }
+        String fileName = '${carId}_car_image.png';
+        UploadTask uploadTask = FirebaseStorage.instance
+            .ref('car_images/$fileName')
+            .putFile(_imageFile!);
+        TaskSnapshot snapshot = await uploadTask;
+        _imageUrl = await snapshot.ref.getDownloadURL();
+      } catch (e) {
+        print('Erreur lors du téléchargement de l\'image: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erreur lors du téléchargement de l\'image.')),
+        );
+      }
+    }
   }
 
-  void _submitCar() {
+  void _initializeForEdit(VoitureModel voiture) {
+    _marqueController.text = voiture.marque;
+    _nombrePlaceController.text = voiture.nombreDePlace.toString();
+    _selectedChauffeurId = voiture.idChauffeur;
+    _imageUrl = voiture.photo;
+  }
+
+  void _submitCar() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final marque = _marqueController.text;
     final nombreDePlace = int.tryParse(_nombrePlaceController.text);
 
-    if (marque.isEmpty || nombreDePlace == null || _selectedChauffeurId == null || _imageFile == null) {
+    if (marque.isEmpty || nombreDePlace == null || _selectedChauffeurId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez remplir tous les champs et sélectionner une image.')),
+        const SnackBar(content: Text('Veuillez remplir tous les champs.')),
       );
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
+    final isEditMode = widget.voiture != null;
+    final carId = isEditMode ? widget.voiture!.idVoiture : FirebaseFirestore.instance.collection('Car').doc().id;
+
+    if (!isEditMode || (_imageFile != null)) {
+      await _uploadImage(carId);
+    }
+
     final voiture = VoitureModel(
-      idVoiture: DateTime.now().toString(),
-      photo: _imageFile?.path ?? '',
+      idVoiture: carId,
       marque: marque,
       nombreDePlace: nombreDePlace,
-      idChauffeur: _selectedChauffeurId!,
+      idChauffeur: _selectedChauffeurId ?? '', // Provide a default value if null
+      photo: _imageUrl ?? '', // Use empty string if no image is uploaded
     );
 
-    print('Nouvelle voiture ajoutée: ${voiture.toMap()}');
-    Navigator.of(context).pop();
+    FirebaseFirestore.instance
+        .collection('Car')
+        .doc(carId)
+        .set(voiture.toMap())
+        .then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(isEditMode ? 'Voiture mise à jour avec succès!' : 'Voiture ajoutée avec succès!')),
+      );
+      Navigator.of(context).pop();
+    }).catchError((error) {
+      print('Erreur lors de l\'ajout ou modification de la voiture: $error');
+    }).whenComplete(() {
+      setState(() {
+        _isLoading = false;
+      });
+    });
   }
 
   @override
@@ -179,11 +305,10 @@ class _AddCarFormState extends State<AddCarForm> {
             ),
           ),
           const Text(
-            'Ajouter une voiture',
+            'Ajouter ou Modifier une voiture',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          // Autocomplete pour le chauffeur (placé en premier)
           Autocomplete<UserModel>(
             optionsBuilder: (TextEditingValue textEditingValue) {
               if (textEditingValue.text.isEmpty) {
@@ -227,7 +352,7 @@ class _AddCarFormState extends State<AddCarForm> {
                   child: Container(
                     width: MediaQuery.of(context).size.width - 80,
                     constraints: const BoxConstraints(
-                      maxHeight: 200.0, // Fixer une limite de hauteur
+                      maxHeight: 200.0,
                     ),
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
@@ -249,7 +374,6 @@ class _AddCarFormState extends State<AddCarForm> {
             },
           ),
           const SizedBox(height: 20),
-          // Choix de l'image
           GestureDetector(
             onTap: _pickImage,
             child: Center(
@@ -259,8 +383,10 @@ class _AddCarFormState extends State<AddCarForm> {
                     radius: 50,
                     backgroundImage: _imageFile != null
                         ? FileImage(_imageFile!)
-                        : null,
-                    child: _imageFile == null
+                        : _imageUrl != null
+                            ? NetworkImage(_imageUrl!)
+                            : null,
+                    child: _imageFile == null && _imageUrl == null
                         ? const Icon(Icons.car_rental, size: 50, color: Colors.grey)
                         : null,
                   ),
@@ -269,7 +395,7 @@ class _AddCarFormState extends State<AddCarForm> {
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.green,
                       ),
@@ -285,7 +411,6 @@ class _AddCarFormState extends State<AddCarForm> {
             ),
           ),
           const SizedBox(height: 20),
-          // Champ Marque (placé après le champ chauffeur)
           TextField(
             controller: _marqueController,
             cursorColor: Colors.black,
@@ -298,10 +423,6 @@ class _AddCarFormState extends State<AddCarForm> {
                 fontSize: 14.0,
                 fontWeight: FontWeight.w400,
               ),
-              hintStyle: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14.0,
-              ),
               prefixIcon: const Icon(Icons.directions_car, color: Colors.black, size: 18),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey.shade200, width: 2),
@@ -309,8 +430,7 @@ class _AddCarFormState extends State<AddCarForm> {
               ),
               floatingLabelStyle: const TextStyle(
                 color: Colors.black,
-                fontSize: 18.0,
-              ),
+                fontSize: 18.0),
               focusedBorder: OutlineInputBorder(
                 borderSide: const BorderSide(color: Colors.black, width: 1.5),
                 borderRadius: BorderRadius.circular(10.0),
@@ -318,7 +438,6 @@ class _AddCarFormState extends State<AddCarForm> {
             ),
           ),
           const SizedBox(height: 20),
-          // Champ Nombre de places
           TextField(
             controller: _nombrePlaceController,
             keyboardType: TextInputType.number,
@@ -332,10 +451,6 @@ class _AddCarFormState extends State<AddCarForm> {
                 fontSize: 14.0,
                 fontWeight: FontWeight.w400,
               ),
-              hintStyle: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14.0,
-              ),
               prefixIcon: const Icon(Icons.event_seat, color: Colors.black, size: 18),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey.shade200, width: 2),
@@ -343,8 +458,7 @@ class _AddCarFormState extends State<AddCarForm> {
               ),
               floatingLabelStyle: const TextStyle(
                 color: Colors.black,
-                fontSize: 18.0,
-              ),
+                fontSize: 18.0),
               focusedBorder: OutlineInputBorder(
                 borderSide: const BorderSide(color: Colors.black, width: 1.5),
                 borderRadius: BorderRadius.circular(10.0),
@@ -352,23 +466,24 @@ class _AddCarFormState extends State<AddCarForm> {
             ),
           ),
           const SizedBox(height: 20),
-          // Bouton Soumettre
-          ElevatedButton(
-            onPressed: _submitCar,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.green,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Center(
-              child: Text(
-                'Ajouter la voiture',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ),
-          ),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ElevatedButton(
+                  onPressed: _submitCar,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Enregistrer la voiture',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ),
           const SizedBox(height: 20),
         ],
       ),

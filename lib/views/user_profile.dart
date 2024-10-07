@@ -41,7 +41,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
 
     if (result == true) {
-      setState(() {}); // Reload the data if user details were updated
+      setState(() {});
     }
   }
 
