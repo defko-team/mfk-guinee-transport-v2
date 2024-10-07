@@ -38,6 +38,7 @@ dependencies:
   async: ^2.11.0
   crypt: ^4.3.1
   http: ^1.2.2
+  flutter_dash: ^1.0.0
 
 dev_dependencies:
   flutter_test:

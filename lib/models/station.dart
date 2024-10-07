@@ -33,11 +33,10 @@ class StationModel {
     var map = doc.data() as Map<String, dynamic>; 
     return StationModel(
       id: map['id'],
-      name: map['name'],
-      latitude: map['latitude'],
-      longitude: map['longitude'],
-      address: map['address'],
-      docId: doc.id
+      name: map['name'] ?? "",
+      latitude: map['latitude'].toDouble() ?? 0.0,
+      longitude: map['longitude'].toDouble() ?? 0.0,
+      address: map['address'] ?? "test", docId: '',
     );
   }
 }

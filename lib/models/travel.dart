@@ -3,39 +3,44 @@ import 'package:mfk_guinee_transport/models/station.dart';
 
 class TravelModel {
   final String id;
-  final StationModel? departureStation;
-  final StationModel? destinationStation;
-  final String? departureLocation;
+  late DocumentReference? travelReference;
+  final DocumentReference? departureStationId;
+  final DocumentReference? destinationStationId;
+  final DocumentReference? departureLocation;
   final String? arrivalLocation;
   final DateTime startTime;
   final DateTime arrivalTime;
   final int remainingSeats;
-  final int ticketPrice;
+  final double ticketPrice;
+  late StationModel? departureStation;
+  late StationModel? destinationStation;
   final bool airConditioned;
   final String driverName;
   final String carName;
 
-  TravelModel({
-    required this.id,
-    required this.departureStation,
-    required this.destinationStation,
-    required this.departureLocation,
-    required this.arrivalLocation,
-    required this.startTime,
-    required this.arrivalTime,
-    required this.remainingSeats,
-    required this.ticketPrice,
-    required this.airConditioned,
-    required this.driverName,
-    required this.carName
-  });
+  TravelModel(
+      {required this.id,
+      required this.departureStationId,
+      required this.destinationStationId,
+      required this.departureLocation,
+      required this.arrivalLocation,
+      required this.startTime,
+      required this.arrivalTime,
+      required this.remainingSeats,
+      required this.ticketPrice,
+      this.travelReference,
+      this.departureStation,
+      this.destinationStation,
+      required this.airConditioned,
+      required this.driverName,
+      required this.carName});
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'departure_station': '/Station/${departureStation?.docId}',
-      'destination_station': '/Station/${destinationStation?.docId}',
-      'departure_location': departureLocation,
+      'departure_station': departureStationId?.path,
+      'destination_station': destinationStationId?.path,
+      'departure_location': departureLocation?.path,
       'arrival_location': arrivalLocation,
       'start_time': startTime.toIso8601String(),
       'arrival_time': arrivalTime.toIso8601String(),
@@ -47,21 +52,51 @@ class TravelModel {
     };
   }
 
-  factory TravelModel.fromMap(Map<String, dynamic> map, StationModel departure, StationModel destination) {
-    print('Map: $map');
+
+  factory TravelModel.fromMap(Map<String, dynamic> map) {
     return TravelModel(
       id: map['id'],
-      departureStation: departure,
-      destinationStation: destination,
-      departureLocation: map['departure_location'],
+      departureStationId: map['departure_station'] != null
+          ? FirebaseFirestore.instance.doc(map['departure_station'])
+          : null,
+      destinationStationId: map['destination_station'] != null
+          ? FirebaseFirestore.instance.doc(map['destination_station'])
+          : null,
+      departureLocation: map['departure_location'] != null
+          ? FirebaseFirestore.instance.doc(map['departure_location'])
+          : null,
       arrivalLocation: map['arrival_location'],
-      startTime: (map['start_time'] as Timestamp).toDate(), // Convert Timestamp to DateTime
-      arrivalTime: (map['arrival_time'] as Timestamp).toDate(), // Convert Timestamp to DateTime
-      remainingSeats: map['remaining_seats'] ?? 0, // Parse as int, default to 0
-      ticketPrice: map['ticket_price'] ?? 0, // Parse as double, default to 0.0
-      airConditioned: map['air_conditioned'] ?? false, // Parse as bool
-      driverName: map['driver_name'], // Parse as string
-      carName: map['car_name'], // Parse as string
+      startTime: (map['start_time'] as Timestamp).toDate(),
+      arrivalTime: (map['arrival_time'] as Timestamp).toDate(),
+      remainingSeats: map['remaining_seats'] ?? 0,
+      ticketPrice: map['ticket_price']?.toDouble() ?? 0.0,
+      airConditioned: map['air_conditioned'] ?? false,
+      driverName: map['driver_name'] ?? '',
+      carName: map['car_name'] ?? '',
+    );
+  }
+  
+  
+  factory TravelModel.fromMapStation(Map<String, dynamic> map, StationModel departureStation, StationModel destinationStation) {
+    return TravelModel(
+      id: map['id'],
+      departureStationId: map['departure_station'] != null
+          ? FirebaseFirestore.instance.doc(map['departure_station'])
+          : null,
+      destinationStationId: map['destination_station'] != null
+          ? FirebaseFirestore.instance.doc(map['destination_station'])
+          : null,
+      departureLocation: map['departure_location'] != null
+          ? FirebaseFirestore.instance.doc(map['departure_location'])
+          : null,
+      arrivalLocation: map['arrival_location'],
+      startTime: (map['start_time'] as Timestamp).toDate(),
+      arrivalTime: (map['arrival_time'] as Timestamp).toDate(),
+      remainingSeats: map['remaining_seats'] ?? 0,
+      ticketPrice: map['ticket_price']?.toDouble() ?? 0.0,
+      airConditioned: map['air_conditioned'] ?? false,
+      driverName: map['driver_name'] ?? '',
+      carName: map['car_name'] ?? '',
     );
   }
 }

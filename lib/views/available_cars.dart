@@ -35,11 +35,11 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   }
 
   Future<void> _loadTravels() async {
-    var travels_data =  await travelService
+    var travelData =  await travelService
     .getTravelsByStations(widget.travelSearchInfo['selectedDeparture'], widget.travelSearchInfo['selectedArrival']);
 
     setState(() {
-      travels = travels_data;
+      travels = travelData;
     });
   }
   void _setOnSelectedCarState(int index) {
@@ -99,7 +99,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
       ReservationModel reservation = ReservationModel(
         departureStation: selectedTravel.departureStation?.address, 
         destinationStation: selectedTravel.destinationStation?.address, 
-        departureLocation: selectedTravel.departureLocation, 
+        departureLocation: selectedTravel.departureStation?.address, 
         arrivalLocation: selectedTravel.arrivalLocation, 
         startTime: selectedTravel.startTime, 
         arrivalTime: selectedTravel.arrivalTime, 
