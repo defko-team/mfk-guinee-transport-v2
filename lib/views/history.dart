@@ -28,7 +28,7 @@ class HistoryPage extends StatelessWidget {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true, // to allow full-screen height
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.vertical(top: Radius.circular(20)),
                       ),
@@ -70,7 +70,7 @@ class HistoryPage extends StatelessWidget {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true, // to allow full-screen height
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.vertical(top: Radius.circular(20)),
                       ),
@@ -112,7 +112,7 @@ class HistoryPage extends StatelessWidget {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true, // to allow full-screen height
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.vertical(top: Radius.circular(20)),
                       ),
@@ -154,6 +154,8 @@ class HistoryPage extends StatelessWidget {
 }
 
 class FilterBar extends StatefulWidget {
+  const FilterBar({super.key});
+
   @override
   _FilterBarState createState() => _FilterBarState();
 }
@@ -195,7 +197,7 @@ class _FilterBarState extends State<FilterBar> {
         }
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(8),
@@ -204,7 +206,7 @@ class _FilterBarState extends State<FilterBar> {
           selectedDate != null
               ? DateFormat('dd/MM/yyyy').format(selectedDate!)
               : 'Date',
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
       ),
     );
@@ -212,7 +214,7 @@ class _FilterBarState extends State<FilterBar> {
 
   Widget _buildStatusDropdown() {
     return DropdownButton<String>(
-      hint: Text('Status'),
+      hint: const Text('Status'),
       value: selectedStatus,
       items: ['Confirmé', 'Completé', 'Annulé'].map((String value) {
         return DropdownMenuItem<String>(
@@ -230,7 +232,7 @@ class _FilterBarState extends State<FilterBar> {
 
   Widget _buildVehicleDropdown() {
     return DropdownButton<String>(
-      hint: Text('Véhicule'),
+      hint: const Text('Véhicule'),
       value: selectedVehicle,
       items: ['Voiture X1', 'Voiture X2'].map((String value) {
         return DropdownMenuItem<String>(

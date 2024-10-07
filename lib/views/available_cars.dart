@@ -26,7 +26,6 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
 
   TravelService travelService = TravelService();
 
-
   @override
   void initState() {
     super.initState();

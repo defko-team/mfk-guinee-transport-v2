@@ -19,7 +19,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _phoneNumberController = TextEditingController();
   final PhoneNumber _initialNumber = PhoneNumber(isoCode: 'GN');
   bool _isLoading = false;
-  String? _fullPhoneNumber; 
+  String? _fullPhoneNumber;
 
   final AuthService _authService = AuthService();
 
@@ -34,7 +34,8 @@ class _RegisterPageState extends State<RegisterPage> {
       try {
         if (_fullPhoneNumber == null || _fullPhoneNumber!.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Veuillez entrer un numéro de téléphone valide')),
+            const SnackBar(
+                content: Text('Veuillez entrer un numéro de téléphone valide')),
           );
           setState(() {
             _isLoading = false;
@@ -179,11 +180,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: InternationalPhoneNumberInput(
                     onInputChanged: (PhoneNumber number) {
                       setState(() {
-                        _fullPhoneNumber = number.phoneNumber; // Get the full phone number with country code
+                        _fullPhoneNumber = number
+                            .phoneNumber; // Get the full phone number with country code
                       });
                     },
-                    validator: (value) =>
-                        value!.isEmpty ? "Veuillez entrer un numéro de téléphone" : null,
+                    validator: (value) => value!.isEmpty
+                        ? "Veuillez entrer un numéro de téléphone"
+                        : null,
                     selectorConfig: const SelectorConfig(
                       selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
                       showFlags: true,
@@ -221,8 +224,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
-                    onSaved: (PhoneNumber number) {
-                    },
+                    onSaved: (PhoneNumber number) {},
                   ),
                 ),
                 const SizedBox(height: 75),
@@ -234,12 +236,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     color: AppColors.green,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5)),
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 30),
                     child: _isLoading
-                        ? Container(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(
+                            child: const CircularProgressIndicator(
                               backgroundColor: AppColors.green,
                               color: AppColors.green,
                               strokeWidth: 2,

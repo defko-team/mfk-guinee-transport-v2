@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 class ChoiceBox extends StatelessWidget {
-
   final String boxTitle;
   final Icon boxIcon;
 
-  ChoiceBox({required this.boxTitle, required this.boxIcon});
-
+  const ChoiceBox({super.key, required this.boxTitle, required this.boxIcon});
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +23,10 @@ class ChoiceBox extends StatelessWidget {
           child: Column(
             children: [
               boxIcon,
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 boxTitle,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black,
                 ),
