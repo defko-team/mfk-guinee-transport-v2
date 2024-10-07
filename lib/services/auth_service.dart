@@ -20,7 +20,7 @@ class AuthService {
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential);
           // ignore: null_argument_to_non_null_type
-          completer.complete(null); // Signifie que la vérification automatique a réussi
+          completer.complete(null);
         },
         verificationFailed: (FirebaseAuthException e) {
           completer.completeError(OtpVerificationException('OTP verification failed: ${e.message}'));
@@ -127,7 +127,7 @@ class AuthService {
     if (roleDoc['nom'] == 'Client') {
       prefs.setBool("isCustomerAuthenticated", true);
       prefs.setBool("isProviderAuthenticated", false);
-    } else if (roleDoc['nom'] == 'Provider') {
+    } else if (roleDoc['nom'] == 'Admin') {
       prefs.setBool("isCustomerAuthenticated", false);
       prefs.setBool("isProviderAuthenticated", true);
     }
@@ -137,9 +137,11 @@ class AuthService {
     DocumentSnapshot roleDoc = await _firestore.collection('roles').doc(roleId).get();
     String roleName = roleDoc['nom'];
 
+    print(roleName);
+
     if (roleName == 'Client') {
       Navigator.pushReplacementNamed(context, '/customerHome');
-    } else if (roleName == 'Provider') {
+    } else if (roleName == 'Admin') {
       Navigator.pushReplacementNamed(context, '/providerHome');
     } else {
       throw Exception('Rôle inconnu : $roleName');

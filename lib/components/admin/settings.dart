@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mfk_guinee_transport/components/base_app_bar.dart';
-import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
-import 'package:mfk_guinee_transport/components/user_details.dart';
-import 'package:mfk_guinee_transport/components/notifications_page.dart';
-import 'package:mfk_guinee_transport/components/security_page.dart';
-import 'package:mfk_guinee_transport/components/clear_cache_page.dart';
-import 'package:mfk_guinee_transport/components/privacy_policy_page.dart';
-import 'package:mfk_guinee_transport/components/contact_us_page.dart';
+import 'package:mfk_guinee_transport/components/admin/user_management.dart';
+import 'package:mfk_guinee_transport/components/admin/car_management.dart';
+import 'package:mfk_guinee_transport/components/admin/profile_page.dart';
 
-class UserProfilePage extends StatefulWidget {
-  const UserProfilePage({super.key});
+class AdminSettingsPage extends StatefulWidget {
+  const AdminSettingsPage({super.key});
 
   @override
-  State<UserProfilePage> createState() => _UserProfilePageState();
+  State<AdminSettingsPage> createState() => _AdminSettingsPageState();
 }
 
-class _UserProfilePageState extends State<UserProfilePage> {
+class _AdminSettingsPageState extends State<AdminSettingsPage> {
   String? _userId;
 
   @override
@@ -34,21 +29,22 @@ class _UserProfilePageState extends State<UserProfilePage> {
     });
   }
 
-  Future<void> _navigateToUserDetails() async {
+  Future<void> _navigateToProfile() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const UserDetailsPage()),
+      MaterialPageRoute(builder: (context) => const AdminProfilPage()),
     );
-
     if (result == true) {
-      setState(() {});
+      setState(() {}); // Reload the data if user details were updated
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const BaseAppBar(title: "Profil"),
+      appBar: AppBar(
+        title: const Text('Paramètres de l\'Admin'),
+      ),
       backgroundColor: const Color(0xFFF5F5F5),
       body: _userId == null
           ? const Center(child: CircularProgressIndicator())
@@ -68,7 +64,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 var userData = snapshot.data!.data() as Map<String, dynamic>;
                 String firstName = userData['prenom'] ?? 'Prénom';
                 String lastName = userData['nom'] ?? 'Nom';
-                String role = userData['role'] ?? 'Utilisateur';
+                String role = userData['role'] ?? 'Admin';
                 String profileImageUrl = userData['photo_profil'] ?? 'assets/images/default_avatar.png';
 
                 return Column(
@@ -76,7 +72,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   children: [
                     const SizedBox(height: 20),
                     GestureDetector(
-                      onTap: _navigateToUserDetails,  // Navigate to UserDetailsPage
+                      onTap: _navigateToProfile,  // Navigate to ProfilePage
                       child: ProfileHeader(
                         firstName: firstName,
                         lastName: lastName,
@@ -85,7 +81,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const ProfileOptions(),
+                    const AdminSettingsOptions(),
                     const SizedBox(height: 20),
                     const LogoutButton(),
                   ],
@@ -95,6 +91,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 }
+
 
 class ProfileHeader extends StatelessWidget {
   final String firstName;
@@ -163,28 +160,64 @@ class ProfileHeader extends StatelessWidget {
   }
 }
 
-class ProfileOptions extends StatelessWidget {
-  const ProfileOptions({super.key});
+class LogoutButton extends StatelessWidget {
+  const LogoutButton({super.key});
+
+  Future<void> _signOut(BuildContext context) async {
+    try {
+      AuthService authService = AuthService();
+      await authService.signOut();
+      Navigator.of(context).pushReplacementNamed('/login');
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(20.0),
+      child: ElevatedButton(
+        onPressed: () => _signOut(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFFF4D4D),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 15.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: const Text(
+          'Déconnexion',
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
+
+class AdminSettingsOptions extends StatelessWidget {
+  const AdminSettingsOptions({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         _buildOptionGroup([
-          const ProfileOptionTile(title: 'Notifications'),
-          const ProfileOptionTile(title: 'Sécurité'),
-        ]),
-        const SizedBox(height: 20),
-        _buildOptionGroup([
-          const ProfileOptionTile(title: 'Effacer cache'),
-          const ProfileOptionTile(title: 'Politique de confidentialité'),
-          const ProfileOptionTile(title: 'Contactez-nous'),
+          const AdminOptionTile(title: 'Gérer Utilisateurs'),
+          const AdminOptionTile(title: 'Gérer Voitures'),
         ]),
       ],
     );
   }
 
-  Widget _buildOptionGroup(List<ProfileOptionTile> tiles) {
+  Widget _buildOptionGroup(List<AdminOptionTile> tiles) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
@@ -200,48 +233,30 @@ class ProfileOptions extends StatelessWidget {
   }
 }
 
-class ProfileOptionTile extends StatefulWidget {
+class AdminOptionTile extends StatefulWidget {
   final String title;
 
-  const ProfileOptionTile({super.key, required this.title});
+  const AdminOptionTile({super.key, required this.title});
 
   @override
-  State<ProfileOptionTile> createState() => _ProfileOptionTileState();
+  State<AdminOptionTile> createState() => _AdminOptionTileState();
 }
 
-class _ProfileOptionTileState extends State<ProfileOptionTile> {
+class _AdminOptionTileState extends State<AdminOptionTile> {
   bool _isPressed = false;
 
   void _navigateToPage(BuildContext context) {
     switch (widget.title) {
-      case 'Notifications':
+      case 'Gérer Utilisateurs':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const NotificationsPage()),
+          MaterialPageRoute(builder: (context) => const AdminUsersManagementPage()),
         );
         break;
-      case 'Sécurité':
+      case 'Gérer Voitures':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const SecurityPage()),
-        );
-        break;
-      case 'Effacer cache':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ClearCachePage()),
-        );
-        break;
-      case 'Politique de confidentialité':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
-        );
-        break;
-      case 'Contactez-nous':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ContactUsPage()),
+          MaterialPageRoute(builder: (context) => const AdminCarManagementPage()),
         );
         break;
       default:
@@ -284,47 +299,6 @@ class _ProfileOptionTileState extends State<ProfileOptionTile> {
             Text(widget.title, style: const TextStyle(fontSize: 16)),
             const Icon(Icons.chevron_right, color: Colors.grey),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class LogoutButton extends StatelessWidget {
-  const LogoutButton({super.key});
-
-  Future<void> _signOut(BuildContext context) async {
-    try {
-      AuthService authService = AuthService();
-      await authService.signOut();
-      Navigator.of(context).pushReplacementNamed('/login');
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(20.0),
-      child: ElevatedButton(
-        onPressed: () => _signOut(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFF4D4D),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 15.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        child: const Text(
-          'Déconnexion',
-          style: TextStyle(fontSize: 16),
         ),
       ),
     );
