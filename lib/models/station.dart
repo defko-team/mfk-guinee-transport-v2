@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class StationModel {
   final String id;
   final String name;
-  final int? latitude;
-  final int? longitude;
+  final double? latitude;
+  final double? longitude;
   final String? address;
   final String docId;
 
@@ -28,9 +28,19 @@ class StationModel {
     };
   }
 
-  factory StationModel.fromMap(DocumentSnapshot<Object?> doc) {
+  factory StationModel.fromDocument(DocumentSnapshot<Object?> doc) {
 
     var map = doc.data() as Map<String, dynamic>; 
+    return StationModel(
+      id: map['id'],
+      name: map['name'] ?? "",
+      latitude: map['latitude'].toDouble() ?? 0.0,
+      longitude: map['longitude'].toDouble() ?? 0.0,
+      address: map['address'] ?? "test", docId: '',
+    );
+  }
+
+  factory StationModel.fromMap(Map<String, dynamic> map) {
     return StationModel(
       id: map['id'],
       name: map['name'] ?? "",

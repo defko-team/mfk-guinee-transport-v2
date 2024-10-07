@@ -13,8 +13,11 @@ class TravelService {
       TravelModel travel =
           TravelModel.fromMap(doc.data() as Map<String, dynamic>);
       travel.travelReference = doc.reference;
+      print("die1");
       travel.departureStation =
           await _stationService.getStationById(travel.departureStationId!.id);
+      print("die2");
+
       travel.destinationStation =
           await _stationService.getStationById(travel.destinationStationId!.id);
       travels.add(travel);
@@ -30,10 +33,10 @@ class TravelService {
     DocumentReference destinationStationRef = _firestore.collection('Station').doc(destinationStationId);
 
     DocumentSnapshot departureStationSnapshot = await departureStationRef.get();
-    StationModel departureStation = StationModel.fromMap(departureStationSnapshot);
+    StationModel departureStation = StationModel.fromDocument(departureStationSnapshot);
 
     DocumentSnapshot destinationStationSnapshot = await destinationStationRef.get();
-    StationModel destinationStation = StationModel.fromMap(destinationStationSnapshot);
+    StationModel destinationStation = StationModel.fromDocument(destinationStationSnapshot);
 
     QuerySnapshot travelQuerySnapshot = await _firestore.collection('Travel')
       .where('departure_station', isEqualTo: departureStationRef)

@@ -27,10 +27,12 @@ class _TrajetManagementPageState extends State<TrajetManagementPage> {
   }
 
   void _loadTravels() {
+    print("Loading travels");
     setState(() {
       futuretravelModels =
           TravelService().getAllTravels(); // Récupérer la liste des voyages
     });
+    print("Travels loaded");
   }
 
   Future<void> _showDeleteConfirmationDialog(String travelId) async {

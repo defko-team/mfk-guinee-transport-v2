@@ -56,23 +56,17 @@ class TravelModel {
   factory TravelModel.fromMap(Map<String, dynamic> map) {
     return TravelModel(
       id: map['id'],
-      departureStationId: map['departure_station'] != null
-          ? FirebaseFirestore.instance.doc(map['departure_station'])
-          : null,
-      destinationStationId: map['destination_station'] != null
-          ? FirebaseFirestore.instance.doc(map['destination_station'])
-          : null,
-      departureLocation: map['departure_location'] != null
-          ? FirebaseFirestore.instance.doc(map['departure_location'])
-          : null,
+      departureStationId: map['departure_station'],
+      destinationStationId: map['destination_station'],
+      departureLocation: map['departure_location'],
       arrivalLocation: map['arrival_location'],
-      startTime: (map['start_time'] as Timestamp).toDate(),
-      arrivalTime: (map['arrival_time'] as Timestamp).toDate(),
-      remainingSeats: map['remaining_seats'] ?? 0,
-      ticketPrice: map['ticket_price']?.toDouble() ?? 0.0,
-      airConditioned: map['air_conditioned'] ?? false,
-      driverName: map['driver_name'] ?? '',
-      carName: map['car_name'] ?? '',
+      startTime: (map['start_time'] as Timestamp)
+          .toDate(), // Convert Timestamp to DateTime
+      arrivalTime: (map['arrival_time'] as Timestamp)
+          .toDate(), // Convert Timestamp to DateTime
+      remainingSeats: map['remaining_seats'] ?? 0, // Parse as int, default to 0
+      ticketPrice: map['ticket_price'].toDouble() ??
+          0.0, airConditioned: true, driverName: '', carName: '', // Parse as double, default to 0.0
     );
   }
   

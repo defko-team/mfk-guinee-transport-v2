@@ -8,7 +8,7 @@ class StationService {
     List<StationModel> stations = [];
     QuerySnapshot querySnapshot = await _firestore.collection('Station').get();
     for (var doc in querySnapshot.docs) {
-      stations.add(StationModel.fromMap(doc));
+      stations.add(StationModel.fromDocument(doc));
     }
     return stations;
   }
@@ -16,7 +16,7 @@ class StationService {
   Future<StationModel> getStationById(String stationId) async {
     DocumentSnapshot stationDoc =
         await _firestore.collection('Station').doc(stationId).get();
-    return StationModel.fromMap(stationDoc.data() as DocumentSnapshot<Object?>);
+    return StationModel.fromMap(stationDoc.data() as Map<String, dynamic>);
   }
 
   Future<void> createStation(StationModel station) async {
