@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_auth/firebase_auth.dart';  // Pour l'authentification
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:animate_do/animate_do.dart';
 
 class AdminCarManagementPage extends StatefulWidget {
   const AdminCarManagementPage({super.key});
@@ -16,6 +17,8 @@ class AdminCarManagementPage extends StatefulWidget {
 }
 
 class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
+  List<bool> _isExpanded = [];
+
   void _openAddCarBottomSheet({VoitureModel? voiture}) {
     showModalBottomSheet(
       context: context,
@@ -30,9 +33,22 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
           right: 20,
           top: 20,
         ),
-        child: AddCarForm(voiture: voiture), // Pass the voiture for edit mode
+        child: AddCarForm(voiture: voiture),
       ),
     );
+  }
+
+  Future<UserModel?> _getChauffeur(String idChauffeur) async {
+    try {
+      DocumentSnapshot doc =
+          await FirebaseFirestore.instance.collection('Users').doc(idChauffeur).get();
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération du chauffeur: $e');
+    }
+    return null;
   }
 
   @override
@@ -59,6 +75,10 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
             return VoitureModel.fromMap(doc.data() as Map<String, dynamic>);
           }).toList();
 
+          if (_isExpanded.length != voitures.length) {
+            _isExpanded = List<bool>.filled(voitures.length, false);
+          }
+
           if (voitures.isEmpty) {
             return const Center(
               child: Text(
@@ -72,49 +92,145 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
             itemCount: voitures.length,
             itemBuilder: (context, index) {
               final voiture = voitures[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                child: Card(
-                  elevation: 4,
-                  child: ListTile(
-                    leading: Image.network(
-                      voiture.photo ?? 'assets/images/default_car.png',
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.car_rental, size: 50, color: Colors.grey),
-                    ),
-                    title: Text(
-                      'Voiture ${voiture.marque}',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      '${voiture.marque}, ${voiture.nombreDePlace} places',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.black),
-                          onPressed: () {
-                            _openAddCarBottomSheet(voiture: voiture);
-                          },
+
+              return FutureBuilder<UserModel?>(
+                future: _getChauffeur(voiture.idChauffeur),
+                builder: (context, chauffeurSnapshot) {
+                  if (!chauffeurSnapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  final chauffeur = chauffeurSnapshot.data;
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        for (int i = 0; i < _isExpanded.length; i++) {
+                          if (i != index) {
+                            _isExpanded[i] = false;
+                          }
+                        }
+                        _isExpanded[index] = !_isExpanded[index];
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            FirebaseFirestore.instance
-                                .collection('Car')
-                                .doc(voiture.idVoiture)
-                                .delete();
-                          },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.network(
+                                      voiture.photo ?? 'assets/images/default_car.png',
+                                      width: MediaQuery.of(context).size.width * 0.2,
+                                      height: MediaQuery.of(context).size.width * 0.15,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          const Icon(Icons.car_rental, size: 50, color: Colors.grey),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Voiture ${voiture.marque}',
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${voiture.marque}, ${voiture.nombreDePlace} places',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          chauffeur != null
+                                              ? 'Chauffeur: ${chauffeur.prenom} ${chauffeur.nom}'
+                                              : 'Chauffeur non assigné',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              if (_isExpanded[index])
+                                FadeIn(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            _openAddCarBottomSheet(voiture: voiture);
+                                          },
+                                          icon: const Icon(Icons.edit, size: 16),
+                                          label: const Text('Modifier'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: Colors.black,
+                                            side: const BorderSide(color: Colors.black),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8), // Space between buttons
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            FirebaseFirestore.instance
+                                                .collection('Car')
+                                                .doc(voiture.idVoiture)
+                                                .delete();
+                                          },
+                                          icon: const Icon(Icons.delete, size: 16),
+                                          label: const Text('Supprimer'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red.shade100,
+                                            foregroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               );
             },
           );
@@ -137,7 +253,7 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
 }
 
 class AddCarForm extends StatefulWidget {
-  final VoitureModel? voiture; // Nullable voiture object for edit mode
+  final VoitureModel? voiture;
 
   const AddCarForm({super.key, this.voiture});
 
@@ -148,6 +264,7 @@ class AddCarForm extends StatefulWidget {
 class _AddCarFormState extends State<AddCarForm> {
   final TextEditingController _marqueController = TextEditingController();
   final TextEditingController _nombrePlaceController = TextEditingController();
+  final TextEditingController _chauffeurController = TextEditingController(); // For the chauffeur name
   File? _imageFile;
   String? _selectedChauffeurId;
   String? _imageUrl;
@@ -159,10 +276,11 @@ class _AddCarFormState extends State<AddCarForm> {
   @override
   void initState() {
     super.initState();
-    _loadChauffeurs();
-    if (widget.voiture != null) {
-      _initializeForEdit(widget.voiture!);
-    }
+    _loadChauffeurs().then((_) {
+      if (widget.voiture != null) {
+        _initializeForEdit(widget.voiture!);
+      }
+    });
   }
 
   Future<void> _loadChauffeurs() async {
@@ -198,6 +316,35 @@ class _AddCarFormState extends State<AddCarForm> {
     return null;
   }
 
+  void _initializeForEdit(VoitureModel voiture) async {
+    _marqueController.text = voiture.marque;
+    _nombrePlaceController.text = voiture.nombreDePlace.toString();
+    _selectedChauffeurId = voiture.idChauffeur;
+    _imageUrl = voiture.photo;
+
+    if (_selectedChauffeurId != null) {
+      UserModel? chauffeur = await _getChauffeurById(_selectedChauffeurId!);
+      if (chauffeur != null) {
+        setState(() {
+          _chauffeurController.text = '${chauffeur.prenom} ${chauffeur.nom}'; // Display chauffeur name
+        });
+      }
+    }
+  }
+
+  Future<UserModel?> _getChauffeurById(String idChauffeur) async {
+    try {
+      DocumentSnapshot doc =
+          await FirebaseFirestore.instance.collection('Users').doc(idChauffeur).get();
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération du chauffeur: $e');
+    }
+    return null;
+  }
+
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -229,13 +376,6 @@ class _AddCarFormState extends State<AddCarForm> {
     }
   }
 
-  void _initializeForEdit(VoitureModel voiture) {
-    _marqueController.text = voiture.marque;
-    _nombrePlaceController.text = voiture.nombreDePlace.toString();
-    _selectedChauffeurId = voiture.idChauffeur;
-    _imageUrl = voiture.photo;
-  }
-
   void _submitCar() async {
     setState(() {
       _isLoading = true;
@@ -255,7 +395,9 @@ class _AddCarFormState extends State<AddCarForm> {
     }
 
     final isEditMode = widget.voiture != null;
-    final carId = isEditMode ? widget.voiture!.idVoiture : FirebaseFirestore.instance.collection('Car').doc().id;
+    final carId = isEditMode
+        ? widget.voiture!.idVoiture
+        : FirebaseFirestore.instance.collection('Car').doc().id;
 
     if (!isEditMode || (_imageFile != null)) {
       await _uploadImage(carId);
@@ -265,8 +407,8 @@ class _AddCarFormState extends State<AddCarForm> {
       idVoiture: carId,
       marque: marque,
       nombreDePlace: nombreDePlace,
-      idChauffeur: _selectedChauffeurId ?? '', // Provide a default value if null
-      photo: _imageUrl ?? '', // Use empty string if no image is uploaded
+      idChauffeur: _selectedChauffeurId ?? '',
+      photo: _imageUrl ?? '',
     );
 
     FirebaseFirestore.instance
@@ -274,9 +416,10 @@ class _AddCarFormState extends State<AddCarForm> {
         .doc(carId)
         .set(voiture.toMap())
         .then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isEditMode ? 'Voiture mise à jour avec succès!' : 'Voiture ajoutée avec succès!')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            isEditMode ? 'Voiture mise à jour avec succès!' : 'Voiture ajoutée avec succès!'),
+      ));
       Navigator.of(context).pop();
     }).catchError((error) {
       print('Erreur lors de l\'ajout ou modification de la voiture: $error');
@@ -320,16 +463,22 @@ class _AddCarFormState extends State<AddCarForm> {
                     .contains(textEditingValue.text.toLowerCase());
               });
             },
-            displayStringForOption: (UserModel option) => '${option.prenom} ${option.nom}',
+            displayStringForOption: (UserModel option) =>
+                '${option.prenom} ${option.nom}',
             onSelected: (UserModel selection) {
               setState(() {
                 _selectedChauffeurId = selection.idUser;
+                _chauffeurController.text = '${selection.prenom} ${selection.nom}';
               });
             },
+            initialValue: TextEditingValue(
+              text: _chauffeurController.text, // Pre-fill the input with chauffeur name
+            ),
             fieldViewBuilder: (BuildContext context,
                 TextEditingController textEditingController,
                 FocusNode focusNode,
                 VoidCallback onFieldSubmitted) {
+              textEditingController.text = _chauffeurController.text; // Ensure controller sync
               return TextField(
                 controller: textEditingController,
                 focusNode: focusNode,
@@ -344,7 +493,9 @@ class _AddCarFormState extends State<AddCarForm> {
                 ),
               );
             },
-            optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<UserModel> onSelected, Iterable<UserModel> options) {
+            optionsViewBuilder: (BuildContext context,
+                AutocompleteOnSelected<UserModel> onSelected,
+                Iterable<UserModel> options) {
               return Align(
                 alignment: Alignment.topLeft,
                 child: Material(
