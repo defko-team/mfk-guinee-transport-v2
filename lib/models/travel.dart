@@ -14,6 +14,9 @@ class TravelModel {
   final double ticketPrice;
   late StationModel? departureStation;
   late StationModel? destinationStation;
+  final bool airConditioned;
+  final String driverName;
+  final String carName;
 
   TravelModel(
       {required this.id,
@@ -27,19 +30,25 @@ class TravelModel {
       required this.ticketPrice,
       this.travelReference,
       this.departureStation,
-      this.destinationStation});
+      this.destinationStation,
+      required this.airConditioned,
+      required this.driverName,
+      required this.carName});
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'departure_station_id': departureStationId,
-      'destination_station_id': destinationStationId,
-      'departure_location': departureLocation,
+      'departure_station': departureStationId?.path,
+      'destination_station': destinationStationId?.path,
+      'departure_location': departureLocation?.path,
       'arrival_location': arrivalLocation,
       'start_time': startTime.toIso8601String(),
       'arrival_time': arrivalTime.toIso8601String(),
       'remaining_seats': remainingSeats,
       'ticket_price': ticketPrice,
+      'air_conditioned': airConditioned,
+      'driver_name': driverName,
+      'car_name': carName
     };
   }
 
@@ -55,8 +64,32 @@ class TravelModel {
       arrivalTime: (map['arrival_time'] as Timestamp)
           .toDate(), // Convert Timestamp to DateTime
       remainingSeats: map['remaining_seats'] ?? 0, // Parse as int, default to 0
-      ticketPrice: map['ticket_price'].toDouble() ??
-          0.0, // Parse as double, default to 0.0
+      ticketPrice: map['ticket_price'].toDouble() ?? 0.0, airConditioned: true,
+      driverName: '', carName: '', // Parse as double, default to 0.0
+    );
+  }
+
+  factory TravelModel.fromMapStation(Map<String, dynamic> map,
+      StationModel departureStation, StationModel destinationStation) {
+    return TravelModel(
+      id: map['id'],
+      departureStationId: map['departure_station'] != null
+          ? FirebaseFirestore.instance.doc(map['departure_station'])
+          : null,
+      destinationStationId: map['destination_station'] != null
+          ? FirebaseFirestore.instance.doc(map['destination_station'])
+          : null,
+      departureLocation: map['departure_location'] != null
+          ? FirebaseFirestore.instance.doc(map['departure_location'])
+          : null,
+      arrivalLocation: map['arrival_location'],
+      startTime: (map['start_time'] as Timestamp).toDate(),
+      arrivalTime: (map['arrival_time'] as Timestamp).toDate(),
+      remainingSeats: map['remaining_seats'] ?? 0,
+      ticketPrice: map['ticket_price']?.toDouble() ?? 0.0,
+      airConditioned: map['air_conditioned'] ?? false,
+      driverName: map['driver_name'] ?? '',
+      carName: map['car_name'] ?? '',
     );
   }
 }

@@ -23,7 +23,12 @@ class BaseAppBar extends StatelessWidget implements PreferredSizeWidget {
           Navigator.of(context).pop(); // Retour à l'écran précédent
         },
       ),
-      actions: const [NotificationBell()],
+      actions: const [
+        Padding(
+          padding: EdgeInsets.only(right: 12),
+          child: NotificationBell(),
+        )
+      ],
     );
   }
 

@@ -8,7 +8,7 @@ class StationService {
     List<StationModel> stations = [];
     QuerySnapshot querySnapshot = await _firestore.collection('Station').get();
     for (var doc in querySnapshot.docs) {
-      stations.add(StationModel.fromMap(doc.data() as Map<String, dynamic>));
+      stations.add(StationModel.fromDocument(doc));
     }
     return stations;
   }
