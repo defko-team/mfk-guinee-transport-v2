@@ -5,6 +5,7 @@ import 'package:mfk_guinee_transport/components/reservation_info.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
+import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
 
 import '../components/base_app_bar.dart';
@@ -24,10 +25,12 @@ class AvailableCarsPage extends StatefulWidget {
 
 class _AvailableCarsPageState extends State<AvailableCarsPage> {
   int selectedCarIndex = -1;
+  ReservationModel? reservationModel;
 
   List<TravelModel> travels = [];
 
   TravelService travelService = TravelService();
+  ReservationService reservationService = ReservationService();
 
   @override
   void initState() {
@@ -82,7 +85,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 30),
               child: CustomElevatedButton(
-                onClick: _onSearch,
+                onClick: OnCarSelection,
                 backgroundColor:
                     selectedCarIndex != -1 ? AppColors.green : AppColors.grey,
                 text: "Continuer",
@@ -94,12 +97,12 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
     );
   }
 
-  void _onSearch() {
+  void OnCarSelection() {
     // Action lors de la recherche
     if (selectedCarIndex != -1) {
       TravelModel selectedTravel = travels[selectedCarIndex];
 
-      ReservationModel reservation = ReservationModel(
+    this.reservationModel = ReservationModel(
           departureStation: selectedTravel.departureStation?.address,
           destinationStation: selectedTravel.destinationStation?.address,
           departureLocation: selectedTravel.departureStation?.address,
@@ -115,7 +118,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
           userId: widget.travelSearchInfo['userId'],
           distance: '2');
 
-      showReservationDialog(context, reservation, onBooking);
+      showReservationDialog(context, reservationModel!, onBooking);
     }
   }
 
@@ -124,8 +127,15 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return BookingConfirmationDialog();
+        return BookingConfirmationDialog(book: _saveReservation);
       },
     );
+  }
+
+  Future<void> _saveReservation() async {
+
+    if(reservationModel != null) {
+      await reservationService.saveReservation(reservationModel!);
+    }
   }
 }
