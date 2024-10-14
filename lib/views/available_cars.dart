@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/components/booking_confirmation.dart';
 import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/reservation_info.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
@@ -35,16 +36,18 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   }
 
   Future<void> _loadTravels() async {
-    var travelData =  await travelService
-    .getTravelsByStations(widget.travelSearchInfo['selectedDeparture'], widget.travelSearchInfo['selectedArrival']);
+    var travelData = await travelService.getTravelsByStations(
+        widget.travelSearchInfo['selectedDeparture'],
+        widget.travelSearchInfo['selectedArrival']);
 
     setState(() {
       travels = travelData;
     });
   }
+
   void _setOnSelectedCarState(int index) {
     setState(() {
-      if(selectedCarIndex == index) {
+      if (selectedCarIndex == index) {
         selectedCarIndex = -1;
       } else {
         selectedCarIndex = index;
@@ -79,7 +82,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 30),
               child: CustomElevatedButton(
-                onSearch: _onSearch,
+                onClick: _onSearch,
                 backgroundColor:
                     selectedCarIndex != -1 ? AppColors.green : AppColors.grey,
                 text: "Continuer",
@@ -97,23 +100,32 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
       TravelModel selectedTravel = travels[selectedCarIndex];
 
       ReservationModel reservation = ReservationModel(
-        departureStation: selectedTravel.departureStation?.address, 
-        destinationStation: selectedTravel.destinationStation?.address, 
-        departureLocation: selectedTravel.departureStation?.address, 
-        arrivalLocation: selectedTravel.arrivalLocation, 
-        startTime: selectedTravel.startTime, 
-        arrivalTime: selectedTravel.arrivalTime, 
-        remainingSeats: selectedTravel.remainingSeats, 
-        ticketPrice: selectedTravel.ticketPrice, 
-        airConditioned: selectedTravel.airConditioned, 
-        driverName: selectedTravel.driverName, 
-        carName: selectedTravel.carName, 
-        status: ReservationStatus.completed, 
-        userId: widget.travelSearchInfo['userId'], 
-        distance: '2'
-        );
+          departureStation: selectedTravel.departureStation?.address,
+          destinationStation: selectedTravel.destinationStation?.address,
+          departureLocation: selectedTravel.departureStation?.address,
+          arrivalLocation: selectedTravel.arrivalLocation,
+          startTime: selectedTravel.startTime,
+          arrivalTime: selectedTravel.arrivalTime,
+          remainingSeats: selectedTravel.remainingSeats,
+          ticketPrice: selectedTravel.ticketPrice,
+          airConditioned: selectedTravel.airConditioned,
+          driverName: selectedTravel.driverName,
+          carName: selectedTravel.carName,
+          status: ReservationStatus.completed,
+          userId: widget.travelSearchInfo['userId'],
+          distance: '2');
 
-        showReservationDialog(context, reservation);
+      showReservationDialog(context, reservation, onBooking);
     }
+  }
+
+  void onBooking() {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return BookingConfirmationDialog();
+      },
+    );
   }
 }

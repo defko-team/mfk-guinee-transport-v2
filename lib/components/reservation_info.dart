@@ -4,7 +4,7 @@ import 'package:mfk_guinee_transport/components/custom_outlined_button.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 
-void showReservationDialog(BuildContext context, ReservationModel reservation) {
+void showReservationDialog(BuildContext context, ReservationModel reservation, VoidCallback onBooking) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -125,7 +125,7 @@ void showReservationDialog(BuildContext context, ReservationModel reservation) {
                       ),
                       Spacer(),
                       CustomElevatedButton(
-                          onSearch: () {},
+                          onClick: onBooking,
                           backgroundColor: AppColors.green,
                           text: 'Réserver'),
                       SizedBox(height: 10),
