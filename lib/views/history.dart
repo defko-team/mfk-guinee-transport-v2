@@ -28,17 +28,6 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   // Fetch reservations using ReservationService
-  // void _fetchReservations() {
-  //   // Assuming you have the user ID available (e.g., from authentication)
-  //   const String userId = 'H20FRZdDzAb8wDnaEUfyBk5IiYv1';
-
-  //   setState(() {
-  //     _reservationsFuture = ReservationService().getUserReservations(
-  //       userId: userId,
-  //       // You can pass optional filters here if needed
-  //     );
-  //   });
-  // }
 
   void fetchReservations() async {
     const String userId = 'H20FRZdDzAb8wDnaEUfyBk5IiYv1';
