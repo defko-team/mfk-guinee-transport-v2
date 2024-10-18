@@ -74,15 +74,10 @@ class TravelModel {
   factory TravelModel.fromMapStation(Map<String, dynamic> map, StationModel departureStation, StationModel destinationStation) {
     return TravelModel(
       id: map['id'],
-      departureStationId: map['departure_station'] != null
-          ? FirebaseFirestore.instance.doc(map['departure_station'])
-          : null,
-      destinationStationId: map['destination_station'] != null
-          ? FirebaseFirestore.instance.doc(map['destination_station'])
-          : null,
-      departureLocation: map['departure_location'] != null
-          ? FirebaseFirestore.instance.doc(map['departure_location'])
-          : null,
+      departureStation: departureStation,
+      destinationStation: destinationStation,
+      departureStationId: null,
+      destinationStationId: null,
       arrivalLocation: map['arrival_location'],
       startTime: (map['start_time'] as Timestamp).toDate(),
       arrivalTime: (map['arrival_time'] as Timestamp).toDate(),
@@ -91,6 +86,7 @@ class TravelModel {
       airConditioned: map['air_conditioned'] ?? false,
       driverName: map['driver_name'] ?? '',
       carName: map['car_name'] ?? '',
+      departureLocation: null,
     );
   }
 }

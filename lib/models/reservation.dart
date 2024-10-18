@@ -69,12 +69,46 @@ class ReservationModel {
       'air_conditioned': airConditioned,
       'driver_name': driverName,
       'car_name': carName,
-      'status': status,
+      'status': status.name,
       'user_id': userId,
       'distance': distance
     };
   }
 
+  ReservationModel copyWith({
+    String? id,
+    String? departureStation,
+    String? destinationStation,
+    String? departureLocation,
+    String? arrivalLocation,
+    DateTime? startTime,
+    DateTime? arrivalTime,
+    int? remainingSeats,
+    double? ticketPrice,
+    bool? airConditioned,
+    String? driverName,
+    String? carName,
+    ReservationStatus? status,
+    String? userId,
+    String? distance,
+  }) {
+    return ReservationModel(
+      id: id ?? this.id,
+      departureStation: departureStation ?? this.departureStation,
+      destinationStation: destinationStation ?? this.destinationStation,
+      departureLocation: departureLocation ?? this.departureLocation,
+      arrivalLocation: arrivalLocation ?? this.arrivalLocation,
+      startTime: startTime ?? this.startTime,
+      arrivalTime: arrivalTime ?? this.arrivalTime,
+      remainingSeats: remainingSeats ?? this.remainingSeats,
+      ticketPrice: ticketPrice ?? this.ticketPrice,
+      airConditioned: airConditioned ?? this.airConditioned,
+      driverName: driverName ?? this.driverName,
+      carName: carName ?? this.carName,
+      status: status ?? this.status,
+      userId: userId ?? this.userId,
+      distance: distance ?? this.distance,
+    );
   // Helper function to convert string to enum
   static ReservationStatus _getStatusFromString(String status) {
     switch (status) {
