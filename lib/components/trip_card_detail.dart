@@ -124,7 +124,7 @@ class TripDetailCard extends StatelessWidget {
               Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: CustomElevatedButton(
-                    onSearch: onCancel,
+                    onClick: onCancel,
                     backgroundColor: AppColors.green,
                     text: "Annuler Reservation",
                   )),
