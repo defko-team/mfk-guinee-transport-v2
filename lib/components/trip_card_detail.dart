@@ -11,20 +11,21 @@ class TripDetailCard extends StatelessWidget {
   final String distance;
   final String time;
   final String price;
+  final String status;
   final VoidCallback onCancel;
 
-  const TripDetailCard({
-    super.key,
-    required this.userName,
-    required this.userAvatarUrl,
-    required this.rating,
-    required this.origin,
-    required this.destination,
-    required this.distance,
-    required this.time,
-    required this.price,
-    required this.onCancel,
-  });
+  const TripDetailCard(
+      {super.key,
+      required this.userName,
+      required this.userAvatarUrl,
+      required this.rating,
+      required this.origin,
+      required this.destination,
+      required this.distance,
+      required this.time,
+      required this.price,
+      required this.onCancel,
+      required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -119,13 +120,14 @@ class TripDetailCard extends StatelessWidget {
               ),
               const SizedBox(height: 20),
             ]),
-            Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: CustomElevatedButton(
-                  onClick: onCancel,
-                  backgroundColor: AppColors.green,
-                  text: "Annuler Reservation",
-                )),
+            if (status != "completed")
+              Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: CustomElevatedButton(
+                    onSearch: onCancel,
+                    backgroundColor: AppColors.green,
+                    text: "Annuler Reservation",
+                  )),
           ],
         ),
       ),

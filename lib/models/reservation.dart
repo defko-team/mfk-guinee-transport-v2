@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReservationModel {
   final String? id;
@@ -16,44 +17,43 @@ class ReservationModel {
   final String userId;
   final String distance;
 
-  ReservationModel({
-    this.id,
-    required this.departureStation,
-    required this.destinationStation,
-    required this.departureLocation,
-    required this.arrivalLocation,
-    required this.startTime,
-    required this.arrivalTime,
-    required this.remainingSeats,
-    required this.ticketPrice,
-    required this.airConditioned,
-    required this.driverName,
-    required this.carName,
-    required this.status,
-    required this.userId,
-    required this.distance
-    });
+  ReservationModel(
+      {this.id,
+      required this.departureStation,
+      required this.destinationStation,
+      required this.departureLocation,
+      required this.arrivalLocation,
+      required this.startTime,
+      required this.arrivalTime,
+      required this.remainingSeats,
+      required this.ticketPrice,
+      required this.airConditioned,
+      required this.driverName,
+      required this.carName,
+      required this.status,
+      required this.userId,
+      required this.distance});
 
   factory ReservationModel.fromMap(Map<String, dynamic> map) {
     return ReservationModel(
-      id: map['id'],
-      departureStation: map['departure_station'],
-      destinationStation: map['destination_station'],
-      departureLocation: map['departure_location'],
-      arrivalLocation: map['arrival_location'],
-      startTime: map['start_time'],
-      arrivalTime: map['arrival_time'],
-      remainingSeats: map['remaining_seats'],
-      ticketPrice: map['ticket_price'],
-      airConditioned: map['air_conditioned'],
-      driverName: map['driver_name'],
-      carName: map['car_name'],
-      status: map['status'],
-      userId: map['user_id'],
-      distance: map['distance']
-    );
+        id: map['id'],
+        departureStation: map['departure_station'],
+        destinationStation: map['destination_station'],
+        departureLocation: map['departure_location'],
+        arrivalLocation: map['arrival_location'],
+        startTime: (map['start_time'] as Timestamp?)!.toDate(),
+        arrivalTime: (map['arrival_time'] as Timestamp?)!.toDate(),
+        remainingSeats: map['remaining_seats'],
+        ticketPrice: (map['ticket_price'] is int)
+            ? (map['ticket_price'] as int).toDouble()
+            : map['ticket_price'] as double,
+        airConditioned: map['air_conditioned'],
+        driverName: map['driver_name'],
+        carName: map['car_name'],
+        status: _getStatusFromString(map['status'] as String),
+        userId: map['user_id'],
+        distance: map['distance']);
   }
-
 
   Map<String, dynamic> toMap() {
     return {
@@ -109,11 +109,17 @@ class ReservationModel {
       userId: userId ?? this.userId,
       distance: distance ?? this.distance,
     );
+  // Helper function to convert string to enum
+  static ReservationStatus _getStatusFromString(String status) {
+    switch (status) {
+      case 'completed':
+        return ReservationStatus.completed;
+      case 'canceled':
+        return ReservationStatus.canceled;
+      default:
+        return ReservationStatus.confirmed;
+    }
   }
 }
 
-enum ReservationStatus {
-  completed,
-  confirmed,
-  canceled
-}
+enum ReservationStatus { completed, confirmed, canceled }
