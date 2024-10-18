@@ -109,6 +109,8 @@ class ReservationModel {
       userId: userId ?? this.userId,
       distance: distance ?? this.distance,
     );
+  }
+
   // Helper function to convert string to enum
   static ReservationStatus _getStatusFromString(String status) {
     switch (status) {
