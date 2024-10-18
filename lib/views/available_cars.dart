@@ -102,7 +102,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
     if (selectedCarIndex != -1) {
       TravelModel selectedTravel = travels[selectedCarIndex];
 
-    this.reservationModel = ReservationModel(
+      this.reservationModel = ReservationModel(
           departureStation: selectedTravel.departureStation?.address,
           destinationStation: selectedTravel.destinationStation?.address,
           departureLocation: selectedTravel.departureStation?.address,
@@ -133,8 +133,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   }
 
   Future<void> _saveReservation() async {
-
-    if(reservationModel != null) {
+    if (reservationModel != null) {
       await reservationService.saveReservation(reservationModel!);
     }
   }

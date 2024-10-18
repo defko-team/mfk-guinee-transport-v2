@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/gare_page.dart';
-import 'package:mfk_guinee_transport/views/admin_views/trajet_management.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
 import 'package:mfk_guinee_transport/views/history.dart';
 import 'package:mfk_guinee_transport/views/user_profile.dart';
@@ -19,7 +18,6 @@ class _HomePageState extends State<HomePage> {
     const GarePage(),
     const HistoryPage(),
     const UserProfilePage(),
-    const TrajetManagementPage()
   ];
 
   // Future<void> _onItemTapped(int index) async {
@@ -82,10 +80,6 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.more_horiz),
             label: 'Plus',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'gest',
           ),
         ],
       ),

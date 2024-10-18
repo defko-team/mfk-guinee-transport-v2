@@ -13,11 +13,8 @@ class TravelService {
       TravelModel travel =
           TravelModel.fromMap(doc.data() as Map<String, dynamic>);
       travel.travelReference = doc.reference;
-      print("die1");
       travel.departureStation =
           await _stationService.getStationById(travel.departureStationId!.id);
-      print("die2");
-
       travel.destinationStation =
           await _stationService.getStationById(travel.destinationStationId!.id);
       travels.add(travel);
@@ -25,31 +22,67 @@ class TravelService {
     return travels;
   }
 
+  Stream<List<TravelModel>> travelStream() {
+    return _firestore.collection('Travel').snapshots().asyncMap(
+      (QuerySnapshot travelQuerySnapshot) async {
+        List<TravelModel> travels = [];
+
+        // Iterate over the travel documents
+        for (QueryDocumentSnapshot travelDoc in travelQuerySnapshot.docs) {
+          TravelModel travel =
+              TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>);
+          travel.travelReference = travelDoc.reference;
+          // Get the station IDs from the Travel document
+          String departureStationId = travel.departureStationId!.id;
+          String destinationStationId = travel.destinationStationId!.id;
+
+          // Fetch the corresponding station data
+          travel.departureStation =
+              await _stationService.getStationById(departureStationId);
+
+          travel.destinationStation =
+              await _stationService.getStationById(destinationStationId);
+
+          travels.add(travel); // Add the travel to the list
+        }
+        return travels;
+      },
+    );
+  }
+
   // Get travel by departureStationId and destinationStationId
   Future<List<TravelModel>> getTravelsByStations(
       String departureStationId, String destinationStationId) async {
     List<TravelModel> travels = [];
-    DocumentReference departureStationRef = _firestore.collection('Station').doc(departureStationId);
-    DocumentReference destinationStationRef = _firestore.collection('Station').doc(destinationStationId);
+    DocumentReference departureStationRef =
+        _firestore.collection('Station').doc(departureStationId);
+    DocumentReference destinationStationRef =
+        _firestore.collection('Station').doc(destinationStationId);
 
     DocumentSnapshot departureStationSnapshot = await departureStationRef.get();
-    StationModel departureStation = StationModel.fromDocument(departureStationSnapshot);
+    StationModel departureStation =
+        StationModel.fromDocument(departureStationSnapshot);
 
-    DocumentSnapshot destinationStationSnapshot = await destinationStationRef.get();
-    StationModel destinationStation = StationModel.fromDocument(destinationStationSnapshot);
+    DocumentSnapshot destinationStationSnapshot =
+        await destinationStationRef.get();
+    StationModel destinationStation =
+        StationModel.fromDocument(destinationStationSnapshot);
 
-    QuerySnapshot travelQuerySnapshot = await _firestore.collection('Travel')
-      .where('departure_station', isEqualTo: departureStationRef)
-      .where('destination_station', isEqualTo: destinationStationRef)
-      .get();
+    QuerySnapshot travelQuerySnapshot = await _firestore
+        .collection('Travel')
+        .where('departure_station', isEqualTo: departureStationRef)
+        .where('destination_station', isEqualTo: destinationStationRef)
+        .get();
 
     for (QueryDocumentSnapshot travelDoc in travelQuerySnapshot.docs) {
-        // Get Travel data
-        Map<String, dynamic> travelData = travelDoc.data() as Map<String, dynamic>;
-        TravelModel travel = TravelModel.fromMapStation(travelData, departureStation, destinationStation);
+      // Get Travel data
+      Map<String, dynamic> travelData =
+          travelDoc.data() as Map<String, dynamic>;
+      TravelModel travel = TravelModel.fromMapStation(
+          travelData, departureStation, destinationStation);
 
-        // Now you have both travel and station data
-        travels.add(travel);
+      // Now you have both travel and station data
+      travels.add(travel);
     }
 
     return travels;
@@ -64,7 +97,7 @@ class TravelService {
   }
 
   Future<void> createTravel(TravelModel travel) async {
-    await _firestore.collection('Travel').doc('n2jdSm5KhvJSFymyvdUf').set(travel.toMap());
+    await _firestore.collection('Travel').add(travel.toMap());
   }
 
   Future<void> updateTravel(TravelModel travel) async {

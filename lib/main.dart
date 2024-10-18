@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mfk_guinee_transport/views/customer_home.dart';
 import 'package:mfk_guinee_transport/views/admin_home_page.dart';
 import 'package:mfk_guinee_transport/views/home_page.dart';
 import 'package:mfk_guinee_transport/views/no_network.dart';
 import 'package:mfk_guinee_transport/views/login.dart';
-import 'package:mfk_guinee_transport/helper/firebase/firebase_init.dart';
 import 'package:mfk_guinee_transport/helper/router/router.dart';
-import 'package:mfk_guinee_transport/helper/utils/utils.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart'; 
+import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter/scheduler.dart';
 
@@ -48,7 +44,7 @@ Future<void> main() async {
   } else if (isProviderAuthenticated == true) {
     homePage = const AdminHomePage();
   } else if (isCustomerAuthenticated == true) {
-    homePage =  HomePage();
+    homePage = HomePage();
   } else {
     homePage = const Login();
   }
@@ -90,7 +86,8 @@ void _setupForegroundNotificationListener() {
     print('Message received in foreground: ${message.notification?.title}');
     if (message.notification != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        _showTopSnackbar(message.notification!.title, message.notification!.body);
+        _showTopSnackbar(
+            message.notification!.title, message.notification!.body);
       });
     }
   });
@@ -124,7 +121,8 @@ void _showTopSnackbar(String? title, String? body) {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 5),
                       Text(

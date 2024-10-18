@@ -7,15 +7,16 @@ class StationModel {
   final double? longitude;
   final String? address;
   final String docId;
+  DocumentReference? stationRef;
 
-  StationModel({
-    required this.id,
-    required this.name,
-    required this.latitude,
-    required this.longitude,
-    required this.address,
-    required this.docId
-  });
+  StationModel(
+      {required this.id,
+      required this.name,
+      required this.latitude,
+      required this.longitude,
+      required this.address,
+      required this.docId,
+      this.stationRef});
 
   Map<String, dynamic> toMap() {
     return {
@@ -29,8 +30,7 @@ class StationModel {
   }
 
   factory StationModel.fromDocument(DocumentSnapshot<Object?> doc) {
-
-    var map = doc.data() as Map<String, dynamic>; 
+    var map = doc.data() as Map<String, dynamic>;
     return StationModel(
       id: map['id'],
       name: map['name'] ?? "",
@@ -47,7 +47,21 @@ class StationModel {
       name: map['name'] ?? "",
       latitude: map['latitude'].toDouble() ?? 0.0,
       longitude: map['longitude'].toDouble() ?? 0.0,
-      address: map['address'] ?? "test", docId: '',
+      address: map['address'] ?? "test",
+      docId: '',
     );
+  }
+
+  @override
+  String toString() {
+    return 'StationModel {'
+        'id: $id, '
+        'name: $name, '
+        'latitude: $latitude, '
+        'longitude: $longitude, '
+        'address: $address, '
+        'docId: $docId, '
+        'stationRef: $stationRef'
+        '}';
   }
 }

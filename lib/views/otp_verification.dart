@@ -98,25 +98,25 @@ class _OtpVerificationState extends State<OtpVerification> {
           _isVerified = true;
         });
 
-      if (role == 'Client') {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/customerHome',
-          (Route<dynamic> route) => false,
-        );
-      } else if (role == 'Admin') {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/providerHome',
-          (Route<dynamic> route) => false,
-        );
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/login',
-          (Route<dynamic> route) => false,
-        );
-      }
+        if (role == 'Client') {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/customerHome',
+            (Route<dynamic> route) => false,
+          );
+        } else if (role == 'Admin') {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/providerHome',
+            (Route<dynamic> route) => false,
+          );
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (Route<dynamic> route) => false,
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
