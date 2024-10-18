@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_auth/firebase_auth.dart';  // Pour l'authentification
+import 'package:firebase_auth/firebase_auth.dart'; // Pour l'authentification
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
@@ -73,7 +73,8 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
             itemBuilder: (context, index) {
               final voiture = voitures[index];
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 child: Card(
                   elevation: 4,
                   child: ListTile(
@@ -82,12 +83,15 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
                       width: 80,
                       height: 80,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.car_rental, size: 50, color: Colors.grey),
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.car_rental,
+                          size: 50,
+                          color: Colors.grey),
                     ),
                     title: Text(
                       'Voiture ${voiture.marque}',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
                       '${voiture.marque}, ${voiture.nombreDePlace} places',
@@ -199,7 +203,8 @@ class _AddCarFormState extends State<AddCarForm> {
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
@@ -223,7 +228,8 @@ class _AddCarFormState extends State<AddCarForm> {
       } catch (e) {
         print('Erreur lors du téléchargement de l\'image: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur lors du téléchargement de l\'image.')),
+          const SnackBar(
+              content: Text('Erreur lors du téléchargement de l\'image.')),
         );
       }
     }
@@ -244,7 +250,9 @@ class _AddCarFormState extends State<AddCarForm> {
     final marque = _marqueController.text;
     final nombreDePlace = int.tryParse(_nombrePlaceController.text);
 
-    if (marque.isEmpty || nombreDePlace == null || _selectedChauffeurId == null) {
+    if (marque.isEmpty ||
+        nombreDePlace == null ||
+        _selectedChauffeurId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez remplir tous les champs.')),
       );
@@ -255,7 +263,9 @@ class _AddCarFormState extends State<AddCarForm> {
     }
 
     final isEditMode = widget.voiture != null;
-    final carId = isEditMode ? widget.voiture!.idVoiture : FirebaseFirestore.instance.collection('Car').doc().id;
+    final carId = isEditMode
+        ? widget.voiture!.idVoiture
+        : FirebaseFirestore.instance.collection('Car').doc().id;
 
     if (!isEditMode || (_imageFile != null)) {
       await _uploadImage(carId);
@@ -265,7 +275,8 @@ class _AddCarFormState extends State<AddCarForm> {
       idVoiture: carId,
       marque: marque,
       nombreDePlace: nombreDePlace,
-      idChauffeur: _selectedChauffeurId ?? '', // Provide a default value if null
+      idChauffeur:
+          _selectedChauffeurId ?? '', // Provide a default value if null
       photo: _imageUrl ?? '', // Use empty string if no image is uploaded
     );
 
@@ -275,7 +286,10 @@ class _AddCarFormState extends State<AddCarForm> {
         .set(voiture.toMap())
         .then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isEditMode ? 'Voiture mise à jour avec succès!' : 'Voiture ajoutée avec succès!')),
+        SnackBar(
+            content: Text(isEditMode
+                ? 'Voiture mise à jour avec succès!'
+                : 'Voiture ajoutée avec succès!')),
       );
       Navigator.of(context).pop();
     }).catchError((error) {
@@ -320,7 +334,8 @@ class _AddCarFormState extends State<AddCarForm> {
                     .contains(textEditingValue.text.toLowerCase());
               });
             },
-            displayStringForOption: (UserModel option) => '${option.prenom} ${option.nom}',
+            displayStringForOption: (UserModel option) =>
+                '${option.prenom} ${option.nom}',
             onSelected: (UserModel selection) {
               setState(() {
                 _selectedChauffeurId = selection.idUser;
@@ -335,7 +350,8 @@ class _AddCarFormState extends State<AddCarForm> {
                 focusNode: focusNode,
                 decoration: InputDecoration(
                   labelText: 'Chauffeur',
-                  prefixIcon: const Icon(Icons.person, color: Colors.black, size: 18),
+                  prefixIcon:
+                      const Icon(Icons.person, color: Colors.black, size: 18),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
                     borderSide: const BorderSide(color: Colors.black),
@@ -344,7 +360,9 @@ class _AddCarFormState extends State<AddCarForm> {
                 ),
               );
             },
-            optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<UserModel> onSelected, Iterable<UserModel> options) {
+            optionsViewBuilder: (BuildContext context,
+                AutocompleteOnSelected<UserModel> onSelected,
+                Iterable<UserModel> options) {
               return Align(
                 alignment: Alignment.topLeft,
                 child: Material(
@@ -387,7 +405,8 @@ class _AddCarFormState extends State<AddCarForm> {
                             ? NetworkImage(_imageUrl!)
                             : null,
                     child: _imageFile == null && _imageUrl == null
-                        ? const Icon(Icons.car_rental, size: 50, color: Colors.grey)
+                        ? const Icon(Icons.car_rental,
+                            size: 50, color: Colors.grey)
                         : null,
                   ),
                   Positioned(
@@ -423,14 +442,14 @@ class _AddCarFormState extends State<AddCarForm> {
                 fontSize: 14.0,
                 fontWeight: FontWeight.w400,
               ),
-              prefixIcon: const Icon(Icons.directions_car, color: Colors.black, size: 18),
+              prefixIcon: const Icon(Icons.directions_car,
+                  color: Colors.black, size: 18),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey.shade200, width: 2),
                 borderRadius: BorderRadius.circular(10.0),
               ),
-              floatingLabelStyle: const TextStyle(
-                color: Colors.black,
-                fontSize: 18.0),
+              floatingLabelStyle:
+                  const TextStyle(color: Colors.black, fontSize: 18.0),
               focusedBorder: OutlineInputBorder(
                 borderSide: const BorderSide(color: Colors.black, width: 1.5),
                 borderRadius: BorderRadius.circular(10.0),
@@ -451,14 +470,14 @@ class _AddCarFormState extends State<AddCarForm> {
                 fontSize: 14.0,
                 fontWeight: FontWeight.w400,
               ),
-              prefixIcon: const Icon(Icons.event_seat, color: Colors.black, size: 18),
+              prefixIcon:
+                  const Icon(Icons.event_seat, color: Colors.black, size: 18),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey.shade200, width: 2),
                 borderRadius: BorderRadius.circular(10.0),
               ),
-              floatingLabelStyle: const TextStyle(
-                color: Colors.black,
-                fontSize: 18.0),
+              floatingLabelStyle:
+                  const TextStyle(color: Colors.black, fontSize: 18.0),
               focusedBorder: OutlineInputBorder(
                 borderSide: const BorderSide(color: Colors.black, width: 1.5),
                 borderRadius: BorderRadius.circular(10.0),

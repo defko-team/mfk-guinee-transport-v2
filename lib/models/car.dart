@@ -25,11 +25,15 @@ class VoitureModel {
 
   factory VoitureModel.fromMap(Map<String, dynamic> map) {
     return VoitureModel(
-      idVoiture: map['id_voiture'] ?? '', // Sécurisation au cas où la clé est absente
-      photo: map['photo'] ?? '', // Si photo est null dans la map, on retourne une chaîne vide
-      marque: map['marque'] ?? '', // On s'assure que marque est toujours une chaîne
+      idVoiture:
+          map['id_voiture'] ?? '', // Sécurisation au cas où la clé est absente
+      photo: map['photo'] ??
+          '', // Si photo est null dans la map, on retourne une chaîne vide
+      marque:
+          map['marque'] ?? '', // On s'assure que marque est toujours une chaîne
       nombreDePlace: map['nombre_de_place'] ?? 0, // Par défaut 0 si absent
-      idChauffeur: map['id_chauffeur'] ?? '', // Par défaut chaîne vide si absent
+      idChauffeur:
+          map['id_chauffeur'] ?? '', // Par défaut chaîne vide si absent
     );
   }
 }

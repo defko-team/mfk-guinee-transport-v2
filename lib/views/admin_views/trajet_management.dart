@@ -79,7 +79,7 @@ class _TrajetManagementPageState extends State<TrajetManagementPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: const BaseAppBar(title: "Gestion des Trajets"),
-        body: Container(
+        body: SizedBox(
           height: MediaQuery.of(context).size.height,
           child: Stack(
             children: [

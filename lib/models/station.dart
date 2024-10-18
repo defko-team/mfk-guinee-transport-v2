@@ -7,6 +7,7 @@ class StationModel {
   final double? longitude;
   final String? address;
   final String docId;
+  DocumentReference? stationRef;
 
   StationModel(
       {required this.id,
@@ -14,7 +15,8 @@ class StationModel {
       required this.latitude,
       required this.longitude,
       required this.address,
-      required this.docId});
+      required this.docId,
+      this.stationRef});
 
   Map<String, dynamic> toMap() {
     return {
@@ -48,5 +50,18 @@ class StationModel {
       address: map['address'] ?? "test",
       docId: '',
     );
+  }
+
+  @override
+  String toString() {
+    return 'StationModel {'
+        'id: $id, '
+        'name: $name, '
+        'latitude: $latitude, '
+        'longitude: $longitude, '
+        'address: $address, '
+        'docId: $docId, '
+        'stationRef: $stationRef'
+        '}';
   }
 }

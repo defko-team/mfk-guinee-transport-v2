@@ -13,10 +13,24 @@ class StationService {
     return stations;
   }
 
+  Future<List<StationModel>> getAllStationsBis() async {
+    List<StationModel> stations = [];
+    QuerySnapshot querySnapshot = await _firestore.collection('Station').get();
+    for (var doc in querySnapshot.docs) {
+      StationModel station = StationModel.fromDocument(doc);
+      station.stationRef = doc.reference;
+      stations.add(station);
+    }
+    return stations;
+  }
+
   Future<StationModel> getStationById(String stationId) async {
     DocumentSnapshot stationDoc =
         await _firestore.collection('Station').doc(stationId).get();
-    return StationModel.fromMap(stationDoc.data() as Map<String, dynamic>);
+    StationModel station =
+        StationModel.fromMap(stationDoc.data() as Map<String, dynamic>);
+    station.stationRef = stationDoc.reference;
+    return station;
   }
 
   Future<void> createStation(StationModel station) async {
