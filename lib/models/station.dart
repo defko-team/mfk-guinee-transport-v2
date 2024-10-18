@@ -37,7 +37,7 @@ class StationModel {
       latitude: map['latitude'].toDouble() ?? 0.0,
       longitude: map['longitude'].toDouble() ?? 0.0,
       address: map['address'] ?? "test",
-      docId: '',
+      docId: doc.id,
     );
   }
 

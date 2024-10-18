@@ -112,7 +112,7 @@ class _CustomerHomeState extends State<CustomerHome> {
           Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: CustomElevatedButton(
-                onSearch: formIsValid ? _onSearch : () {},
+                onClick: formIsValid ? _onSearch : () {},
                 backgroundColor: formIsValid ? AppColors.green : AppColors.grey,
                 text: "Rechercher",
               )),

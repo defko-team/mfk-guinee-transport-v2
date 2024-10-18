@@ -545,7 +545,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
     }
     final TravelModel travel = TravelModel(
         travelReference: currentTravelReference,
-        id: currentTravelReference!.id,
+        id: currentTravelReference?.id ?? '',
         departureStationId: _selectedDepartureStation!.stationRef,
         destinationStationId: _selectedDestinationStation!.stationRef,
         //departureLocation: departureLocation,
