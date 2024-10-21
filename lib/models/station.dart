@@ -5,7 +5,7 @@ class StationModel {
   final String name;
   final double? latitude;
   final double? longitude;
-  final String? address;
+  final String address;
   final String docId;
   DocumentReference? stationRef;
 
