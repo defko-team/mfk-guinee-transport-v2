@@ -410,7 +410,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
   }
 
   Future<void> _loadStation() async {
-    final allStations = await StationService().getAllStationsBis();
+    final allStations = await StationService().getAllStations();
     setState(() {
       stations = allStations;
     });
