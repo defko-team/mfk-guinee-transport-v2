@@ -272,13 +272,13 @@ class _AddCarFormState extends State<AddCarForm> {
     }
 
     final voiture = VoitureModel(
-      idVoiture: carId,
-      marque: marque,
-      nombreDePlace: nombreDePlace,
-      idChauffeur:
-          _selectedChauffeurId ?? '', // Provide a default value if null
-      photo: _imageUrl ?? '', // Use empty string if no image is uploaded
-    );
+        idVoiture: carId,
+        marque: marque,
+        nombreDePlace: nombreDePlace,
+        idChauffeur:
+            _selectedChauffeurId ?? '', // Provide a default value if null
+        photo: _imageUrl ?? '', // Use empty string if no image is uploaded
+        airConditioner: true);
 
     FirebaseFirestore.instance
         .collection('Car')

@@ -1,13 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dash/flutter_dash.dart';
 import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/helper/utils/utils.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
-import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
@@ -747,15 +745,16 @@ class _AddTravelFormState extends State<AddTravelForm> {
 
             // Switch widget
             Switch(
-              activeColor: AppColors.green,
-              inactiveThumbColor: Colors.red,
-              value: aircondtioned!,
-              onChanged: (value) {
-                setState(() {
-                  aircondtioned = value;
-                });
-              },
-            ),
+                activeColor: AppColors.green,
+                inactiveThumbColor: Colors.red,
+                value: aircondtioned!,
+                onChanged: _selectedVoiture!.airConditioner
+                    ? (value) {
+                        setState(() {
+                          aircondtioned = value;
+                        });
+                      }
+                    : null),
           ],
         ),
         const SizedBox(height: 20),
