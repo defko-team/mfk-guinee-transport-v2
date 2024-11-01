@@ -36,6 +36,6 @@ class VoitureModel {
         nombreDePlace: map['nombre_de_place'] ?? 0, // Par défaut 0 si absent
         idChauffeur:
             map['id_chauffeur'] ?? '', // Par défaut chaîne vide si absent
-        airConditioner: map['air_conditioner'] ?? '');
+        airConditioner: map['air_conditioner'] ?? false);
   }
 }

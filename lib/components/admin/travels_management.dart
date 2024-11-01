@@ -253,6 +253,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
         );
         _departureTimeController.text =
             DateFormat('HH:mm').format(selectedDateTime);
+        _pickedDepartureDate = selectedDateTime;
       });
     }
   }
@@ -271,6 +272,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
         );
         _arrivalTimeController.text =
             DateFormat('HH:mm').format(selectedArrivalDateTime);
+        _pickedArrivalDate = selectedArrivalDateTime;
       });
     }
   }
@@ -339,7 +341,8 @@ class _AddTravelFormState extends State<AddTravelForm> {
         //remainingSeats: remainingSeats,
         ticketPrice: double.parse(_tecketPriceController.text),
         airConditioned: aircondtioned!,
-        driverName: 'driverName',
+        driverName: await VoitureService()
+            .getDriverNameById(_selectedVoiture!.idChauffeur),
         remainingSeats: 2,
         carName: _selectedVoiture!.marque);
     if (isUpdate!) {
@@ -748,13 +751,14 @@ class _AddTravelFormState extends State<AddTravelForm> {
                 activeColor: AppColors.green,
                 inactiveThumbColor: Colors.red,
                 value: aircondtioned!,
-                onChanged: _selectedVoiture!.airConditioner
-                    ? (value) {
-                        setState(() {
-                          aircondtioned = value;
-                        });
-                      }
-                    : null),
+                onChanged:
+                    _selectedVoiture != null && _selectedVoiture!.airConditioner
+                        ? (value) {
+                            setState(() {
+                              aircondtioned = value;
+                            });
+                          }
+                        : null),
           ],
         ),
         const SizedBox(height: 20),

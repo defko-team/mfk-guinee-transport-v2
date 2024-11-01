@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 
-class UserService{
+class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<UserModel>> getAllUsers() async {
@@ -14,8 +14,9 @@ class UserService{
   }
 
   Future<UserModel> getUserById(String userId) async {
-    DocumentSnapshot userDoc = await _firestore.collection('Users').doc(userId).get();
-    return UserModel.fromMap(userDoc as Map<String, dynamic>);
+    DocumentSnapshot userDoc =
+        await _firestore.collection('Users').doc(userId).get();
+    return UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
   }
 
   Future<void> createUser(UserModel user) async {
