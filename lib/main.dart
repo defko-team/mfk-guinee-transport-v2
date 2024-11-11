@@ -9,12 +9,15 @@ import 'package:mfk_guinee_transport/views/no_network.dart';
 import 'package:mfk_guinee_transport/views/login.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_init.dart';
 import 'package:mfk_guinee_transport/helper/router/router.dart';
-import 'package:mfk_guinee_transport/helper/utils/utils.dart';
+import 'package:mfk_guinee_transport/helper/utils/utils.dart';  // Import your utils
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await initFirebase();
+
+  // Call the function to create the default admin
+  await createDefaultAdmin(); // Create default admin if it doesn't exist
 
   bool isConnected = await isConnectedToInternet();
 

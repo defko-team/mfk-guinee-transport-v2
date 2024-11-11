@@ -127,7 +127,7 @@ class AuthService {
     if (roleDoc['nom'] == 'Client') {
       prefs.setBool("isCustomerAuthenticated", true);
       prefs.setBool("isProviderAuthenticated", false);
-    } else if (roleDoc['nom'] == 'Provider') {
+    } else if (roleDoc['nom'] == 'Admin') {
       prefs.setBool("isCustomerAuthenticated", false);
       prefs.setBool("isProviderAuthenticated", true);
     }
@@ -139,7 +139,7 @@ class AuthService {
 
     if (roleName == 'Client') {
       Navigator.pushReplacementNamed(context, '/customerHome');
-    } else if (roleName == 'Provider') {
+    } else if (roleName == 'Admin') {
       Navigator.pushReplacementNamed(context, '/providerHome');
     } else {
       throw Exception('Rôle inconnu : $roleName');
