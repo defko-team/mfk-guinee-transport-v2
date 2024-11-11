@@ -48,8 +48,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const BaseAppBar(title: "Profil"),
-      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        backgroundColor: Colors.white, // Set AppBar background color to white
+        elevation: 0, // Remove shadow
+        iconTheme: IconThemeData(color: Colors.black), // Set icon color to black
+        title: const Text(
+          "Profil",
+          style: TextStyle(color: Colors.black), // Set title color to black
+        ),
+      ),
+      backgroundColor: Colors.white, // Set page background color to white
       body: _userId == null
           ? const Center(child: CircularProgressIndicator())
           : StreamBuilder<DocumentSnapshot>(
@@ -76,7 +84,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   children: [
                     const SizedBox(height: 20),
                     GestureDetector(
-                      onTap: _navigateToUserDetails,  // Navigate to UserDetailsPage
+                      onTap: _navigateToUserDetails, // Navigate to UserDetailsPage
                       child: ProfileHeader(
                         firstName: firstName,
                         lastName: lastName,
@@ -154,7 +162,7 @@ class ProfileHeader extends StatelessWidget {
             ),
             const Icon(
               Icons.chevron_right,
-              color: Colors.white,
+              color: Colors.grey,
             ),
           ],
         ),

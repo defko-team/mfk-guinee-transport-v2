@@ -43,7 +43,13 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Paramètres de l\'Admin'),
+        backgroundColor: Colors.white, // Set AppBar background color to white
+        elevation: 0, // Remove shadow
+        iconTheme: IconThemeData(color: Colors.black), // Set icon color to black
+        title: const Text(
+          'Paramètres de l\'Admin',
+          style: TextStyle(color: Colors.black), // Set title color to black
+        ),
       ),
       backgroundColor: const Color(0xFFF5F5F5),
       body: _userId == null
@@ -72,7 +78,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   children: [
                     const SizedBox(height: 20),
                     GestureDetector(
-                      onTap: _navigateToProfile,  // Navigate to ProfilePage
+                      onTap: _navigateToProfile, // Navigate to ProfilePage
                       child: ProfileHeader(
                         firstName: firstName,
                         lastName: lastName,
@@ -91,7 +97,6 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
     );
   }
 }
-
 
 class ProfileHeader extends StatelessWidget {
   final String firstName;
@@ -151,7 +156,7 @@ class ProfileHeader extends StatelessWidget {
             ),
             const Icon(
               Icons.chevron_right,
-              color: Colors.white,
+              color: Colors.grey,
             ),
           ],
         ),
@@ -201,7 +206,6 @@ class LogoutButton extends StatelessWidget {
   }
 }
 
-
 class AdminSettingsOptions extends StatelessWidget {
   const AdminSettingsOptions({super.key});
 
@@ -210,7 +214,7 @@ class AdminSettingsOptions extends StatelessWidget {
     return Column(
       children: [
         _buildOptionGroup([
-          const AdminOptionTile(title: 'Gérer Utilisateurs'),
+          const AdminOptionTile(title: 'Gérer Chauffeurs'),
           const AdminOptionTile(title: 'Gérer Voitures'),
         ]),
       ],
@@ -247,10 +251,10 @@ class _AdminOptionTileState extends State<AdminOptionTile> {
 
   void _navigateToPage(BuildContext context) {
     switch (widget.title) {
-      case 'Gérer Utilisateurs':
+      case 'Gérer Chauffeurs':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AdminUsersManagementPage()),
+          MaterialPageRoute(builder: (context) => const AdminChauffeurManagementPage()),
         );
         break;
       case 'Gérer Voitures':

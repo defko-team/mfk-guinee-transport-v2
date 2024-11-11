@@ -5,7 +5,6 @@ import 'package:mfk_guinee_transport/components/admin/reservations_management.da
 import 'package:mfk_guinee_transport/components/admin/settings.dart';
 
 class AdminHomePage extends StatefulWidget {
-
   const AdminHomePage({super.key});
 
   @override
@@ -31,9 +30,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: _adminPages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
