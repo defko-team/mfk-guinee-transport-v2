@@ -78,8 +78,8 @@ Future<void> _requestNotificationPermission() async {
   print('User granted permission: ${settings.authorizationStatus}');
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    String? token = await messaging.getToken();
-    print("FCM Token: $token");
+    //String? token = await messaging.getToken();
+    //print("FCM Token: $token");
   }
 }
 

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/views/history.dart';
 import 'package:mfk_guinee_transport/components/admin/dashboard_management.dart';
 import 'package:mfk_guinee_transport/components/admin/travels_management.dart';
+import 'package:mfk_guinee_transport/components/admin/reservations_management.dart';
 import 'package:mfk_guinee_transport/components/admin/settings.dart';
-import 'package:mfk_guinee_transport/views/history.dart';
 
 class AdminHomePage extends StatefulWidget {
-
   const AdminHomePage({super.key});
 
   @override
@@ -18,7 +18,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   final List<Widget> _adminPages = [
     const AdminDashboardManagementPage(),
     const AdminTravelsManagementPage(),
-    HistoryPage(title: "Réservations"),
+    const HistoryPage(),
     const AdminSettingsPage(),
   ];
 
@@ -31,9 +31,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: _adminPages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
