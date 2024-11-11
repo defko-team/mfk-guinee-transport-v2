@@ -19,7 +19,6 @@ Future<void> main() async {
   await _initFirebase();
 
   // Call the function to create the default admin
-  await createDefaultAdmin(); // Create default admin if it doesn't exist
 
   bool isConnected = await isConnectedToInternet();
 
