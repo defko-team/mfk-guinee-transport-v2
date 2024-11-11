@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
-import 'package:mfk_guinee_transport/components/simple_app_bar.dart';
 import 'package:mfk_guinee_transport/components/trip_card.dart';
 import 'package:mfk_guinee_transport/components/trip_card_detail.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
@@ -9,7 +8,6 @@ import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/history_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryPage extends StatefulWidget {
   final String title;
@@ -29,16 +27,14 @@ class _HistoryPageState extends State<HistoryPage> {
   List<UserModel> users = [];
   UserModel? currentUser;
 
-
   @override
   void initState() {
     super.initState();
     fetchReservations();
     fetUsers();
   }
-  
-  Future<void> fetUsers() async {
 
+  Future<void> fetUsers() async {
     currentUser = await userService.getUser();
 
     List<UserModel> fetchedUsers = await UserService().getAllUsers();
@@ -47,29 +43,27 @@ class _HistoryPageState extends State<HistoryPage> {
     });
   }
 
-
   // Fetch reservations using ReservationService
 
   void fetchReservations() async {
-    List<ReservationModel> fetchedReservations =
-        await ReservationService().fetchReservation(
-      startTimeFilter: selectedDate,
-      statusFilter: selectedStatus,
-      carNameFilter: selectedVehicle,
-      userId: userId
-    );
+    List<ReservationModel> fetchedReservations = await ReservationService()
+        .fetchReservation(
+            startTimeFilter: selectedDate,
+            statusFilter: selectedStatus,
+            carNameFilter: selectedVehicle,
+            userId: userId);
     setState(() {
       reservations = fetchedReservations;
     });
   }
 
-  void onFiltersChanged(DateTime? date, String? status, String? vehicle, String? selectedId) {
+  void onFiltersChanged(
+      DateTime? date, String? status, String? vehicle, String? selectedId) {
     setState(() {
       selectedDate = date;
       selectedStatus = status;
       selectedVehicle = vehicle;
       userId = selectedId;
-      
     });
     fetchReservations(); // Fetch reservations with the new filters
   }
@@ -89,14 +83,16 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BaseAppBar(title: widget.title, showBackArrow: false,),
+      appBar: BaseAppBar(
+        title: widget.title,
+        showBackArrow: false,
+      ),
       body: Column(
         children: [
           FilterBar(
-            onFiltersChanged: onFiltersChanged,
-            users: users,
-            isAdmin: currentUser?.role?.toLowerCase() == 'admin'
-          ),
+              onFiltersChanged: onFiltersChanged,
+              users: users,
+              isAdmin: currentUser?.role?.toLowerCase() == 'admin'),
           Expanded(
               child: ListView.builder(
             itemCount: reservations.length,
@@ -154,7 +150,12 @@ class FilterBar extends StatefulWidget {
   final List<UserModel> users;
   final bool isAdmin;
 
-  const FilterBar({Key? key, required this.onFiltersChanged, required this.users, required this.isAdmin}) : super(key: key);
+  const FilterBar(
+      {Key? key,
+      required this.onFiltersChanged,
+      required this.users,
+      required this.isAdmin})
+      : super(key: key);
 
   @override
   _FilterBarState createState() => _FilterBarState();
@@ -170,22 +171,19 @@ class _FilterBarState extends State<FilterBar> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            _buildDatePicker(context),
-            _buildStatusDropdown(),
-            _buildVehicleDropdown(),
-            if (widget.isAdmin) _buildUsersDropdown(),
-            if (_isAnyFilterSet()) // Conditionally render the IconButton
-              IconButton(
-                icon: const Icon(Icons.clear), // "X" icon to clear filters
-                onPressed: _clearFilters, // Clear filters when pressed
-              ),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          _buildDatePicker(context),
+          _buildStatusDropdown(),
+          _buildVehicleDropdown(),
+          if (widget.isAdmin) _buildUsersDropdown(),
+          if (_isAnyFilterSet()) // Conditionally render the IconButton
+            IconButton(
+              icon: const Icon(Icons.clear), // "X" icon to clear filters
+              onPressed: _clearFilters, // Clear filters when pressed
+            ),
+        ],
       ),
     );
   }
@@ -237,7 +235,8 @@ class _FilterBarState extends State<FilterBar> {
         setState(() {
           selectedStatus = newValue;
         });
-        widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle, userId);
+        widget.onFiltersChanged(
+            selectedDate, selectedStatus, selectedVehicle, userId);
       },
     );
   }
@@ -256,28 +255,63 @@ class _FilterBarState extends State<FilterBar> {
         setState(() {
           selectedVehicle = newValue;
         });
-        widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle, userId);
+        widget.onFiltersChanged(
+            selectedDate, selectedStatus, selectedVehicle, userId);
       },
     );
   }
 
-  
   Widget _buildUsersDropdown() {
-    return DropdownButton<String>(
-      hint: const Text('User'),
-      value: userId,
-      items: widget.users.map((UserModel value) {
-        return DropdownMenuItem<String>(
-          value: value.idUser,
-          child: Text(value.prenom + " " + value.nom),
-        );
-      }).toList(),
-      onChanged: (newValue) {
-        setState(() {
-          userId = newValue;
-        });
-        widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle, userId);
-      },
+    return Expanded(
+      child: Autocomplete<UserModel>(
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          if (textEditingValue.text.isEmpty) {
+            return widget.users;
+          }
+          return widget.users.where((UserModel user) {
+            final fullName = '${user.prenom} ${user.nom}'.toLowerCase();
+            return fullName.contains(textEditingValue.text.toLowerCase());
+          });
+        },
+        displayStringForOption: (UserModel user) =>
+            '${user.prenom} ${user.nom}',
+        fieldViewBuilder: (BuildContext context,
+            TextEditingController textEditingController,
+            FocusNode focusNode,
+            VoidCallback onFieldSubmitted) {
+          return TextField(
+            controller: textEditingController,
+            focusNode: focusNode,
+            decoration: InputDecoration(
+              hintText: 'Utilisateurs',
+              suffixIcon: textEditingController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.clear_rounded),
+                      onPressed: () {
+                        textEditingController.clear(); // Clear the text field
+                        setState(() {
+                          userId = null; // Reset the selected product
+                        });
+                        widget.onFiltersChanged(selectedDate, selectedStatus,
+                            selectedVehicle, userId);
+                        FocusScope.of(context).unfocus();
+                      },
+                    )
+                  : null,
+            ),
+            onTapOutside: (PointerDownEvent event) {
+              FocusScope.of(context).unfocus();
+            },
+          );
+        },
+        onSelected: (UserModel selectedUser) {
+          setState(() {
+            userId = selectedUser.idUser;
+          });
+          widget.onFiltersChanged(
+              selectedDate, selectedStatus, selectedVehicle, userId);
+        },
+      ),
     );
   }
 
@@ -289,7 +323,8 @@ class _FilterBarState extends State<FilterBar> {
       selectedVehicle = null;
     });
     // Notify parent widget about filter clearing
-    widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle, userId);
+    widget.onFiltersChanged(
+        selectedDate, selectedStatus, selectedVehicle, userId);
   }
 
   // Check if any filter is set
