@@ -64,8 +64,9 @@ class TravelModel {
       arrivalTime: (map['arrival_time'] as Timestamp)
           .toDate(), // Convert Timestamp to DateTime
       remainingSeats: map['remaining_seats'] ?? 0, // Parse as int, default to 0
-      ticketPrice: map['ticket_price'].toDouble() ?? 0.0, airConditioned: true,
-      driverName: '',
+      ticketPrice: map['ticket_price'].toDouble() ?? 0.0,
+      airConditioned: map['air_conditioned'] ?? false,
+      driverName: map['driver_name'] ?? '',
       carName: map['car_name'] ?? '', // Parse as double, default to 0.0
     );
   }

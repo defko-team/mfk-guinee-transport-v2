@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class VoitureService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -52,6 +54,12 @@ class VoitureService {
       voitures.add(voiture);
     }
     return voitures;
+  }
+
+  // Get DriverName by voitureId
+  Future<String> getDriverNameById(String driverId) async {
+    UserModel driver = await UserService().getUserById(driverId);
+    return '${driver.prenom} ${driver.nom}';
   }
 
   // Create a new voiture
