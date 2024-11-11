@@ -5,6 +5,7 @@ class UserModel {
   final String? photoProfil;
   final String telephone;
   final String idRole;
+  String? role;
 
   UserModel({
     required this.idUser,
@@ -13,6 +14,7 @@ class UserModel {
     this.photoProfil,
     required this.telephone,
     required this.idRole,
+    this.role,
   });
 
   Map<String, dynamic> toMap() {
