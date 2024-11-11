@@ -17,6 +17,7 @@ class TravelModel {
   late final bool airConditioned;
   late final String driverName;
   late final String carName;
+  late final int nombreDePlace;
 
   TravelModel(
       {this.id,
@@ -33,7 +34,8 @@ class TravelModel {
       this.destinationStation,
       required this.airConditioned,
       required this.driverName,
-      required this.carName});
+      required this.carName,
+      required this.nombreDePlace});
 
   Map<String, dynamic> toMap() {
     return {
@@ -48,27 +50,26 @@ class TravelModel {
       'ticket_price': ticketPrice,
       'air_conditioned': airConditioned,
       'driver_name': driverName,
-      'car_name': carName
+      'car_name': carName,
+      'nombre_de_place': nombreDePlace
     };
   }
 
   factory TravelModel.fromMap(Map<String, dynamic> map) {
     return TravelModel(
-      id: map['id'],
-      departureStationId: map['departure_station'],
-      destinationStationId: map['destination_station'],
-      departureLocation: map['departure_location'],
-      arrivalLocation: map['arrival_location'],
-      startTime: (map['start_time'] as Timestamp)
-          .toDate(), // Convert Timestamp to DateTime
-      arrivalTime: (map['arrival_time'] as Timestamp)
-          .toDate(), // Convert Timestamp to DateTime
-      remainingSeats: map['remaining_seats'] ?? 0, // Parse as int, default to 0
-      ticketPrice: map['ticket_price'].toDouble() ?? 0.0,
-      airConditioned: map['air_conditioned'] ?? false,
-      driverName: map['driver_name'] ?? '',
-      carName: map['car_name'] ?? '', // Parse as double, default to 0.0
-    );
+        id: map['id'],
+        departureStationId: map['departure_station'],
+        destinationStationId: map['destination_station'],
+        departureLocation: map['departure_location'],
+        arrivalLocation: map['arrival_location'],
+        startTime: (map['start_time'] as Timestamp).toDate(),
+        arrivalTime: (map['arrival_time'] as Timestamp).toDate(),
+        remainingSeats: map['remaining_seats'] ?? 0,
+        ticketPrice: map['ticket_price'].toDouble() ?? 0.0,
+        airConditioned: map['air_conditioned'] ?? false,
+        driverName: map['driver_name'] ?? '',
+        carName: map['car_name'] ?? '',
+        nombreDePlace: map['nombre_de_place'] ?? 0);
   }
 
   factory TravelModel.fromMapStation(Map<String, dynamic> map,
@@ -87,6 +88,7 @@ class TravelModel {
       airConditioned: map['air_conditioned'] ?? false,
       driverName: map['driver_name'] ?? '',
       carName: map['car_name'] ?? '',
+      nombreDePlace: map['nombre_de_place'] ?? 0,
       departureLocation: null,
     );
   }

@@ -7,6 +7,7 @@ import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
+import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
 import 'package:mfk_guinee_transport/views/CardTravel.dart';
@@ -344,6 +345,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
         driverName: await VoitureService()
             .getDriverNameById(_selectedVoiture!.idChauffeur),
         remainingSeats: 2,
+        nombreDePlace: _selectedVoiture!.nombreDePlace,
         carName: _selectedVoiture!.marque);
     if (isUpdate!) {
       print(travel.toString());
@@ -351,8 +353,13 @@ class _AddTravelFormState extends State<AddTravelForm> {
       Navigator.of(context).pop();
     } else {
       TravelService().createTravel(travel);
+
       Navigator.of(context).pop();
     }
+    // FirebaseMessagingService().sendMessage(
+    //   "c5yEM7e4T2WX8XJ2D9zukJ:APA91bEf-2PQ-eOBNzQ5sMnwn1qOITbsChPGNbTyRhw3nd33GmA-pndsWPARfKSyp_2OxY3zRrA0mDoEb-XrwXN3TH92efEFJ8sD0zW8mtdXsrt9fhqNWeI",
+    // "title",
+    // "body");
   }
 
   @override

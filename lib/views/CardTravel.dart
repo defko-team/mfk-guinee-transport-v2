@@ -191,7 +191,7 @@ class CardTravel extends StatelessWidget {
                     Container(
                       width: 9,
                     ),
-                    const Text('3/4 places'),
+                    Text('xx/${travelModel.nombreDePlace}'),
                     Container(
                       width: 9,
                     ),
