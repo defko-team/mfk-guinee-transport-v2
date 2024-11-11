@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/admin/dashboard_management.dart';
 import 'package:mfk_guinee_transport/components/admin/travels_management.dart';
-import 'package:mfk_guinee_transport/components/admin/reservations_management.dart';
 import 'package:mfk_guinee_transport/components/admin/settings.dart';
 import 'package:mfk_guinee_transport/views/history.dart';
 

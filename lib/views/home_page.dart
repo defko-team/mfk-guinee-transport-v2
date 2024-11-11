@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mfk_guinee_transport/components/gare_page.dart';
 import 'package:mfk_guinee_transport/views/station_page.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
 import 'package:mfk_guinee_transport/views/history.dart';
