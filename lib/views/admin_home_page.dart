@@ -3,6 +3,7 @@ import 'package:mfk_guinee_transport/components/admin/dashboard_management.dart'
 import 'package:mfk_guinee_transport/components/admin/travels_management.dart';
 import 'package:mfk_guinee_transport/components/admin/reservations_management.dart';
 import 'package:mfk_guinee_transport/components/admin/settings.dart';
+import 'package:mfk_guinee_transport/views/history.dart';
 
 class AdminHomePage extends StatefulWidget {
 
@@ -18,7 +19,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   final List<Widget> _adminPages = [
     const AdminDashboardManagementPage(),
     const AdminTravelsManagementPage(),
-    const AdminReservationsManagementPage(),
+    HistoryPage(title: "Réservations"),
     const AdminSettingsPage(),
   ];
 

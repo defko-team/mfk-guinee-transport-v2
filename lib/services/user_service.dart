@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/models/role_model.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService{
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -13,9 +15,15 @@ class UserService{
     return users;
   }
 
-  Future<UserModel> getUserById(String userId) async {
+  Future<UserModel> getUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
     DocumentSnapshot userDoc = await _firestore.collection('Users').doc(userId).get();
-    return UserModel.fromMap(userDoc as Map<String, dynamic>);
+    DocumentSnapshot roleDoc = await _firestore.collection('roles').doc(userDoc['id_role']).get();
+    UserModel user = UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
+    RoleModel role = RoleModel.fromMap(roleDoc.data() as Map<String, dynamic>);
+    user.role = role.nom;
+    return user;
   }
 
   Future<void> createUser(UserModel user) async {

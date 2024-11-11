@@ -7,9 +7,12 @@ import 'package:mfk_guinee_transport/components/trip_card_detail.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/services/history_service.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoryPage extends StatefulWidget {
-  const HistoryPage({super.key});
+  final String title;
+  const HistoryPage({super.key, this.title = "Historique"});
 
   @override
   _HistoryPageState createState() => _HistoryPageState();
@@ -30,10 +33,8 @@ class _HistoryPageState extends State<HistoryPage> {
   // Fetch reservations using ReservationService
 
   void fetchReservations() async {
-    const String userId = 'H20FRZdDzAb8wDnaEUfyBk5IiYv1';
     List<ReservationModel> fetchedReservations =
-        await ReservationService().getUserReservations(
-      userId: userId,
+        await ReservationService().fetchReservation(
       startTimeFilter: selectedDate,
       statusFilter: selectedStatus,
       carNameFilter: selectedVehicle,
@@ -67,7 +68,7 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const BaseAppBar(title: "Historique"),
+      appBar: BaseAppBar(title: widget.title, showBackArrow: false,),
       body: Column(
         children: [
           FilterBar(
