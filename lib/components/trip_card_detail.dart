@@ -11,19 +11,21 @@ class TripDetailCard extends StatelessWidget {
   final String distance;
   final String time;
   final String price;
+  final String status;
   final VoidCallback onCancel;
 
-  TripDetailCard({
-    required this.userName,
-    required this.userAvatarUrl,
-    required this.rating,
-    required this.origin,
-    required this.destination,
-    required this.distance,
-    required this.time,
-    required this.price,
-    required this.onCancel,
-  });
+  const TripDetailCard(
+      {super.key,
+      required this.userName,
+      required this.userAvatarUrl,
+      required this.rating,
+      required this.origin,
+      required this.destination,
+      required this.distance,
+      required this.time,
+      required this.price,
+      required this.onCancel,
+      required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -45,47 +47,47 @@ class TripDetailCard extends StatelessWidget {
                     backgroundImage:
                         NetworkImage(userAvatarUrl), // Load user's avatar
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         userName,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          const Icon(Icons.star, color: Colors.amber, size: 16),
                           Text(rating.toString(),
-                              style: TextStyle(fontSize: 14)),
+                              style: const TextStyle(fontSize: 14)),
                         ],
                       ),
                     ],
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Row(
                     children: [
                       IconButton(
-                        icon: Icon(Icons.message_outlined),
+                        icon: const Icon(Icons.message_outlined),
                         onPressed: () {}, // Handle message action
                       ),
                       IconButton(
-                        icon: Icon(Icons.phone),
+                        icon: const Icon(Icons.phone),
                         onPressed: () {}, // Handle call action
                       ),
                     ],
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
-                  Icon(Icons.radio_button_checked, color: Colors.green),
-                  SizedBox(width: 8),
+                  const Icon(Icons.radio_button_checked, color: Colors.green),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(origin,
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -93,21 +95,21 @@ class TripDetailCard extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 30.0),
                 child: Row(
                   children: [
-                    Icon(Icons.location_pin, color: Colors.black54),
-                    SizedBox(width: 8),
+                    const Icon(Icons.location_pin, color: Colors.black54),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(destination),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Container(
                 width: double.infinity,
                 height: 1,
                 color: Colors.grey[300],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -116,15 +118,16 @@ class TripDetailCard extends StatelessWidget {
                   TripInfoItem(label: 'PRICE', value: price),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ]),
-            Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: CustomElevatedButton(
-                  onSearch: onCancel,
-                  backgroundColor: AppColors.green,
-                  text: "Annuler Reservation",
-                )),
+            if (status != "completed")
+              Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: CustomElevatedButton(
+                    onClick: onCancel,
+                    backgroundColor: AppColors.green,
+                    text: "Annuler Reservation",
+                  )),
           ],
         ),
       ),
@@ -136,7 +139,7 @@ class TripInfoItem extends StatelessWidget {
   final String label;
   final String value;
 
-  TripInfoItem({required this.label, required this.value});
+  const TripInfoItem({super.key, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -144,11 +147,11 @@ class TripInfoItem extends StatelessWidget {
       children: [
         Text(
           value,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.grey),
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
       ],
     );

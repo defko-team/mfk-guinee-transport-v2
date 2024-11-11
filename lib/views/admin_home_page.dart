@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/views/history.dart';
 import 'package:mfk_guinee_transport/components/admin/dashboard_management.dart';
 import 'package:mfk_guinee_transport/components/admin/travels_management.dart';
 import 'package:mfk_guinee_transport/components/admin/reservations_management.dart';
@@ -17,7 +18,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   final List<Widget> _adminPages = [
     const AdminDashboardManagementPage(),
     const AdminTravelsManagementPage(),
-    const AdminReservationsManagementPage(),
+    const HistoryPage(),
     const AdminSettingsPage(),
   ];
 

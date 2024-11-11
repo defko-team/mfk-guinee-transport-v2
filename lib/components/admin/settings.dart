@@ -43,13 +43,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white, // Set AppBar background color to white
-        elevation: 0, // Remove shadow
-        iconTheme: IconThemeData(color: Colors.black), // Set icon color to black
-        title: const Text(
-          'Paramètres de l\'Admin',
-          style: TextStyle(color: Colors.black), // Set title color to black
-        ),
+        title: const Text('Paramètres de l\'Admin'),
       ),
       backgroundColor: const Color(0xFFF5F5F5),
       body: _userId == null
@@ -78,7 +72,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   children: [
                     const SizedBox(height: 20),
                     GestureDetector(
-                      onTap: _navigateToProfile, // Navigate to ProfilePage
+                      onTap: _navigateToProfile,  // Navigate to ProfilePage
                       child: ProfileHeader(
                         firstName: firstName,
                         lastName: lastName,
@@ -156,7 +150,7 @@ class ProfileHeader extends StatelessWidget {
             ),
             const Icon(
               Icons.chevron_right,
-              color: Colors.grey,
+              color: Colors.white,
             ),
           ],
         ),
@@ -214,7 +208,7 @@ class AdminSettingsOptions extends StatelessWidget {
     return Column(
       children: [
         _buildOptionGroup([
-          const AdminOptionTile(title: 'Gérer Chauffeurs'),
+          const AdminOptionTile(title: 'Gérer Utilisateurs'),
           const AdminOptionTile(title: 'Gérer Voitures'),
         ]),
       ],
@@ -251,7 +245,7 @@ class _AdminOptionTileState extends State<AdminOptionTile> {
 
   void _navigateToPage(BuildContext context) {
     switch (widget.title) {
-      case 'Gérer Chauffeurs':
+      case 'Gérer Utilisateurs':
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const AdminChauffeurManagementPage()),

@@ -7,7 +7,6 @@ class LocationForm extends StatefulWidget {
   final ValueChanged<String> onArrivalChanged;
   final List<StationModel> locations;
 
-
   const LocationForm({
     super.key,
     required this.onDepartureChanged,
@@ -20,7 +19,6 @@ class LocationForm extends StatefulWidget {
 }
 
 class _LocationFormState extends State<LocationForm> {
-
   TextEditingController departureController = TextEditingController();
   TextEditingController arrivalController = TextEditingController();
 
@@ -60,14 +58,16 @@ class _LocationFormState extends State<LocationForm> {
               children: [
                 Column(
                   children: [
-                    const Icon(Icons.my_location, color: Colors.green, size: 24),
-                    Container(
+                    const Icon(Icons.my_location,
+                        color: Colors.green, size: 24),
+                    SizedBox(
                       height: 40,
                       child: CustomPaint(
                         painter: DottedLinePainter(),
                       ),
                     ),
-                    const Icon(Icons.location_on, color: Colors.green, size: 24),
+                    const Icon(Icons.location_on,
+                        color: Colors.green, size: 24),
                   ],
                 ),
                 const SizedBox(width: 10.0),
@@ -97,133 +97,135 @@ class _LocationFormState extends State<LocationForm> {
     );
   }
 
-
-Widget _buildAutocompleteField({
-  required TextEditingController controller,
-  required String hintText,
-  required ValueChanged<String> onChanged,
-  bool isArrival = false,
-}) {
-  return Stack(
-    children: [
-      Autocomplete<String>(
-        optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text.isEmpty) {
-            return const Iterable<String>.empty();
-          }
-          final suggestions = widget.locations.where((StationModel option) {
-            return option.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
-          }).toList();
-          return suggestions.map((station) => station.name);
-        },
-        onSelected: (String selection) {
-          setState(() {
-            controller.text = selection;
-          });
-          onChanged(selection);
-        },
-        fieldViewBuilder: (BuildContext context,
-            TextEditingController textEditingController,
-            FocusNode focusNode,
-            VoidCallback onFieldSubmitted) {
-          return TextField(
-            controller: textEditingController,
-            focusNode: focusNode,
-            decoration: InputDecoration(
-              hintText: hintText,
-              border: OutlineInputBorder(
-                borderRadius: isArrival
-                    ? const BorderRadius.only(
-                        bottomLeft: Radius.circular(8),
-                        bottomRight: Radius.circular(8),
-                      )
-                    : const BorderRadius.only(
-                        topLeft: Radius.circular(8),
-                        topRight: Radius.circular(8),
-                      ),
-                borderSide: const BorderSide(
-                  color: Colors.black,
-                  width: 1.0,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: isArrival
-                    ? const BorderRadius.only(
-                        bottomLeft: Radius.circular(8),
-                        bottomRight: Radius.circular(8),
-                      )
-                    : const BorderRadius.only(
-                        topLeft: Radius.circular(8),
-                        topRight: Radius.circular(8),
-                      ),
-                borderSide: const BorderSide(
-                  color: Colors.black,
-                  width: 1.0,
-                ),
-              ),
-              suffixIcon: controller.text.isNotEmpty
-                  ? IconButton(
-                      icon: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey.shade300,
+  Widget _buildAutocompleteField({
+    required TextEditingController controller,
+    required String hintText,
+    required ValueChanged<String> onChanged,
+    bool isArrival = false,
+  }) {
+    return Stack(
+      children: [
+        Autocomplete<String>(
+          optionsBuilder: (TextEditingValue textEditingValue) {
+            if (textEditingValue.text.isEmpty) {
+              return const Iterable<String>.empty();
+            }
+            final suggestions = widget.locations.where((StationModel option) {
+              return option.name
+                  .toLowerCase()
+                  .contains(textEditingValue.text.toLowerCase());
+            }).toList();
+            return suggestions.map((station) => station.name);
+          },
+          onSelected: (String selection) {
+            setState(() {
+              controller.text = selection;
+            });
+            onChanged(selection);
+          },
+          fieldViewBuilder: (BuildContext context,
+              TextEditingController textEditingController,
+              FocusNode focusNode,
+              VoidCallback onFieldSubmitted) {
+            return TextField(
+              controller: textEditingController,
+              focusNode: focusNode,
+              decoration: InputDecoration(
+                hintText: hintText,
+                border: OutlineInputBorder(
+                  borderRadius: isArrival
+                      ? const BorderRadius.only(
+                          bottomLeft: Radius.circular(8),
+                          bottomRight: Radius.circular(8),
+                        )
+                      : const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
                         ),
-                        child: const Icon(
-                          Icons.clear,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          controller.clear();
-                          textEditingController.clear();
-                        });
-                        onChanged(''); // Clear the corresponding value
-                      },
-                    )
-                  : null,
-            ),
-            keyboardType: TextInputType.text,
-            onChanged: (value) {
-              setState(() {});
-              onChanged(value);
-            },
-          );
-        },
-        optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
-          return Align(
-            alignment: Alignment.topLeft,
-            child: Material(
-              color: Colors.white, // Set background color to white
-              elevation: 4.0,
-              child: Container(
-                width: MediaQuery.of(context).size.width - 80,
-                constraints: const BoxConstraints(
-                  maxHeight: 200.0, // Limit the height to make it scrollable if more than 5 items
+                  borderSide: const BorderSide(
+                    color: Colors.black,
+                    width: 1.0,
+                  ),
                 ),
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  itemCount: options.length,
-                  shrinkWrap: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    final String option = options.elementAt(index);
-                    return ListTile(
-                      title: Text(option),
-                      onTap: () {
-                        onSelected(option);
-                      },
-                    );
-                  },
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: isArrival
+                      ? const BorderRadius.only(
+                          bottomLeft: Radius.circular(8),
+                          bottomRight: Radius.circular(8),
+                        )
+                      : const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
+                        ),
+                  borderSide: const BorderSide(
+                    color: Colors.black,
+                    width: 1.0,
+                  ),
+                ),
+                suffixIcon: controller.text.isNotEmpty
+                    ? IconButton(
+                        icon: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey.shade300,
+                          ),
+                          child: const Icon(
+                            Icons.clear,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            controller.clear();
+                            textEditingController.clear();
+                          });
+                          onChanged(''); // Clear the corresponding value
+                        },
+                      )
+                    : null,
+              ),
+              keyboardType: TextInputType.text,
+              onChanged: (value) {
+                setState(() {});
+                onChanged(value);
+              },
+            );
+          },
+          optionsViewBuilder: (BuildContext context,
+              AutocompleteOnSelected<String> onSelected,
+              Iterable<String> options) {
+            return Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                color: Colors.white, // Set background color to white
+                elevation: 4.0,
+                child: Container(
+                  width: MediaQuery.of(context).size.width - 80,
+                  constraints: const BoxConstraints(
+                    maxHeight:
+                        200.0, // Limit the height to make it scrollable if more than 5 items
+                  ),
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: options.length,
+                    shrinkWrap: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      final String option = options.elementAt(index);
+                      return ListTile(
+                        title: Text(option),
+                        onTap: () {
+                          onSelected(option);
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
-    ],
-  );
-}
-
-
+            );
+          },
+        ),
+      ],
+    );
+  }
 }

@@ -26,6 +26,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   StationModel? selectedDeparture;
   StationModel? selectedArrival;
 
+  final int _selectedIndex = 0;
+
   int selectedTransportTypeIndex = -1;
   List<StationModel> locations = [];
 
@@ -101,7 +103,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return GestureDetector(
       onTap: () {
         FocusScope.of(context)
@@ -148,7 +149,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             : CustomerHome(
                 userId: _userId,
                 locations: locations,
-            ),
+              ),
       ),
     );
   }

@@ -409,6 +409,7 @@ class _AddCarFormState extends State<AddCarForm> {
       nombreDePlace: nombreDePlace,
       idChauffeur: _selectedChauffeurId ?? '',
       photo: _imageUrl ?? '',
+      airConditioner: true
     );
 
     FirebaseFirestore.instance

@@ -3,13 +3,13 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
 class CustomElevatedButton extends StatelessWidget {
 
-  final VoidCallback onSearch;
+  final VoidCallback onClick;
   final Color backgroundColor;
   final String text;
 
   const CustomElevatedButton({
     super.key,
-    required this.onSearch,
+    required this.onClick,
     required this.backgroundColor,
     required this.text,
   });
@@ -17,7 +17,7 @@ class CustomElevatedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onSearch,
+      onPressed: onClick,
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
         padding: const EdgeInsets.symmetric(vertical: 16),

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mfk_guinee_transport/components/base_app_bar.dart';
-import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/components/user_details.dart';
@@ -69,15 +67,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-                  return const Center(child: Text("Erreur lors du chargement des données"));
+                if (snapshot.hasError ||
+                    !snapshot.hasData ||
+                    !snapshot.data!.exists) {
+                  return const Center(
+                      child: Text("Erreur lors du chargement des données"));
                 }
-                
+
                 var userData = snapshot.data!.data() as Map<String, dynamic>;
                 String firstName = userData['prenom'] ?? 'Prénom';
                 String lastName = userData['nom'] ?? 'Nom';
                 String role = userData['role'] ?? 'Utilisateur';
-                String profileImageUrl = userData['photo_profil'] ?? 'assets/images/default_avatar.png';
+                String profileImageUrl = userData['photo_profil'] ??
+                    'assets/images/default_avatar.png';
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -309,7 +311,8 @@ class LogoutButton extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
+          SnackBar(
+              content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
         );
       }
     }
