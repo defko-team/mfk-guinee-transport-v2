@@ -10,7 +10,7 @@ class UserService{
     List<UserModel> users = [];
     QuerySnapshot querySnapshot = await _firestore.collection('Users').get();
     for (var doc in querySnapshot.docs) {
-      users.add(UserModel.fromMap(doc as Map<String, dynamic>));
+      users.add(UserModel.fromMap(doc.data() as Map<String, dynamic>));
     }
     return users;
   }

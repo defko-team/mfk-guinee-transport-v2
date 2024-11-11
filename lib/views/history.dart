@@ -6,6 +6,7 @@ import 'package:mfk_guinee_transport/components/trip_card.dart';
 import 'package:mfk_guinee_transport/components/trip_card_detail.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/history_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,15 +21,32 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   List<ReservationModel> reservations = [];
+  UserService userService = new UserService();
   DateTime? selectedDate;
   String? selectedStatus;
   String? selectedVehicle;
+  String? userId;
+  List<UserModel> users = [];
+  UserModel? currentUser;
+
 
   @override
   void initState() {
     super.initState();
     fetchReservations();
+    fetUsers();
   }
+  
+  Future<void> fetUsers() async {
+
+    currentUser = await userService.getUser();
+
+    List<UserModel> fetchedUsers = await UserService().getAllUsers();
+    setState(() {
+      users = fetchedUsers;
+    });
+  }
+
 
   // Fetch reservations using ReservationService
 
@@ -38,17 +56,20 @@ class _HistoryPageState extends State<HistoryPage> {
       startTimeFilter: selectedDate,
       statusFilter: selectedStatus,
       carNameFilter: selectedVehicle,
+      userId: userId
     );
     setState(() {
       reservations = fetchedReservations;
     });
   }
 
-  void onFiltersChanged(DateTime? date, String? status, String? vehicle) {
+  void onFiltersChanged(DateTime? date, String? status, String? vehicle, String? selectedId) {
     setState(() {
       selectedDate = date;
       selectedStatus = status;
       selectedVehicle = vehicle;
+      userId = selectedId;
+      
     });
     fetchReservations(); // Fetch reservations with the new filters
   }
@@ -73,6 +94,8 @@ class _HistoryPageState extends State<HistoryPage> {
         children: [
           FilterBar(
             onFiltersChanged: onFiltersChanged,
+            users: users,
+            isAdmin: currentUser?.role?.toLowerCase() == 'admin'
           ),
           Expanded(
               child: ListView.builder(
@@ -127,9 +150,11 @@ class _HistoryPageState extends State<HistoryPage> {
 }
 
 class FilterBar extends StatefulWidget {
-  final Function(DateTime?, String?, String?) onFiltersChanged;
+  final Function(DateTime?, String?, String?, String?) onFiltersChanged;
+  final List<UserModel> users;
+  final bool isAdmin;
 
-  const FilterBar({Key? key, required this.onFiltersChanged}) : super(key: key);
+  const FilterBar({Key? key, required this.onFiltersChanged, required this.users, required this.isAdmin}) : super(key: key);
 
   @override
   _FilterBarState createState() => _FilterBarState();
@@ -139,23 +164,28 @@ class _FilterBarState extends State<FilterBar> {
   DateTime? selectedDate;
   String? selectedStatus;
   String? selectedVehicle;
+  String? userId;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildDatePicker(context),
-          _buildStatusDropdown(),
-          _buildVehicleDropdown(),
-          if (_isAnyFilterSet()) // Conditionally render the IconButton
-            IconButton(
-              icon: const Icon(Icons.clear), // "X" icon to clear filters
-              onPressed: _clearFilters, // Clear filters when pressed
-            ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            _buildDatePicker(context),
+            _buildStatusDropdown(),
+            _buildVehicleDropdown(),
+            if (widget.isAdmin) _buildUsersDropdown(),
+            if (_isAnyFilterSet()) // Conditionally render the IconButton
+              IconButton(
+                icon: const Icon(Icons.clear), // "X" icon to clear filters
+                onPressed: _clearFilters, // Clear filters when pressed
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -174,7 +204,7 @@ class _FilterBarState extends State<FilterBar> {
             selectedDate = picked;
           });
           widget.onFiltersChanged(
-              selectedDate, selectedStatus, selectedVehicle);
+              selectedDate, selectedStatus, selectedVehicle, userId);
         }
       },
       child: Container(
@@ -207,7 +237,7 @@ class _FilterBarState extends State<FilterBar> {
         setState(() {
           selectedStatus = newValue;
         });
-        widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle);
+        widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle, userId);
       },
     );
   }
@@ -226,7 +256,27 @@ class _FilterBarState extends State<FilterBar> {
         setState(() {
           selectedVehicle = newValue;
         });
-        widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle);
+        widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle, userId);
+      },
+    );
+  }
+
+  
+  Widget _buildUsersDropdown() {
+    return DropdownButton<String>(
+      hint: const Text('User'),
+      value: userId,
+      items: widget.users.map((UserModel value) {
+        return DropdownMenuItem<String>(
+          value: value.idUser,
+          child: Text(value.prenom + " " + value.nom),
+        );
+      }).toList(),
+      onChanged: (newValue) {
+        setState(() {
+          userId = newValue;
+        });
+        widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle, userId);
       },
     );
   }
@@ -239,7 +289,7 @@ class _FilterBarState extends State<FilterBar> {
       selectedVehicle = null;
     });
     // Notify parent widget about filter clearing
-    widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle);
+    widget.onFiltersChanged(selectedDate, selectedStatus, selectedVehicle, userId);
   }
 
   // Check if any filter is set

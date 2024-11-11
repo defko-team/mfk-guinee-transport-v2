@@ -13,9 +13,9 @@ class ReservationService {
     DateTime? startTimeFilter,
     String? statusFilter,
     String? carNameFilter,
+    String? userId
   }) async {
-    try {
-      
+    try {      
 
       UserModel user = await userService.getUser();
       // Initialize query object
@@ -23,6 +23,10 @@ class ReservationService {
 
       if (user.role?.toLowerCase() == 'client') {
         query = query.where('user_id', isEqualTo: user.idUser);
+      }
+
+      if(user.role?.toLowerCase() == 'admin' && userId != null) {
+        query = query.where('user_id', isEqualTo: userId);
       }
 
       if (startTimeFilter != null) {
