@@ -1,16 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dash/flutter_dash.dart';
 import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/helper/utils/utils.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
-import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
+import 'package:mfk_guinee_transport/views/CardTravel.dart';
 
 class AdminTravelsManagementPage extends StatefulWidget {
   const AdminTravelsManagementPage({super.key});
@@ -120,227 +119,12 @@ class _AdminTravelManagementPageState
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, int index) {
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5)),
-                    color: Colors.white,
-                    semanticContainer: true,
-                    shadowColor: Colors.teal,
-                    elevation: 1,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              // First Column
-                              const Padding(
-                                padding: EdgeInsets.only(top: 10),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 7),
-                                      child: Icon(
-                                        Icons.my_location_rounded,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 15),
-                                      child: Dash(
-                                        direction: Axis.vertical,
-                                        length: 28,
-                                        dashLength: 4,
-                                        dashGap: 3,
-                                        dashColor: Colors.grey,
-                                        dashThickness: 2,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 5),
-                                      child: Icon(
-                                        Icons.place,
-                                        color: Colors.black,
-                                        size: 22,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                  padding: const EdgeInsets.only(top: 10),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 1),
-                                        child: Text(
-                                          '${snapshot.data![index].departureStation?.name}',
-                                          style: const TextStyle(fontSize: 13),
-                                        ),
-                                      ),
-                                      Container(height: 26),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 1, bottom: 4),
-                                        child: Text(
-                                          '${snapshot.data![index].destinationStation?.name}',
-                                          style: const TextStyle(fontSize: 13),
-                                        ),
-                                      ),
-                                    ],
-                                  )),
-                              const Padding(
-                                  padding: EdgeInsets.only(top: 10, left: 170),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                            left: 17, bottom: 11),
-                                        child: Icon(
-                                          Icons.social_distance,
-                                          color: Colors.black,
-                                          size: 12,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                            left: 17, bottom: 9),
-                                        child: Icon(
-                                          Icons.access_time_filled,
-                                          color: Colors.grey,
-                                          size: 12,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.only(left: 17),
-                                        child: Text(
-                                          "XOF",
-                                          style: TextStyle(
-                                              fontSize: 8,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey),
-                                        ),
-                                      ),
-                                    ],
-                                  )),
-                              Padding(
-                                  padding:
-                                      const EdgeInsets.only(top: 10, left: 6),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 0, right: 0),
-                                        child: Text(
-                                          '${distance(snapshot.data![index].departureStation!, snapshot.data![index].destinationStation!)} km',
-                                          style: const TextStyle(fontSize: 13),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 0, right: 0),
-                                        child: Text(
-                                          duration(snapshot.data![index]),
-                                          style: const TextStyle(fontSize: 13),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 0),
-                                        child: Text(
-                                          '${snapshot.data![index].ticketPrice}',
-                                          style: const TextStyle(fontSize: 13),
-                                        ),
-                                      ),
-                                    ],
-                                  ))
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                  padding: const EdgeInsets.only(left: 15),
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {
-                                      _openAddTravelBottomSheet(
-                                          travel: snapshot.data![index]);
-                                    },
-                                    icon: const Icon(
-                                      Icons.edit_square,
-                                      size: 14,
-                                      color: Colors.black,
-                                    ), // Icône à afficher
-                                    label: const Text(
-                                      "Modifier",
-                                      style: TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
-                                    ), // Texte à afficher
-                                    style: OutlinedButton.styleFrom(
-                                      minimumSize: const Size(132, 33),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            40), // Bords arrondis
-                                      ),
-                                      side: const BorderSide(
-                                          width: 1.0,
-                                          color: Colors
-                                              .black), // Bordure avec couleur
-                                    ),
-                                  )),
-                              Padding(
-                                  padding: const EdgeInsets.only(right: 15),
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {
-                                      _showDeleteConfirmationDialog(snapshot
-                                          .data![index].travelReference!.id);
-                                    },
-                                    icon: const Icon(
-                                      Icons.delete_forever_outlined,
-                                      size: 14,
-                                      color: Colors.red,
-                                    ), // Icône à afficher
-                                    label: const Text(
-                                      "Supprimer",
-                                      style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500),
-                                    ), // Texte à afficher
-                                    style: OutlinedButton.styleFrom(
-                                      minimumSize: const Size(132, 33),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            40), // Bords arrondis
-                                      ),
-                                      side: const BorderSide(
-                                          width: 1.0,
-                                          color: Colors
-                                              .red), // Bordure avec couleur
-                                    ),
-                                  ))
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  return CardTravel(
+                      travelModel: snapshot.data![index],
+                      onShowDeleteDialog: _showDeleteConfirmationDialog,
+                      onDuration: duration,
+                      onDistance: distance,
+                      onOpenAddTravelBottomSheet: _openAddTravelBottomSheet);
                 });
           }),
       floatingActionButton: AnimatedOpacity(
@@ -469,6 +253,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
         );
         _departureTimeController.text =
             DateFormat('HH:mm').format(selectedDateTime);
+        _pickedDepartureDate = selectedDateTime;
       });
     }
   }
@@ -487,6 +272,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
         );
         _arrivalTimeController.text =
             DateFormat('HH:mm').format(selectedArrivalDateTime);
+        _pickedArrivalDate = selectedArrivalDateTime;
       });
     }
   }
@@ -555,7 +341,8 @@ class _AddTravelFormState extends State<AddTravelForm> {
         //remainingSeats: remainingSeats,
         ticketPrice: double.parse(_tecketPriceController.text),
         airConditioned: aircondtioned!,
-        driverName: 'driverName',
+        driverName: await VoitureService()
+            .getDriverNameById(_selectedVoiture!.idChauffeur),
         remainingSeats: 2,
         carName: _selectedVoiture!.marque);
     if (isUpdate!) {
@@ -961,15 +748,17 @@ class _AddTravelFormState extends State<AddTravelForm> {
 
             // Switch widget
             Switch(
-              activeColor: AppColors.green,
-              inactiveThumbColor: Colors.red,
-              value: aircondtioned!,
-              onChanged: (value) {
-                setState(() {
-                  aircondtioned = value;
-                });
-              },
-            ),
+                activeColor: AppColors.green,
+                inactiveThumbColor: Colors.red,
+                value: aircondtioned!,
+                onChanged:
+                    _selectedVoiture != null && _selectedVoiture!.airConditioner
+                        ? (value) {
+                            setState(() {
+                              aircondtioned = value;
+                            });
+                          }
+                        : null),
           ],
         ),
         const SizedBox(height: 20),

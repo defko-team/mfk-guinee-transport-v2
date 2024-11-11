@@ -35,7 +35,7 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Future<void> fetUsers() async {
-    currentUser = await userService.getUser();
+    currentUser = await userService.getCurrentUser();
 
     List<UserModel> fetchedUsers = await UserService().getAllUsers();
     setState(() {

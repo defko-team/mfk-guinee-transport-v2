@@ -17,7 +17,7 @@ class ReservationService {
   }) async {
     try {      
 
-      UserModel user = await userService.getUser();
+      UserModel user = await userService.getCurrentUser();
       // Initialize query object
       Query query = reservationCollection;
 
