@@ -24,7 +24,8 @@ class _LoginState extends State<Login> {
 
     if (_fullPhoneNumber == null || _fullPhoneNumber!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez entrer un numéro de téléphone valide')),
+        const SnackBar(
+            content: Text('Veuillez entrer un numéro de téléphone valide')),
       );
       return;
     }
@@ -100,8 +101,7 @@ class _LoginState extends State<Login> {
                   child: Text(
                     'Entrez votre numéro de téléphone pour continuer. Nous vous enverrons un code pour vérification.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 14, color: Colors.grey.shade700),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                   ),
                 ),
               ),
@@ -109,12 +109,13 @@ class _LoginState extends State<Login> {
               FadeInDown(
                 delay: const Duration(milliseconds: 400),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                        color: AppColors.black.withOpacity(0.13)),
+                    border:
+                        Border.all(color: AppColors.black.withOpacity(0.13)),
                     boxShadow: const [
                       BoxShadow(
                         color: AppColors.grey,
@@ -131,8 +132,7 @@ class _LoginState extends State<Login> {
                             _fullPhoneNumber = number.phoneNumber;
                           });
                         },
-                        onInputValidated: (bool value) {
-                        },
+                        onInputValidated: (bool value) {},
                         selectorConfig: const SelectorConfig(
                           selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
                           showFlags: true,
@@ -156,11 +156,9 @@ class _LoginState extends State<Login> {
                           border: InputBorder.none,
                           hintText: 'Numéro de téléphone',
                           hintStyle: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 16),
+                              color: Colors.grey.shade500, fontSize: 16),
                         ),
-                        onSaved: (PhoneNumber number) {
-                        },
+                        onSaved: (PhoneNumber number) {},
                       ),
                       Positioned(
                         left: 90,
@@ -185,19 +183,19 @@ class _LoginState extends State<Login> {
                   color: AppColors.green,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5)),
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 15, horizontal: 30),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                   child: _isLoading
-                      ? Container(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(
+                          child: const CircularProgressIndicator(
                             backgroundColor: AppColors.green,
                             color: AppColors.green,
                             strokeWidth: 2,
                           ),
                         )
-                      : Text(
+                      : const Text(
                           "Demander le code",
                           style: TextStyle(color: AppColors.white),
                         ),
@@ -205,18 +203,16 @@ class _LoginState extends State<Login> {
               ),
               const SizedBox(height: 20),
               FadeInDown(
-                delay: Duration(milliseconds: 800),
+                delay: const Duration(milliseconds: 800),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('Je n\'ai pas de compte ?',
-                        style: TextStyle(
-                            color: Colors.grey.shade700)),
+                        style: TextStyle(color: Colors.grey.shade700)),
                     const SizedBox(width: 5),
                     InkWell(
                       onTap: () {
-                        Navigator.of(context)
-                            .pushNamed('/register');
+                        Navigator.of(context).pushNamed('/register');
                       },
                       child: const Text('S\'inscrire',
                           style: TextStyle(color: AppColors.black)),

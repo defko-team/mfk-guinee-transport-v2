@@ -31,8 +31,7 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-
-  # New fix
+  # New fix for ios18
   pod 'PhoneNumberKit', '~> 3.7.6'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
@@ -41,6 +40,8 @@ target 'Runner' do
   end
 end
 
+
+  # New fix for ios18
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)

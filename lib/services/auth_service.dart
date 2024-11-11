@@ -20,7 +20,7 @@ class AuthService {
         verificationCompleted: (PhoneAuthCredential credential) async {
           await _auth.signInWithCredential(credential);
           // ignore: null_argument_to_non_null_type
-          completer.complete(null); // Signifie que la vérification automatique a réussi
+          completer.complete(null);
         },
         verificationFailed: (FirebaseAuthException e) {
           completer.completeError(OtpVerificationException('OTP verification failed: ${e.message}'));
@@ -136,6 +136,8 @@ class AuthService {
   Future<void> _redirectUserBasedOnRole(String roleId, BuildContext context) async {
     DocumentSnapshot roleDoc = await _firestore.collection('roles').doc(roleId).get();
     String roleName = roleDoc['nom'];
+
+    print(roleName);
 
     if (roleName == 'Client') {
       Navigator.pushReplacementNamed(context, '/customerHome');

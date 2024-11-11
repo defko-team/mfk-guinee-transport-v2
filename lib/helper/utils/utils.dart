@@ -1,9 +1,5 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mfk_guinee_transport/models/user_model.dart';
-import 'package:mfk_guinee_transport/models/role_model.dart';
-import 'package:mfk_guinee_transport/models/account_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math';
 
 Future<bool> isConnectedToInternet() async {
   try {
@@ -17,78 +13,40 @@ Future<bool> isConnectedToInternet() async {
   return false;
 }
 
-Future<void> createDefaultAdmin() async {
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  const String defaultAdminPhone = '+221778445637';
+String calculateDuration(DateTime departureDateTime, DateTime arrivalDateTime) {
+  Duration duration = arrivalDateTime.difference(departureDateTime);
 
-  try {
-    QuerySnapshot userSnapshot = await firestore
-        .collection('Users')
-        .where('telephone', isEqualTo: defaultAdminPhone)
-        .get();
+  int hours = duration.inHours;
+  int minutes = duration.inMinutes.remainder(60);
 
-    if (userSnapshot.docs.isEmpty) {
-      // Create a new admin user in Firestore
-      String userId = firestore.collection('Users').doc().id;
-      String roleId = firestore.collection('roles').doc().id;
-      String accountId = firestore.collection('Accounts').doc().id;
+  return '$hours h:$minutes min';
+}
 
-      // Create the role 'Admin' if it doesn't exist
-      DocumentSnapshot roleDoc = await firestore.collection('roles').doc('Admin').get();
-      if (!roleDoc.exists) {
-        RoleModel adminRole = RoleModel(idRole: roleId, nom: 'Admin');
-        await firestore.collection('roles').doc(roleId).set(adminRole.toMap());
-      } else {
-        roleId = roleDoc.id;
-      }
+double calculateDistance(
+    double departureStationLate,
+    double departureStationLong,
+    double destinationStationLate,
+    double destinationStationLong) {
+  const R = 6378.0; // rayon de la terre
+  // Conversion des coordonnees en radians
+  double departureStationLateRad = departureStationLate * pi / 180;
+  double departureStationLongRad = departureStationLong * pi / 180;
+  double destinationStationLateRad = destinationStationLate * pi / 180;
+  double destinationStationLongRad = destinationStationLong * pi / 180;
 
-      // Create the admin user in Firestore
-      UserModel adminUser = UserModel(
-        idUser: userId,
-        prenom: 'Admin',
-        nom: 'User',
-        telephone: defaultAdminPhone,
-        idRole: roleId,
-      );
-      await firestore.collection('Users').doc(userId).set(adminUser.toMap());
+  // Differences des coordonnees
+  double deltaLat = (departureStationLateRad - destinationStationLateRad).abs();
+  double deltaLong =
+      (departureStationLongRad - destinationStationLongRad).abs();
 
-      // Create the admin's account
-      AccountModel adminAccount = AccountModel(
-        idAccount: accountId,
-        idUser: userId,
-        statut: 'Active',
-        dateCreation: DateTime.now(),
-      );
-      await firestore.collection('Accounts').doc(accountId).set(adminAccount.toMap());
+  double a = pow(sin(deltaLat / 2), 2) +
+      cos(departureStationLateRad) *
+          cos(destinationStationLateRad) *
+          pow(sin(deltaLong / 2), 2);
+  double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-      // Here we use the predefined OTP method to sign in the admin
-      // Start the phone number verification process with the default phone number
-      await auth.verifyPhoneNumber(
-        phoneNumber: defaultAdminPhone,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await auth.signInWithCredential(credential);
-          print('Admin user signed in without OTP verification.');
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          print('Verification failed: ${e.message}');
-        },
-        codeSent: (String verificationId, int? resendToken) async {
-          // Automatically provide the default OTP (223344)
-          PhoneAuthCredential credential = PhoneAuthProvider.credential(
-            verificationId: verificationId,
-            smsCode: '223344',
-          );
-          await auth.signInWithCredential(credential);
-          print('Admin signed in using default OTP.');
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          print('Code auto-retrieval timeout.');
-        },
-        timeout: const Duration(seconds: 60), // Timeout duration
-      );
-    }
-  } catch (e) {
-    print('Error creating default admin: $e');
-  }
+  // Distance en km
+  double distance = R * c;
+
+  return distance;
 }

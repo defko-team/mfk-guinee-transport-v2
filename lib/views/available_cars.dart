@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/components/booking_confirmation.dart';
 import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
+import 'package:mfk_guinee_transport/components/reservation_info.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
-import 'package:mfk_guinee_transport/helper/constants/mock_data.dart';
+import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
+import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
 
 import '../components/base_app_bar.dart';
 import '../components/selectable_car.dart';
 
 class AvailableCarsPage extends StatefulWidget {
-  final Map<String, dynamic> reservationInfo;
+  final Map<String, dynamic> travelSearchInfo;
 
   const AvailableCarsPage({
     super.key,
-    required this.reservationInfo,
+    required this.travelSearchInfo,
   });
 
   @override
@@ -22,46 +25,35 @@ class AvailableCarsPage extends StatefulWidget {
 
 class _AvailableCarsPageState extends State<AvailableCarsPage> {
   int selectedCarIndex = -1;
+  ReservationModel? reservationModel;
 
-  List<Map<String, dynamic>> cars = mock_cars;
   List<TravelModel> travels = [];
 
   TravelService travelService = TravelService();
-
+  ReservationService reservationService = ReservationService();
 
   @override
   void initState() {
     super.initState();
-    // Initialize 'isSelected' flag for each car
-    for (var car in cars) {
-      car['isSelected'] = false;
-    }
-
     _loadTravels();
-    print(travels);
   }
 
   Future<void> _loadTravels() async {
-    var travels_data =  await travelService
-    .getTravelsByStations(widget.reservationInfo['selectedDeparture'], widget.reservationInfo['selectedArrival']);
+    var travelData = await travelService.getTravelsByStations(
+        widget.travelSearchInfo['selectedDeparture'],
+        widget.travelSearchInfo['selectedArrival']);
 
     setState(() {
-      travels = travels_data;
+      travels = travelData;
     });
   }
-  void _setOnSelectedCarState(bool isSelected, int index) {
+
+  void _setOnSelectedCarState(int index) {
     setState(() {
-      if (isSelected) {
-        // Désélectionner toutes les autres voitures
-        for (int i = 0; i < cars.length; i++) {
-          cars[i]['isSelected'] = i == index;
-        }
-        selectedCarIndex = index;
-        widget.reservationInfo['car'] = cars[index];
-      } else {
-        // Désélectionner la voiture si elle est cliquée à nouveau
-        cars[index]['isSelected'] = false;
+      if (selectedCarIndex == index) {
         selectedCarIndex = -1;
+      } else {
+        selectedCarIndex = index;
       }
     });
   }
@@ -77,18 +69,13 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
             // Liste scrollable qui occupe tout l'espace disponible
             Expanded(
               child: ListView.builder(
-                itemCount: cars.length,
+                itemCount: travels.length,
                 itemBuilder: (context, index) {
                   return SelectableCarWidget(
+                    travel: travels[index],
+                    isSelected: selectedCarIndex == index,
                     index: index,
-                    carName: cars[index]['carName'],
-                    driverName: cars[index]['driverName'],
-                    departureTime: cars[index]['departureTime'],
-                    price: cars[index]['price'],
-                    isClimatised: cars[index]['isClimatised'],
-                    seats: cars[index]['seats'],
-                    isSelected: cars[index]['isSelected'] ?? false,
-                    onSelected: _setOnSelectedCarState,
+                    onToggled: _setOnSelectedCarState,
                   );
                 },
               ),
@@ -96,46 +83,58 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
 
             // Bouton en bas de la page, en dehors de la zone de scroll
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 30),
               child: CustomElevatedButton(
-                onSearch: _onSearch,
+                onClick: OnCarSelection,
                 backgroundColor:
                     selectedCarIndex != -1 ? AppColors.green : AppColors.grey,
-                text: "Réserver",
+                text: "Continuer",
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 0,
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Gares',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Historique',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz),
-            label: 'Plus',
-          ),
-        ],
-      ),
     );
   }
 
-  void _onSearch() {
+  void OnCarSelection() {
     // Action lors de la recherche
-    print("Réservation : ${widget.reservationInfo}");
+    if (selectedCarIndex != -1) {
+      TravelModel selectedTravel = travels[selectedCarIndex];
+
+      this.reservationModel = ReservationModel(
+          departureStation: selectedTravel.departureStation?.address,
+          destinationStation: selectedTravel.destinationStation?.address,
+          departureLocation: selectedTravel.departureStation?.address,
+          arrivalLocation: selectedTravel.arrivalLocation,
+          startTime: selectedTravel.startTime,
+          arrivalTime: selectedTravel.arrivalTime,
+          remainingSeats: selectedTravel.remainingSeats,
+          ticketPrice: selectedTravel.ticketPrice,
+          airConditioned: selectedTravel.airConditioned,
+          driverName: selectedTravel.driverName,
+          carName: selectedTravel.carName,
+          status: ReservationStatus.completed,
+          userId: widget.travelSearchInfo['userId'],
+          distance: '2');
+
+      showReservationDialog(context, reservationModel!, onBooking);
+    }
+  }
+
+  void onBooking() {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return BookingConfirmationDialog(book: _saveReservation);
+      },
+    );
+  }
+
+  Future<void> _saveReservation() async {
+    if (reservationModel != null) {
+      await reservationService.saveReservation(reservationModel!);
+    }
   }
 }

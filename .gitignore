@@ -46,7 +46,8 @@ ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 ios/ServiceDefinitions.json
 ios/Runner/GeneratedPluginRegistrant.*
-
+linux/
+macos/
 # Xcode related
 xcuserdata/
 *.xcworkspace
