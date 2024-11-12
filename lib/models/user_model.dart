@@ -15,6 +15,7 @@ class UserModel {
       required this.telephone,
       required this.idRole,
       this.fcmToken});
+  String? role;
 
   Map<String, dynamic> toMap() {
     return {

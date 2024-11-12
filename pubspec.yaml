@@ -39,6 +39,8 @@ dependencies:
   async: ^2.11.0
   crypt: ^4.3.1
   http: ^1.2.2
+  fl_chart: ^0.69.0
+  syncfusion_flutter_datepicker: ^27.1.58
   flutter_dash: ^1.0.0
 
 dev_dependencies:

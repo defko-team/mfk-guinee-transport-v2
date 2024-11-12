@@ -116,7 +116,9 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
           carName: selectedTravel.carName,
           status: ReservationStatus.completed,
           userId: widget.travelSearchInfo['userId'],
-          distance: '2');
+          distance: '2',
+          travelId: selectedTravel.id!
+          );
 
       showReservationDialog(context, reservationModel!, onBooking);
     }

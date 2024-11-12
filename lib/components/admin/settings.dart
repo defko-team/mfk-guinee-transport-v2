@@ -92,7 +92,6 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   }
 }
 
-
 class ProfileHeader extends StatelessWidget {
   final String firstName;
   final String lastName;
@@ -201,7 +200,6 @@ class LogoutButton extends StatelessWidget {
   }
 }
 
-
 class AdminSettingsOptions extends StatelessWidget {
   const AdminSettingsOptions({super.key});
 
@@ -250,7 +248,7 @@ class _AdminOptionTileState extends State<AdminOptionTile> {
       case 'Gérer Utilisateurs':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AdminUsersManagementPage()),
+          MaterialPageRoute(builder: (context) => const AdminChauffeurManagementPage()),
         );
         break;
       case 'Gérer Voitures':

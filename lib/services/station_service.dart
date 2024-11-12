@@ -4,16 +4,8 @@ import 'package:mfk_guinee_transport/models/station.dart';
 class StationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<StationModel>> getAllStations() async {
-    List<StationModel> stations = [];
-    QuerySnapshot querySnapshot = await _firestore.collection('Station').get();
-    for (var doc in querySnapshot.docs) {
-      stations.add(StationModel.fromDocument(doc));
-    }
-    return stations;
-  }
 
-  Future<List<StationModel>> getAllStationsBis() async {
+  Future<List<StationModel>> getAllStations() async {
     List<StationModel> stations = [];
     QuerySnapshot querySnapshot = await _firestore.collection('Station').get();
     for (var doc in querySnapshot.docs) {

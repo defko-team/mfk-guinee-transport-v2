@@ -16,13 +16,14 @@ class ReservationModel {
   final ReservationStatus status;
   final String userId;
   final String distance;
+  final String travelId;
 
   ReservationModel(
       {this.id,
-      required this.departureStation,
-      required this.destinationStation,
-      required this.departureLocation,
-      required this.arrivalLocation,
+      this.departureStation,
+      this.destinationStation,
+      this.departureLocation,
+      this.arrivalLocation,
       required this.startTime,
       required this.arrivalTime,
       required this.remainingSeats,
@@ -32,7 +33,9 @@ class ReservationModel {
       required this.carName,
       required this.status,
       required this.userId,
-      required this.distance});
+      required this.distance,
+      required this.travelId
+      });
 
   factory ReservationModel.fromMap(Map<String, dynamic> map) {
     return ReservationModel(
@@ -52,7 +55,9 @@ class ReservationModel {
         carName: map['car_name'],
         status: _getStatusFromString(map['status'] as String),
         userId: map['user_id'],
-        distance: map['distance']);
+        distance: map['distance'],
+        travelId: map['travel_id']
+        );
   }
 
   Map<String, dynamic> toMap() {
@@ -71,7 +76,8 @@ class ReservationModel {
       'car_name': carName,
       'status': status.name,
       'user_id': userId,
-      'distance': distance
+      'distance': distance,
+      'travel_id': travelId
     };
   }
 
@@ -91,6 +97,7 @@ class ReservationModel {
     ReservationStatus? status,
     String? userId,
     String? distance,
+    String? travelId
   }) {
     return ReservationModel(
       id: id ?? this.id,
@@ -108,6 +115,7 @@ class ReservationModel {
       status: status ?? this.status,
       userId: userId ?? this.userId,
       distance: distance ?? this.distance,
+      travelId: travelId ?? this.travelId
     );
   }
 

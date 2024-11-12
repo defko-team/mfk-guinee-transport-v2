@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mfk_guinee_transport/components/gare_page.dart';
+import 'package:mfk_guinee_transport/views/station_page.dart';
 import 'package:mfk_guinee_transport/views/customer_home.dart';
 import 'package:mfk_guinee_transport/views/history.dart';
 import 'package:mfk_guinee_transport/views/user_profile.dart';
@@ -15,7 +15,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final List<Widget> _widgetOptions = [
     const CustomerHomePage(),
-    const GarePage(),
+    const StationPage(),
     const HistoryPage(),
     const UserProfilePage(),
   ];

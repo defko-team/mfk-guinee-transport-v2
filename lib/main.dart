@@ -20,6 +20,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initFirebase();
 
+  // Call the function to create the default admin
+
   bool isConnected = await isConnectedToInternet();
 
   // Set the preferred orientations
