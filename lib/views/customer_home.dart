@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
 import 'package:mfk_guinee_transport/components/customer_home_page.dart';
+import 'package:mfk_guinee_transport/components/customer_home_page_old.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';

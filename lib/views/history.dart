@@ -38,9 +38,11 @@ class _HistoryPageState extends State<HistoryPage> {
     currentUser = await userService.getCurrentUser();
 
     List<UserModel> fetchedUsers = await UserService().getAllUsers();
-    setState(() {
-      users = fetchedUsers;
-    });
+    if (mounted) {
+      setState(() {
+        users = fetchedUsers;
+      });
+    }
   }
 
   // Fetch reservations using ReservationService
