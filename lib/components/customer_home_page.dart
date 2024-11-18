@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
+import 'package:mfk_guinee_transport/components/vtc/vtc_form.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';
@@ -69,7 +70,7 @@ class _CustomerHomeState extends State<CustomerHome> {
             ),
           ),
           const SizedBox(height: 5),
-          LocationForm(
+          VtcForm(
             onDepartureChanged: (departure) {
               setState(() {
                 var selectedDepartureFound = widget.locations.where((location) =>

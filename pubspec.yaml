@@ -41,6 +41,11 @@ dependencies:
   fl_chart: ^0.69.0
   syncfusion_flutter_datepicker: ^27.1.58
   flutter_dash: ^1.0.0
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  dio: ^5.7.0
 
 dev_dependencies:
   flutter_test:
