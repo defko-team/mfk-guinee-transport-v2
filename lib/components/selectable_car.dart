@@ -9,13 +9,12 @@ class SelectableCarWidget extends StatelessWidget {
   final int index;
   final Function(int index) onToggled;
 
-  const SelectableCarWidget({
-    super.key,
-    required this.travel,
-    required this.onToggled,
-    required this.isSelected,
-    required this.index
-  });
+  const SelectableCarWidget(
+      {super.key,
+      required this.travel,
+      required this.onToggled,
+      required this.isSelected,
+      required this.index});
 
   void _toggleSelection() {
     onToggled(index);
@@ -58,7 +57,7 @@ class SelectableCarWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      travel.carName,
+                      travel.carName!,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -66,8 +65,9 @@ class SelectableCarWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Row(children: [
-                      const Icon(Icons.person_pin_circle_rounded, color: AppColors.grey),
-                      Text(travel.driverName),
+                      const Icon(Icons.person_pin_circle_rounded,
+                          color: AppColors.grey),
+                      Text(travel.driverName!),
                     ]),
                     const SizedBox(height: 4),
                     Row(children: [
@@ -76,8 +76,12 @@ class SelectableCarWidget extends StatelessWidget {
                     ]),
                     const SizedBox(height: 4),
                     Row(children: [
-                      Icon(color: AppColors.grey, travel.airConditioned ? Icons.ac_unit: Icons.sunny),
-                      Text(travel.airConditioned ? 'Climatisé' : 'Non Climatisé'),
+                      Icon(
+                          color: AppColors.grey,
+                          travel.airConditioned! ? Icons.ac_unit : Icons.sunny),
+                      Text(travel.airConditioned!
+                          ? 'Climatisé'
+                          : 'Non Climatisé'),
                     ]),
                   ],
                 ),
@@ -89,9 +93,8 @@ class SelectableCarWidget extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.lightGrey,
-                    borderRadius: BorderRadius.circular(17)
-                  ),
+                      color: AppColors.lightGrey,
+                      borderRadius: BorderRadius.circular(17)),
                   child: Text(
                     DateFormat('HH\'h\' mm').format(travel.startTime),
                     style: const TextStyle(

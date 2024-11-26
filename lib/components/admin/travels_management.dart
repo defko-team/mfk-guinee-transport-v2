@@ -46,7 +46,7 @@ class _AdminTravelManagementPageState
           .toStringAsFixed(0);
 
   String duration(TravelModel travel) =>
-      calculateDuration(travel.startTime, travel.arrivalTime);
+      calculateDuration(travel.startTime, travel.arrivalTime!);
 
   Future<void> _showDeleteConfirmationDialog(String travelId) async {
     bool? confirm = await showDialog<bool>(
@@ -299,7 +299,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
       _selectedDestinationStation = travel.destinationStation!;
       if (cars.isNotEmpty) {
         _selectedVoiture = cars.firstWhere(
-          (car) => car.marque.toLowerCase() == travel.carName.toLowerCase(),
+          (car) => car.marque.toLowerCase() == travel.carName!.toLowerCase(),
         );
       }
       _departureDateController.text =
@@ -309,9 +309,9 @@ class _AddTravelFormState extends State<AddTravelForm> {
       _pickedArrivalDate = travel.arrivalTime;
       _pickedDepartureDate = travel.startTime;
       _arrivalDateController.text =
-          DateFormat('yyyy-MM-dd').format(travel.arrivalTime);
+          DateFormat('yyyy-MM-dd').format(travel.arrivalTime!);
       _arrivalTimeController.text =
-          DateFormat('HH:mm').format(travel.arrivalTime);
+          DateFormat('HH:mm').format(travel.arrivalTime!);
     });
   }
 
@@ -333,8 +333,8 @@ class _AddTravelFormState extends State<AddTravelForm> {
     final TravelModel travel = TravelModel(
         travelReference: currentTravelReference,
         id: currentTravelReference?.id ?? '',
-        departureStationId: _selectedDepartureStation!.stationRef,
-        destinationStationId: _selectedDestinationStation!.stationRef,
+        departureStationId: _selectedDepartureStation!.stationRef!.id,
+        destinationStationId: _selectedDestinationStation!.stationRef!.id,
         //departureLocation: departureLocation,
         // arrivalLocation: arrivalLocation,
         startTime: _pickedDepartureDate!,

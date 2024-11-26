@@ -4,19 +4,18 @@ import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class ReservationService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference reservationCollection =
       FirebaseFirestore.instance.collection('reservation');
   final UserService userService = new UserService();
 
   // Method to get all reservations for a specific user with optional filters
-  Future<List<ReservationModel>> fetchReservation({
-    DateTime? startTimeFilter,
-    String? statusFilter,
-    String? carNameFilter,
-    String? userId
-  }) async {
-    try {      
-
+  Future<List<ReservationModel>> fetchReservation(
+      {DateTime? startTimeFilter,
+      String? statusFilter,
+      String? carNameFilter,
+      String? userId}) async {
+    try {
       UserModel user = await userService.getCurrentUser();
       // Initialize query object
       Query query = reservationCollection;
@@ -25,7 +24,7 @@ class ReservationService {
         query = query.where('user_id', isEqualTo: user.idUser);
       }
 
-      if(user.role?.toLowerCase() == 'admin' && userId != null) {
+      if (user.role?.toLowerCase() == 'admin' && userId != null) {
         query = query.where('user_id', isEqualTo: userId);
       }
 
@@ -55,5 +54,15 @@ class ReservationService {
       print('Error fetching reservations: $e');
       return [];
     }
+  }
+
+  Future<void> createReservation(ReservationModel reservation) async {
+    //try {
+    //DocumentReference docRef =
+    await _firestore.collection('reservation').add(reservation.toMap());
+    // return docRef.id;
+    // } catch (e) {
+    //   return null;
+    // }
   }
 }

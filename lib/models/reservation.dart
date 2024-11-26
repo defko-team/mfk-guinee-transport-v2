@@ -7,12 +7,12 @@ class ReservationModel {
   final String? departureLocation;
   final String? arrivalLocation;
   final DateTime startTime;
-  final DateTime arrivalTime;
+  final DateTime? arrivalTime;
   final int remainingSeats;
-  final double ticketPrice;
-  final bool airConditioned;
-  final String driverName;
-  final String carName;
+  final double? ticketPrice;
+  final bool? airConditioned;
+  final String? driverName;
+  final String? carName;
   final ReservationStatus status;
   final String userId;
   final String distance;
@@ -25,17 +25,16 @@ class ReservationModel {
       this.departureLocation,
       this.arrivalLocation,
       required this.startTime,
-      required this.arrivalTime,
+      this.arrivalTime,
       required this.remainingSeats,
-      required this.ticketPrice,
-      required this.airConditioned,
-      required this.driverName,
-      required this.carName,
+      this.ticketPrice,
+      this.airConditioned,
+      this.driverName,
+      this.carName,
       required this.status,
       required this.userId,
       required this.distance,
-      required this.travelId
-      });
+      required this.travelId});
 
   factory ReservationModel.fromMap(Map<String, dynamic> map) {
     return ReservationModel(
@@ -56,8 +55,7 @@ class ReservationModel {
         status: _getStatusFromString(map['status'] as String),
         userId: map['user_id'],
         distance: map['distance'],
-        travelId: map['travel_id']
-        );
+        travelId: map['travel_id']);
   }
 
   Map<String, dynamic> toMap() {
@@ -81,42 +79,40 @@ class ReservationModel {
     };
   }
 
-  ReservationModel copyWith({
-    String? id,
-    String? departureStation,
-    String? destinationStation,
-    String? departureLocation,
-    String? arrivalLocation,
-    DateTime? startTime,
-    DateTime? arrivalTime,
-    int? remainingSeats,
-    double? ticketPrice,
-    bool? airConditioned,
-    String? driverName,
-    String? carName,
-    ReservationStatus? status,
-    String? userId,
-    String? distance,
-    String? travelId
-  }) {
+  ReservationModel copyWith(
+      {String? id,
+      String? departureStation,
+      String? destinationStation,
+      String? departureLocation,
+      String? arrivalLocation,
+      DateTime? startTime,
+      DateTime? arrivalTime,
+      int? remainingSeats,
+      double? ticketPrice,
+      bool? airConditioned,
+      String? driverName,
+      String? carName,
+      ReservationStatus? status,
+      String? userId,
+      String? distance,
+      String? travelId}) {
     return ReservationModel(
-      id: id ?? this.id,
-      departureStation: departureStation ?? this.departureStation,
-      destinationStation: destinationStation ?? this.destinationStation,
-      departureLocation: departureLocation ?? this.departureLocation,
-      arrivalLocation: arrivalLocation ?? this.arrivalLocation,
-      startTime: startTime ?? this.startTime,
-      arrivalTime: arrivalTime ?? this.arrivalTime,
-      remainingSeats: remainingSeats ?? this.remainingSeats,
-      ticketPrice: ticketPrice ?? this.ticketPrice,
-      airConditioned: airConditioned ?? this.airConditioned,
-      driverName: driverName ?? this.driverName,
-      carName: carName ?? this.carName,
-      status: status ?? this.status,
-      userId: userId ?? this.userId,
-      distance: distance ?? this.distance,
-      travelId: travelId ?? this.travelId
-    );
+        id: id ?? this.id,
+        departureStation: departureStation ?? this.departureStation,
+        destinationStation: destinationStation ?? this.destinationStation,
+        departureLocation: departureLocation ?? this.departureLocation,
+        arrivalLocation: arrivalLocation ?? this.arrivalLocation,
+        startTime: startTime ?? this.startTime,
+        arrivalTime: arrivalTime ?? this.arrivalTime,
+        remainingSeats: remainingSeats ?? this.remainingSeats,
+        ticketPrice: ticketPrice ?? this.ticketPrice,
+        airConditioned: airConditioned ?? this.airConditioned,
+        driverName: driverName ?? this.driverName,
+        carName: carName ?? this.carName,
+        status: status ?? this.status,
+        userId: userId ?? this.userId,
+        distance: distance ?? this.distance,
+        travelId: travelId ?? this.travelId);
   }
 
   // Helper function to convert string to enum
@@ -126,10 +122,14 @@ class ReservationModel {
         return ReservationStatus.completed;
       case 'canceled':
         return ReservationStatus.canceled;
-      default:
+      case 'pending':
+        return ReservationStatus.pending;
+      case 'confirmed':
         return ReservationStatus.confirmed;
+      default:
+        return ReservationStatus.unknown;
     }
   }
 }
 
-enum ReservationStatus { completed, confirmed, canceled }
+enum ReservationStatus { unknown, pending, completed, confirmed, canceled }

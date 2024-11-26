@@ -50,9 +50,10 @@ class CardTravel extends StatelessWidget {
                       width: 4,
                     ),
                     Text(
-                      '${travelModel.departureStation?.name}',
+                      travelModel.departureStation?.name ??
+                          travelModel.departureLocation!,
                       style: const TextStyle(fontSize: 13),
-                    ),
+                    )
                   ],
                 ),
                 Row(
@@ -67,10 +68,12 @@ class CardTravel extends StatelessWidget {
                     Container(
                       width: 4,
                     ),
-                    Text(
-                      '${onDistance(travelModel.departureStation!, travelModel.destinationStation!)} km',
-                      style: const TextStyle(fontSize: 13),
-                    ),
+                    travelModel.departureStation != null
+                        ? Text(
+                            '${onDistance(travelModel.departureStation!, travelModel.destinationStation!)} km',
+                            style: const TextStyle(fontSize: 13),
+                          )
+                        : const Text('To be define'),
                     Container(
                       width: 4,
                     ),
@@ -106,10 +109,12 @@ class CardTravel extends StatelessWidget {
                     Container(
                       width: 4,
                     ),
-                    Text(
-                      onDuration(travelModel),
-                      style: const TextStyle(fontSize: 13),
-                    ),
+                    (travelModel.arrivalTime != null)
+                        ? Text(
+                            onDuration(travelModel),
+                            style: const TextStyle(fontSize: 13),
+                          )
+                        : const Text("To Be Define"),
                     Container(
                       width: 4,
                     ),
@@ -131,7 +136,8 @@ class CardTravel extends StatelessWidget {
                       width: 4,
                     ),
                     Text(
-                      '${travelModel.destinationStation?.name}',
+                      travelModel.destinationStation?.name ??
+                          travelModel.arrivalLocation!,
                       style: const TextStyle(fontSize: 13),
                     ),
                   ],
@@ -179,7 +185,7 @@ class CardTravel extends StatelessWidget {
                       ),
                     ),
                     Container(width: 8),
-                    Text(travelModel.driverName)
+                    Text(travelModel.driverName ?? '')
                   ],
                 ),
                 Row(
@@ -212,10 +218,10 @@ class CardTravel extends StatelessWidget {
                       color: Colors.grey, // icon color
                     ),
                     Container(width: 8),
-                    Text(travelModel.carName)
+                    Text(travelModel.carName!)
                   ],
                 ),
-                travelModel.airConditioned
+                travelModel.airConditioned!
                     ? Row(
                         children: [
                           Container(

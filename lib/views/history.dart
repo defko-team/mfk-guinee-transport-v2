@@ -103,7 +103,7 @@ class _HistoryPageState extends State<HistoryPage> {
               return TripCard(
                 origin: reservation.departureLocation ?? "",
                 destination: reservation.destinationStation ?? "",
-                vehicleName: reservation.carName,
+                vehicleName: reservation.carName!,
                 status: reservation.status.name,
                 statusColor: _getColorFromStatus(reservation.status.name),
                 onTap: () {
@@ -119,7 +119,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         expand: false,
                         builder: (context, scrollController) {
                           return TripDetailCard(
-                            userName: reservation.driverName,
+                            userName: reservation.driverName!,
                             userAvatarUrl:
                                 "https://st3.depositphotos.com/15648834/17930/v/1600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg",
                             rating: 4.9,

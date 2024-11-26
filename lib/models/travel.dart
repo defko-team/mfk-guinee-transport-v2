@@ -4,38 +4,38 @@ import 'package:mfk_guinee_transport/models/station.dart';
 class TravelModel {
   final String? id;
   late DocumentReference? travelReference;
-  late final DocumentReference? departureStationId;
-  late final DocumentReference? destinationStationId;
-  late final DocumentReference? departureLocation;
+  late final String? departureStationId;
+  late final String? destinationStationId;
+  late final String? departureLocation;
   late final String? arrivalLocation;
   late final DateTime startTime;
-  late final DateTime arrivalTime;
+  late final DateTime? arrivalTime;
   late final int remainingSeats;
-  late final double ticketPrice;
+  late final double? ticketPrice;
   late StationModel? departureStation;
   late StationModel? destinationStation;
-  late final bool airConditioned;
-  late final String driverName;
-  late final String carName;
-  late final int nombreDePlace;
+  late final bool? airConditioned;
+  late final String? driverName;
+  late final String? carName;
+  late final int? nombreDePlace;
 
   TravelModel(
       {this.id,
-      required this.departureStationId,
-      required this.destinationStationId,
+      this.departureStationId,
+      this.destinationStationId,
       this.departureLocation,
       this.arrivalLocation,
       required this.startTime,
-      required this.arrivalTime,
+      this.arrivalTime,
       required this.remainingSeats,
-      required this.ticketPrice,
+      this.ticketPrice,
       this.travelReference,
       this.departureStation,
       this.destinationStation,
-      required this.airConditioned,
-      required this.driverName,
-      required this.carName,
-      required this.nombreDePlace});
+      this.airConditioned,
+      this.driverName,
+      this.carName,
+      this.nombreDePlace});
 
   Map<String, dynamic> toMap() {
     return {
@@ -60,12 +60,16 @@ class TravelModel {
         id: map['id'],
         departureStationId: map['departure_station'],
         destinationStationId: map['destination_station'],
-        departureLocation: map['departure_location'],
-        arrivalLocation: map['arrival_location'],
+        departureLocation: map['departure_location'] ?? '',
+        arrivalLocation: map['arrival_location'] ?? '',
         startTime: (map['start_time'] as Timestamp).toDate(),
-        arrivalTime: (map['arrival_time'] as Timestamp).toDate(),
+        arrivalTime: map['arrival_time'] != null
+            ? (map['arrival_time'] as Timestamp).toDate()
+            : null,
         remainingSeats: map['remaining_seats'] ?? 0,
-        ticketPrice: map['ticket_price'].toDouble() ?? 0.0,
+        ticketPrice: map['ticket_price'] != null
+            ? (map['ticket_price'] as num).toDouble()
+            : 0.0,
         airConditioned: map['air_conditioned'] ?? false,
         driverName: map['driver_name'] ?? '',
         carName: map['car_name'] ?? '',

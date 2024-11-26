@@ -4,7 +4,8 @@ import 'package:mfk_guinee_transport/components/custom_outlined_button.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 
-void showReservationDialog(BuildContext context, ReservationModel reservation, VoidCallback onBooking) {
+void showReservationDialog(BuildContext context, ReservationModel reservation,
+    VoidCallback onBooking) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -23,21 +24,21 @@ void showReservationDialog(BuildContext context, ReservationModel reservation, V
             children: [
               Container(
                 color: AppColors.veryLightGrey,
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
                     const CircleAvatar(
                       radius: 24,
                       child: Icon(Icons.person),
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(reservation.driverName,
-                            style: TextStyle(
+                        Text(reservation.driverName!,
+                            style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold)),
-                        Row(
+                        const Row(
                           children: [
                             Icon(Icons.star, color: Colors.yellow, size: 16),
                             Text('4.9'),
@@ -45,13 +46,13 @@ void showReservationDialog(BuildContext context, ReservationModel reservation, V
                         ),
                       ],
                     ),
-                    Spacer(),
+                    const Spacer(),
                     IconButton(
-                      icon: Icon(Icons.message),
+                      icon: const Icon(Icons.message),
                       onPressed: () {},
                     ),
                     IconButton(
-                      icon: Icon(Icons.call),
+                      icon: const Icon(Icons.call),
                       onPressed: () {},
                     ),
                   ],
@@ -59,19 +60,20 @@ void showReservationDialog(BuildContext context, ReservationModel reservation, V
               ),
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ListTile(
-                        leading: Icon(Icons.my_location, color: Colors.green),
+                        leading:
+                            const Icon(Icons.my_location, color: Colors.green),
                         title: Text(reservation.departureStation ?? ''),
                       ),
                       ListTile(
-                        leading: Icon(Icons.location_on),
+                        leading: const Icon(Icons.location_on),
                         title: Text(reservation.destinationStation ?? ''),
                       ),
-                      Divider(),
+                      const Divider(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -92,14 +94,14 @@ void showReservationDialog(BuildContext context, ReservationModel reservation, V
                                   color: Colors.black,
                                 ),
                               )
-                              
                             ],
                           ),
                           Column(
                             children: [
                               const reservationTitle(title: 'TEMPS'),
                               Text(
-                                getTimeDifference(reservation.startTime, reservation.arrivalTime),
+                                getTimeDifference(reservation.startTime,
+                                    reservation.arrivalTime!),
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
@@ -123,12 +125,12 @@ void showReservationDialog(BuildContext context, ReservationModel reservation, V
                           ),
                         ],
                       ),
-                      Spacer(),
+                      const Spacer(),
                       CustomElevatedButton(
                           onClick: onBooking,
                           backgroundColor: AppColors.green,
                           text: 'Réserver'),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       CustomOutlinedButton(
                           onPressed: () {
                             Navigator.of(context).pop();
@@ -165,12 +167,12 @@ class reservationTitle extends StatelessWidget {
   }
 }
 
-
 String getTimeDifference(DateTime startTime, DateTime arrivalTime) {
   Duration difference = arrivalTime.difference(startTime);
 
   int hours = difference.inHours;
-  int minutes = difference.inMinutes.remainder(60); // Remaining minutes after calculating hours
+  int minutes = difference.inMinutes
+      .remainder(60); // Remaining minutes after calculating hours
 
   return "${hours}h ${minutes}m";
 }
