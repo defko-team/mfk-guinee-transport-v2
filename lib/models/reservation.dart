@@ -16,7 +16,6 @@ class ReservationModel {
   final ReservationStatus status;
   final String userId;
   final String distance;
-  final String travelId;
 
   ReservationModel(
       {this.id,
@@ -33,8 +32,7 @@ class ReservationModel {
       this.carName,
       required this.status,
       required this.userId,
-      required this.distance,
-      required this.travelId});
+      required this.distance});
 
   factory ReservationModel.fromMap(Map<String, dynamic> map) {
     return ReservationModel(
@@ -44,18 +42,19 @@ class ReservationModel {
         departureLocation: map['departure_location'],
         arrivalLocation: map['arrival_location'],
         startTime: (map['start_time'] as Timestamp?)!.toDate(),
-        arrivalTime: (map['arrival_time'] as Timestamp?)!.toDate(),
+        arrivalTime: map['arrival_time'] != null
+            ? (map['arrival_time'] as Timestamp?)!.toDate()
+            : null,
         remainingSeats: map['remaining_seats'],
         ticketPrice: (map['ticket_price'] is int)
             ? (map['ticket_price'] as int).toDouble()
-            : map['ticket_price'] as double,
+            : 0,
         airConditioned: map['air_conditioned'],
         driverName: map['driver_name'],
         carName: map['car_name'],
         status: _getStatusFromString(map['status'] as String),
         userId: map['user_id'],
-        distance: map['distance'],
-        travelId: map['travel_id']);
+        distance: map['distance']);
   }
 
   Map<String, dynamic> toMap() {
@@ -74,8 +73,7 @@ class ReservationModel {
       'car_name': carName,
       'status': status.name,
       'user_id': userId,
-      'distance': distance,
-      'travel_id': travelId
+      'distance': distance
     };
   }
 
@@ -94,8 +92,7 @@ class ReservationModel {
       String? carName,
       ReservationStatus? status,
       String? userId,
-      String? distance,
-      String? travelId}) {
+      String? distances}) {
     return ReservationModel(
         id: id ?? this.id,
         departureStation: departureStation ?? this.departureStation,
@@ -111,8 +108,7 @@ class ReservationModel {
         carName: carName ?? this.carName,
         status: status ?? this.status,
         userId: userId ?? this.userId,
-        distance: distance ?? this.distance,
-        travelId: travelId ?? this.travelId);
+        distance: distance ?? this.distance);
   }
 
   // Helper function to convert string to enum

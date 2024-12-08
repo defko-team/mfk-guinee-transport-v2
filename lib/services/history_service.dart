@@ -3,7 +3,7 @@ import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 
-class ReservationService {
+class HistoriqueService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference reservationCollection =
       FirebaseFirestore.instance.collection('reservation');
@@ -59,7 +59,7 @@ class ReservationService {
   Future<void> createReservation(ReservationModel reservation) async {
     //try {
     //DocumentReference docRef =
-    await _firestore.collection('reservation').add(reservation.toMap());
+    await _firestore.collection('Reservation').add(reservation.toMap());
     // return docRef.id;
     // } catch (e) {
     //   return null;

@@ -48,7 +48,7 @@ class _HistoryPageState extends State<HistoryPage> {
   // Fetch reservations using ReservationService
 
   void fetchReservations() async {
-    List<ReservationModel> fetchedReservations = await ReservationService()
+    List<ReservationModel> fetchedReservations = await HistoriqueService()
         .fetchReservation(
             startTimeFilter: selectedDate,
             statusFilter: selectedStatus,

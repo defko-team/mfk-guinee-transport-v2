@@ -10,7 +10,7 @@ import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
-import 'package:mfk_guinee_transport/views/CardTravel.dart';
+import 'package:mfk_guinee_transport/views/card_travel.dart';
 
 class AdminTravelsManagementPage extends StatefulWidget {
   const AdminTravelsManagementPage({super.key});

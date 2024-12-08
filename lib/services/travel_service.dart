@@ -30,21 +30,12 @@ class TravelService {
     return _firestore.collection('Travel').snapshots().asyncMap(
       (QuerySnapshot travelQuerySnapshot) async {
         List<TravelModel> travels = [];
-        print("Here 1");
-        // Iterate over the travel documents
-
         for (QueryDocumentSnapshot travelDoc in travelQuerySnapshot.docs) {
           TravelModel travel =
               TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>);
-          print("i am here 2");
           travel.travelReference = travelDoc.reference;
-          // Get the station IDs from the Travel document
-
-          // Fetch the corresponding station data
-
           if ((travel.departureStationId != null) &&
               (travel.destinationStationId != null)) {
-            print(travel.toString());
             String departureStationId = travel.departureStationId!;
             String destinationStationId = travel.destinationStationId!;
             travel.departureStation =
@@ -53,8 +44,6 @@ class TravelService {
             travel.destinationStation =
                 await _stationService.getStationById(destinationStationId);
           }
-
-          print(travel);
           travels.add(travel); // Add the travel to the list
         }
         return travels;
