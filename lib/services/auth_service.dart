@@ -23,13 +23,15 @@ class AuthService {
           completer.complete(null);
         },
         verificationFailed: (FirebaseAuthException e) {
-          completer.completeError(OtpVerificationException('OTP verification failed: ${e.message}'));
+          completer.completeError(OtpVerificationException(
+              'OTP verification failed: ${e.message}'));
         },
         codeSent: (String verificationId, int? resendToken) {
           completer.complete(verificationId);
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          completer.complete(verificationId);
+          // bug here
+          //completer.complete(verificationId);
         },
         timeout: const Duration(seconds: 60),
       );
@@ -40,32 +42,33 @@ class AuthService {
     }
   }
 
-  Future<void> verifyOtpAndRegisterUser({
-    required String otp,
-    required String prenom,
-    required String nom,
-    required String telephone,
-    required String verificationId,
-    required bool isRegistration,
-    required BuildContext context
-  }) async {
+  Future<void> verifyOtpAndRegisterUser(
+      {required String otp,
+      required String prenom,
+      required String nom,
+      required String telephone,
+      required String verificationId,
+      required bool isRegistration,
+      required BuildContext context}) async {
     try {
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: otp,
       );
 
-      UserCredential userCredential = await _auth.signInWithCredential(credential);
+      UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
       String userId = userCredential.user!.uid;
 
-      DocumentSnapshot userDoc = await _firestore.collection('Users').doc(userId).get();
+      DocumentSnapshot userDoc =
+          await _firestore.collection('Users').doc(userId).get();
 
       if (userDoc.exists) {
         if (isRegistration) {
           throw Exception('L\'utilisateur existe déjà.');
         } else {
-        
-          UserModel userModel = UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
+          UserModel userModel =
+              UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
           await _storeUserInPreferences(userId);
           await _redirectUserBasedOnRole(userModel.idRole, context);
         }
@@ -77,14 +80,18 @@ class AuthService {
         String roleId = _firestore.collection('roles').doc().id;
         String accountId = _firestore.collection('Accounts').doc().id;
 
-        DocumentSnapshot roleDoc = await _firestore.collection('roles').doc('Client').get();
+        DocumentSnapshot roleDoc =
+            await _firestore.collection('roles').doc('Client').get();
 
         if (!roleDoc.exists) {
           RoleModel roleModel = RoleModel(
             idRole: roleId,
             nom: 'Client',
           );
-          await _firestore.collection('roles').doc(roleId).set(roleModel.toMap());
+          await _firestore
+              .collection('roles')
+              .doc(roleId)
+              .set(roleModel.toMap());
         } else {
           roleId = roleDoc.id;
         }
@@ -106,10 +113,14 @@ class AuthService {
         );
 
         await _firestore.collection('Users').doc(userId).set(userModel.toMap());
-        await _firestore.collection('Accounts').doc(accountId).set(accountModel.toMap());
+        await _firestore
+            .collection('Accounts')
+            .doc(accountId)
+            .set(accountModel.toMap());
 
         await _storeUserInPreferences(userId);
-        await _redirectUserBasedOnRole(roleId, context);  // Passer le context ici
+        await _redirectUserBasedOnRole(
+            roleId, context); // Passer le context ici
       }
     } catch (e) {
       throw Exception('La vérification OTP a échoué : ${e.toString()}');
@@ -117,8 +128,10 @@ class AuthService {
   }
 
   Future<void> _storeUserInPreferences(String userId) async {
-    DocumentSnapshot userDoc = await _firestore.collection('Users').doc(userId).get();
-    DocumentSnapshot roleDoc = await _firestore.collection('roles').doc(userDoc['id_role']).get();
+    DocumentSnapshot userDoc =
+        await _firestore.collection('Users').doc(userId).get();
+    DocumentSnapshot roleDoc =
+        await _firestore.collection('roles').doc(userDoc['id_role']).get();
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -133,8 +146,10 @@ class AuthService {
     }
   }
 
-  Future<void> _redirectUserBasedOnRole(String roleId, BuildContext context) async {
-    DocumentSnapshot roleDoc = await _firestore.collection('roles').doc(roleId).get();
+  Future<void> _redirectUserBasedOnRole(
+      String roleId, BuildContext context) async {
+    DocumentSnapshot roleDoc =
+        await _firestore.collection('roles').doc(roleId).get();
     String roleName = roleDoc['nom'];
 
     print(roleName);

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class FirebaseMessagingService {
@@ -37,5 +38,22 @@ class FirebaseMessagingService {
   static Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     print('Handling background message: ${message.messageId}');
+  }
+
+  Future<void> sendMessage(String fcmToken, String title, String body) async {
+    try {
+      final HttpsCallable callable =
+          FirebaseFunctions.instance.httpsCallable("sendMessage");
+      final response = await callable.call(
+          <String, dynamic>{'token': fcmToken, 'title': title, 'body': body});
+
+      if (response.data['success']) {
+        print('Message envoye avec succes : ${response.data['response']}');
+      } else {
+        print('Erreur: ${response.data['error']}');
+      }
+    } catch (e) {
+      print('Erreur lors de l appele de la fonction');
+    }
   }
 }

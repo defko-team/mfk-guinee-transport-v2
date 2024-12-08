@@ -5,17 +5,17 @@ class UserModel {
   final String? photoProfil;
   final String telephone;
   final String idRole;
-  String? role;
+  String? fcmToken;
 
-  UserModel({
-    required this.idUser,
-    required this.prenom,
-    required this.nom,
-    this.photoProfil,
-    required this.telephone,
-    required this.idRole,
-    this.role,
-  });
+  UserModel(
+      {required this.idUser,
+      required this.prenom,
+      required this.nom,
+      this.photoProfil,
+      required this.telephone,
+      required this.idRole,
+      this.fcmToken});
+  String? role;
 
   Map<String, dynamic> toMap() {
     return {
@@ -25,17 +25,18 @@ class UserModel {
       'photo_profil': photoProfil,
       'telephone': telephone,
       'id_role': idRole,
+      'fcm_token': fcmToken
     };
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      idUser: map['id_user'],
-      prenom: map['prenom'],
-      nom: map['nom'],
-      photoProfil: map['photo_profil'],
-      telephone: map['telephone'],
-      idRole: map['id_role'],
-    );
+        idUser: map['id_user'],
+        prenom: map['prenom'],
+        nom: map['nom'],
+        photoProfil: map['photo_profil'],
+        telephone: map['telephone'],
+        idRole: map['id_role'],
+        fcmToken: map['fmc_token'] ?? '');
   }
 }

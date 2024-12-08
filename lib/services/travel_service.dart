@@ -13,10 +13,14 @@ class TravelService {
       TravelModel travel =
           TravelModel.fromMap(doc.data() as Map<String, dynamic>);
       travel.travelReference = doc.reference;
-      travel.departureStation =
-          await _stationService.getStationById(travel.departureStationId!.id);
-      travel.destinationStation =
-          await _stationService.getStationById(travel.destinationStationId!.id);
+      print(travel.toString());
+      if (travel.departureStationId != null &&
+          travel.destinationStationId != null) {
+        travel.departureStation =
+            await _stationService.getStationById(travel.departureStationId!);
+        travel.destinationStation =
+            await _stationService.getStationById(travel.destinationStationId!);
+      }
       travels.add(travel);
     }
     return travels;
@@ -26,23 +30,20 @@ class TravelService {
     return _firestore.collection('Travel').snapshots().asyncMap(
       (QuerySnapshot travelQuerySnapshot) async {
         List<TravelModel> travels = [];
-
-        // Iterate over the travel documents
         for (QueryDocumentSnapshot travelDoc in travelQuerySnapshot.docs) {
           TravelModel travel =
               TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>);
           travel.travelReference = travelDoc.reference;
-          // Get the station IDs from the Travel document
-          String departureStationId = travel.departureStationId!.id;
-          String destinationStationId = travel.destinationStationId!.id;
+          if ((travel.departureStationId != null) &&
+              (travel.destinationStationId != null)) {
+            String departureStationId = travel.departureStationId!;
+            String destinationStationId = travel.destinationStationId!;
+            travel.departureStation =
+                await _stationService.getStationById(departureStationId);
 
-          // Fetch the corresponding station data
-          travel.departureStation =
-              await _stationService.getStationById(departureStationId);
-
-          travel.destinationStation =
-              await _stationService.getStationById(destinationStationId);
-
+            travel.destinationStation =
+                await _stationService.getStationById(destinationStationId);
+          }
           travels.add(travel); // Add the travel to the list
         }
         return travels;
@@ -96,8 +97,14 @@ class TravelService {
     return TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>);
   }
 
-  Future<void> createTravel(TravelModel travel) async {
-    await _firestore.collection('Travel').add(travel.toMap());
+  Future<String?> createTravel(TravelModel travel) async {
+    try {
+      DocumentReference docRef =
+          await _firestore.collection('Travel').add(travel.toMap());
+      return docRef.id;
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<void> updateTravel(TravelModel travel) async {

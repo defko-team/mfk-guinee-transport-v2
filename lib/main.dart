@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/admin_home_page.dart';
 import 'package:mfk_guinee_transport/views/home_page.dart';
@@ -34,7 +36,13 @@ Future<void> main() async {
 
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
-
+  var fcmToken = preferences.getString('fcmToken');
+  var userId = preferences.getString('userId');
+  print('userId ${userId}');
+  // UserModel currentUser =
+  //    await UserService().getUserById(preferences.getString('userId')!);
+  // print('User ${currentUser.nom}');
+  print('FCM TOKEN ${fcmToken}');
   Widget homePage;
 
   if (!isConnected && isProviderAuthenticated == true) {
@@ -70,6 +78,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future<void> _requestNotificationPermission() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
+  SharedPreferences preferences = await SharedPreferences.getInstance();
   NotificationSettings settings = await messaging.requestPermission(
     alert: true,
     badge: true,
@@ -78,8 +87,8 @@ Future<void> _requestNotificationPermission() async {
   print('User granted permission: ${settings.authorizationStatus}');
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    //String? token = await messaging.getToken();
-    //print("FCM Token: $token");
+    String? token = await messaging.getToken();
+    preferences.setString('fcmToken', token!);
   }
 }
 
