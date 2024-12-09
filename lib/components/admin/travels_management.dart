@@ -179,8 +179,6 @@ class _AddTravelFormState extends State<AddTravelForm> {
   @override
   void initState() {
     super.initState();
-
-    // Load initial data asynchronously
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeData();
     });

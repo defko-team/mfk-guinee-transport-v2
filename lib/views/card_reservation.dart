@@ -9,8 +9,12 @@ import 'package:flutter/cupertino.dart'; // Make sure to import this
 
 class CardReservation extends StatelessWidget {
   final ReservationModel reservationModel;
-
-  const CardReservation({super.key, required this.reservationModel});
+  final void Function({required ReservationModel reservation})
+      onOpenModifyReservationBottonSheet;
+  const CardReservation(
+      {super.key,
+      required this.reservationModel,
+      required this.onOpenModifyReservationBottonSheet});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +22,7 @@ class CardReservation extends StatelessWidget {
       return Card(
           margin: const EdgeInsets.all(8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-          color: Colors.white,
+          color: const Color.fromARGB(255, 245, 245, 245),
           semanticContainer: true,
           shadowColor: Colors.teal,
           elevation: 1,
@@ -165,7 +169,8 @@ class CardReservation extends StatelessWidget {
                           width: 4,
                         ),
                         OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: () => onOpenModifyReservationBottonSheet(
+                              reservation: reservationModel),
                           icon: const Icon(
                             Icons.edit_square,
                             size: 14,
