@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/services/location_service.dart';
 
 class AddressAutocomplete extends StatefulWidget {
   final ValueChanged<String> onLocationChanged;
-  final String? hintText;
-  final bool showCurrentLocation;
+  final String hintText;
+  final String currentLocation;
+  final String labelText;
+  final bool isDeparture;
 
   const AddressAutocomplete(
       {super.key,
       required this.onLocationChanged,
-      this.hintText,
-      required this.showCurrentLocation});
+      required this.hintText,
+      required this.currentLocation,
+      required this.labelText,
+      this.isDeparture = true 
+      });
 
   @override
   State<AddressAutocomplete> createState() => _AddressAutocompleteState();
@@ -19,30 +25,18 @@ class AddressAutocomplete extends StatefulWidget {
 
 class _AddressAutocompleteState extends State<AddressAutocomplete> {
   LocationService locationService = LocationService();
-  String? currentLocation;
-  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeCurrentLocation();
   }
 
-  Future<void> _initializeCurrentLocation() async {
-    try {
-      currentLocation =
-          await locationService.getCurrentAddress();
-    } catch (e) {
-      // Handle errors (e.g., show an error message)
-      print('Error getting current location: $e');
-    }
-  }
 
   Future<List<String>> _fetchAddressSuggestions(String query) async {
     var suggestions = await locationService.fetchAddressSuggestions(query);
 
-    if (widget.showCurrentLocation && currentLocation != null) {
-      suggestions.insert(0, currentLocation!);
+    if (widget.currentLocation != '') {
+      suggestions.insert(0, widget.currentLocation);
     }
 
     suggestions.forEach((add) {
@@ -55,17 +49,15 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
   @override
   Widget build(BuildContext context) {
     return Autocomplete<String>(
-      // Fetch suggestions based on the input query
+      initialValue: widget.currentLocation != ''
+          ? TextEditingValue(text: widget.currentLocation ): null,
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
           return const Iterable<String>.empty();
         }
-        print("Searching for " + textEditingValue.text);
-        // Fetch suggestions asynchronously
         return _fetchAddressSuggestions(textEditingValue.text);
       },
       onSelected: (String selection) {
-        print("Value selected: " + selection);
         widget.onLocationChanged(selection);
       },
       fieldViewBuilder: (BuildContext context,
@@ -74,13 +66,27 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
           VoidCallback onFieldSubmitted) {
         return TextField(
           controller:
-              textEditingController, // Use provided controller or default one
+              textEditingController,
           focusNode: focusNode,
           decoration: InputDecoration(
-            labelText: widget.hintText,
-            border: OutlineInputBorder(),
-            suffixIcon: _isLoading ? const CircularProgressIndicator() : null,
-          ),
+              contentPadding: const EdgeInsets.all(0.0),
+              labelText: widget.labelText,
+              hintText: widget.hintText,
+              labelStyle: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.w400),
+              prefixIcon: widget.isDeparture ?
+                  const Icon(Icons.my_location_rounded, color: AppColors.green, size: 18):
+                  const Icon(Icons.place, color: Colors.black, size: 18),
+              enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 2),
+                  borderRadius: BorderRadius.circular(10.0)),
+              floatingLabelStyle:
+                  const TextStyle(color: Colors.black, fontSize: 18.0),
+              focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                  borderRadius: BorderRadius.circular(10.0))),
         );
       },
       optionsViewBuilder: (BuildContext context,
@@ -89,13 +95,13 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
         return Align(
           alignment: Alignment.topLeft,
           child: Material(
-            color: Colors.white, // Set background color to white
+            color: Colors.white,
             elevation: 4.0,
             child: Container(
               width: MediaQuery.of(context).size.width - 80,
               constraints: const BoxConstraints(
                 maxHeight:
-                    200.0, // Limit the height to make it scrollable if more than 5 items
+                    200.0,
               ),
               child: ListView.builder(
                 padding: EdgeInsets.zero,

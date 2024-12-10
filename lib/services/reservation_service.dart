@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class ReservationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UserService userService = new UserService();
 
   // Save a ReservationModel to Firestore
   Future<void> saveReservation(ReservationModel reservation) async {
@@ -24,14 +27,11 @@ class ReservationService {
     }
   }
 
-  Future<void> createReservation(ReservationModel reservation) async {
-    //try {
-    //DocumentReference docRef =
-    await _firestore.collection('Reservation').add(reservation.toMap());
-    // return docRef.id;
-    // } catch (e) {
-    //   return null;
-    // }
+  // Create a new reservation for current user
+  Future<void> createUserReservation(ReservationModel reservation) async {
+    UserModel user = await userService.getCurrentUser();
+    var res = reservation.copyWith(userId: user.idUser);
+    await _firestore.collection('Reservation').add(res.toMap());
   }
 
   Stream<List<ReservationModel>> reservationStream() {

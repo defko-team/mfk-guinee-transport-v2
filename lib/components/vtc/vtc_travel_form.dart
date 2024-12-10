@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mfk_guinee_transport/components/vtc/address_autocomplete.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/services/location_service.dart';
+import 'package:mfk_guinee_transport/services/reservation_service.dart';
 
 class VTCTravelForm extends StatefulWidget {
   final ReservationModel? reservation;
@@ -15,12 +17,12 @@ class VTCTravelForm extends StatefulWidget {
 
 class _VTCTravelFormState extends State<VTCTravelForm> {
   LocationService locationService = LocationService();
+  ReservationService reservationService = ReservationService();
   List<String> _addressSuggestions = [];
+  String currentLocation = '';
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _departureLocationController =
-      TextEditingController();
-  final TextEditingController _destinationLocationController =
-      TextEditingController();
+  late String _departureLocation;
+  late String _destinationLocation;
   final TextEditingController _departureDateController =
       TextEditingController();
   final TextEditingController _departureTimeController =
@@ -32,18 +34,17 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {});
     _initializeCurrentLocation();
-
   }
 
   Future<void> _initializeCurrentLocation() async {
     try {
-      String currentLocation =
-          await locationService.getCurrentAddress();
-
-      print("Current location: " + currentLocation);
-      _departureLocationController.text = currentLocation;
+      String loc = await locationService.getCurrentAddress();
+      setState(() {
+        currentLocation = loc;
+        _departureLocation = loc;
+      });
+      print("Current location: " + currentLocation!);
     } catch (e) {
       // Handle errors (e.g., show an error message)
       print('Error getting current location: $e');
@@ -103,9 +104,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
       content: Text(message),
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.only(
-          bottom:
-              MediaQuery.of(context).size.height - 100), // Adjust top margin
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height - 100),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -121,29 +120,33 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
         status: ReservationStatus.pending,
         userId: widget.userId!,
         distance: '',
-        departureLocation: _departureLocationController.text,
-        arrivalLocation: _destinationLocationController.text,
+        departureLocation: _departureLocation,
+        arrivalLocation: _destinationLocation,
         startTime: DateTime(
             _pickedDepartureDate!.year,
             _pickedDepartureDate!.month,
             _pickedDepartureDate!.day,
             _pickedDepartureTime!.hour,
             _pickedDepartureTime!.minute),
-        remainingSeats: 0, //  vtc user reserve all seats
+        remainingSeats: 0,
       );
+
+      reservationService.createUserReservation(reservation);
 
       setState(() {
         _isLoading = false;
       });
 
       _formKey.currentState!.reset();
-      _departureLocationController.clear();
       _departureDateController.clear();
       _departureTimeController.clear();
-      _destinationLocationController.clear();
+
+      setState(() {
+        _departureLocation = '';
+        _destinationLocation = '';
+      });      
+
     }
-/*
-    */
   }
 
   @override
@@ -174,82 +177,23 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold))),
                   const SizedBox(height: 20),
-                  TextField(
-                    controller: _departureLocationController,
-                    cursorColor: Colors.black,
-                    keyboardType: TextInputType.streetAddress,
-                    decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(0.0),
-                        labelText: 'Lieu de Depart',
-                        hintText: 'Adresse de depart',
-                        labelStyle: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14.0,
-                            fontWeight: FontWeight.w400),
-                        prefixIcon: const Icon(Icons.my_location_rounded,
-                            color: Colors.green, size: 18),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                const BorderSide(color: Colors.grey, width: 2),
-                            borderRadius: BorderRadius.circular(10.0)),
-                        floatingLabelStyle: const TextStyle(
-                            color: Colors.black, fontSize: 18.0),
-                        focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                                color: Colors.black, width: 1.5),
-                            borderRadius: BorderRadius.circular(10.0))),
-                  ),
+                  AddressAutocomplete(
+                      onLocationChanged: (val) {
+                        _departureLocation = val;
+                      },
+                      hintText: 'Adresse de depart',
+                      currentLocation: currentLocation,
+                      labelText: 'Lieu de Depart'),
                   const SizedBox(height: 20),
-                  Stack(
-                    children: [
-                      TextField(
-                      controller: _destinationLocationController,
-                      onChanged: _fetchAddressSuggestions,
-                      cursorColor: Colors.black,
-                      keyboardType: TextInputType.streetAddress,
-                      decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.all(0.0),
-                          labelText: 'Destination',
-                          hintText: 'Adresse d arrivee',
-                          labelStyle: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.w400),
-                          prefixIcon: const Icon(Icons.place,
-                              color: Colors.black, size: 18),
-                          enabledBorder: OutlineInputBorder(
-                              borderSide:
-                                  const BorderSide(color: Colors.grey, width: 2),
-                              borderRadius: BorderRadius.circular(10.0)),
-                          floatingLabelStyle: const TextStyle(
-                              color: Colors.black, fontSize: 18.0),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                  color: Colors.black, width: 1.5),
-                              borderRadius: BorderRadius.circular(10.0))),
-                    ),
-                    //if (_addressSuggestions.isNotEmpty)
-                        Positioned(
-                          top: 20.0,
-                          left: 0,
-                          right: 0,
-                          child: Card(
-                            elevation: 40,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: _addressSuggestions.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                  title: Text(_addressSuggestions[index]),
-                                  onTap: () {
-                                    setState(() {});
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        )]
-                  ),
+                  AddressAutocomplete(
+                      onLocationChanged: (val) {
+                        _destinationLocation = val;
+                      },
+                      hintText: "Adresse d'arrivée",
+                      currentLocation: '',
+                      labelText: 'Destination',
+                      isDeparture: false,
+                      ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -281,7 +225,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                           onTap: () => _selectDepartureDate(context),
                         ),
                       ),
-                      const SizedBox(width: 16), // Space between fields
+                      const SizedBox(width: 16),
                       Expanded(
                         child: TextField(
                             controller: _departureTimeController,
