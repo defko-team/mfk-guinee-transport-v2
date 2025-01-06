@@ -7,9 +7,10 @@ import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
+import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
-import 'package:mfk_guinee_transport/views/CardTravel.dart';
+import 'package:mfk_guinee_transport/views/card_travel.dart';
 
 class AdminTravelsManagementPage extends StatefulWidget {
   const AdminTravelsManagementPage({super.key});
@@ -45,7 +46,7 @@ class _AdminTravelManagementPageState
           .toStringAsFixed(0);
 
   String duration(TravelModel travel) =>
-      calculateDuration(travel.startTime, travel.arrivalTime);
+      calculateDuration(travel.startTime, travel.arrivalTime!);
 
   Future<void> _showDeleteConfirmationDialog(String travelId) async {
     bool? confirm = await showDialog<bool>(
@@ -178,8 +179,6 @@ class _AddTravelFormState extends State<AddTravelForm> {
   @override
   void initState() {
     super.initState();
-
-    // Load initial data asynchronously
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeData();
     });
@@ -298,7 +297,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
       _selectedDestinationStation = travel.destinationStation!;
       if (cars.isNotEmpty) {
         _selectedVoiture = cars.firstWhere(
-          (car) => car.marque.toLowerCase() == travel.carName.toLowerCase(),
+          (car) => car.marque.toLowerCase() == travel.carName!.toLowerCase(),
         );
       }
       _departureDateController.text =
@@ -308,9 +307,9 @@ class _AddTravelFormState extends State<AddTravelForm> {
       _pickedArrivalDate = travel.arrivalTime;
       _pickedDepartureDate = travel.startTime;
       _arrivalDateController.text =
-          DateFormat('yyyy-MM-dd').format(travel.arrivalTime);
+          DateFormat('yyyy-MM-dd').format(travel.arrivalTime!);
       _arrivalTimeController.text =
-          DateFormat('HH:mm').format(travel.arrivalTime);
+          DateFormat('HH:mm').format(travel.arrivalTime!);
     });
   }
 
@@ -332,8 +331,8 @@ class _AddTravelFormState extends State<AddTravelForm> {
     final TravelModel travel = TravelModel(
         travelReference: currentTravelReference,
         id: currentTravelReference?.id ?? '',
-        departureStationId: _selectedDepartureStation!.stationRef,
-        destinationStationId: _selectedDestinationStation!.stationRef,
+        departureStationId: _selectedDepartureStation!.stationRef!.id,
+        destinationStationId: _selectedDestinationStation!.stationRef!.id,
         //departureLocation: departureLocation,
         // arrivalLocation: arrivalLocation,
         startTime: _pickedDepartureDate!,
@@ -344,6 +343,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
         driverName: await VoitureService()
             .getDriverNameById(_selectedVoiture!.idChauffeur),
         remainingSeats: 2,
+        nombreDePlace: _selectedVoiture!.nombreDePlace,
         carName: _selectedVoiture!.marque);
     if (isUpdate!) {
       print(travel.toString());
@@ -351,8 +351,13 @@ class _AddTravelFormState extends State<AddTravelForm> {
       Navigator.of(context).pop();
     } else {
       TravelService().createTravel(travel);
+
       Navigator.of(context).pop();
     }
+    // FirebaseMessagingService().sendMessage(
+    //   "c5yEM7e4T2WX8XJ2D9zukJ:APA91bEf-2PQ-eOBNzQ5sMnwn1qOITbsChPGNbTyRhw3nd33GmA-pndsWPARfKSyp_2OxY3zRrA0mDoEb-XrwXN3TH92efEFJ8sD0zW8mtdXsrt9fhqNWeI",
+    // "title",
+    // "body");
   }
 
   @override

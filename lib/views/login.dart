@@ -186,10 +186,10 @@ class _LoginState extends State<Login> {
                   padding:
                       const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                   child: _isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: const CircularProgressIndicator(
+                          child: CircularProgressIndicator(
                             backgroundColor: AppColors.green,
                             color: AppColors.green,
                             strokeWidth: 2,

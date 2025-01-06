@@ -9,7 +9,6 @@ import 'package:mfk_guinee_transport/helper/router/router.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
-
 import 'package:flutter/scheduler.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -34,7 +33,13 @@ Future<void> main() async {
 
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
-
+  var fcmToken = preferences.getString('fcmToken');
+  var userId = preferences.getString('userId');
+  print('userId ${userId}');
+  // UserModel currentUser =
+  //    await UserService().getUserById(preferences.getString('userId')!);
+  // print('User ${currentUser.nom}');
+  print('FCM TOKEN ${fcmToken}');
   Widget homePage;
 
   if (!isConnected && isProviderAuthenticated == true) {
@@ -70,6 +75,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future<void> _requestNotificationPermission() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
+  SharedPreferences preferences = await SharedPreferences.getInstance();
   NotificationSettings settings = await messaging.requestPermission(
     alert: true,
     badge: true,
@@ -78,8 +84,8 @@ Future<void> _requestNotificationPermission() async {
   print('User granted permission: ${settings.authorizationStatus}');
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    //String? token = await messaging.getToken();
-    //print("FCM Token: $token");
+    String? token = await messaging.getToken();
+    preferences.setString('fcmToken', token!);
   }
 }
 

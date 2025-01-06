@@ -18,7 +18,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   final List<Widget> _adminPages = [
     const AdminDashboardManagementPage(),
     const AdminTravelsManagementPage(),
-    const HistoryPage(),
+    const AdminReservationsManagementPage(),
     const AdminSettingsPage(),
   ];
 
