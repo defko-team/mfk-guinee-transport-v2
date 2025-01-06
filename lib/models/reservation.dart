@@ -1,19 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ReservationModel {
-  final String? id;
+  String? id;
   final String? departureStation;
   final String? destinationStation;
   final String? departureLocation;
   final String? arrivalLocation;
   final DateTime startTime;
-  final DateTime? arrivalTime;
+  DateTime? arrivalTime;
   final int remainingSeats;
-  final double? ticketPrice;
-  final bool? airConditioned;
-  final String? driverName;
-  final String? carName;
-  final ReservationStatus status;
+  double? ticketPrice;
+  bool? airConditioned;
+  String? driverName;
+  String? carName;
+  ReservationStatus status;
   final String userId;
   final String distance;
 

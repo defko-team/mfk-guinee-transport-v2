@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/location_form.dart';
 import 'package:mfk_guinee_transport/components/location_type.dart';
@@ -50,40 +49,54 @@ class _CustomerHomeState extends State<CustomerHome> {
     }
   }
 
+  void _openModifyReservationBottomSheet(
+      {required ReservationModel reservation}) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 20,
+                  right: 20,
+                  top: 20),
+              child: const Text(''),
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     bool formIsValid = selectedDeparture != null &&
         selectedArrival != null &&
         selectedTransportTypeIndex != -1;
-    return Container(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LocationType(onTypeSelected: (type) {
-            setState(() {
-              selectedTransportTypeIndex = type;
-            });
-          }),
-          if (selectedTransportTypeIndex == 0) ...[
-            LocationForm(
-              onDepartureChanged: (departure) {
-                setState(() {
-                  var selectedDepartureFound = widget.locations.where(
-                      (location) =>
-                          location.name.toLowerCase() ==
-                          departure.toLowerCase());
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LocationType(onTypeSelected: (type) {
+          setState(() {
+            selectedTransportTypeIndex = type;
+          });
+        }),
+        if (selectedTransportTypeIndex == 0) ...[
+          LocationForm(
+            onDepartureChanged: (departure) {
+              setState(() {
+                var selectedDepartureFound = widget.locations.where(
+                    (location) =>
+                        location.name.toLowerCase() == departure.toLowerCase());
 
-                  selectedDeparture = selectedDepartureFound.isNotEmpty
-                      ? selectedDepartureFound.first
-                      : null;
-                });
-              },
-              onArrivalChanged: (arrival) {
-                setState(() {
-                  var selectedArrivalFound = widget.locations.where(
-                      (location) =>
-                          location.name.toLowerCase() == arrival.toLowerCase());
+                selectedDeparture = selectedDepartureFound.isNotEmpty
+                    ? selectedDepartureFound.first
+                    : null;
+              });
+            },
+            onArrivalChanged: (arrival) {
+              setState(() {
+                var selectedArrivalFound = widget.locations.where((location) =>
+                    location.name.toLowerCase() == arrival.toLowerCase());
 
                   selectedArrival = selectedArrivalFound.isNotEmpty
                       ? selectedArrivalFound.first
@@ -103,9 +116,8 @@ class _CustomerHomeState extends State<CustomerHome> {
                 )),
           ],
           if (selectedTransportTypeIndex == 1)
-            VTCTravelForm(userId: widget.userId!)
-        ],
-      ),
+            VTCTravelForm(userId: widget.userId!) 
+      ],
     );
   }
 }

@@ -45,9 +45,36 @@ class ReservationService {
           in reservationQuerySnapshot.docs) {
         ReservationModel reservationModel = ReservationModel.fromMap(
             reservationDoc.data() as Map<String, dynamic>);
+        reservationModel.id = reservationDoc.reference.id;
         reservations.add(reservationModel);
       }
       return reservations;
     });
+  }
+
+  Stream<List<ReservationModel>> userReservationStream(String userId) {
+    return _firestore
+        .collection('Reservation')
+        .where('user_id', isEqualTo: userId)
+        .snapshots()
+        .asyncMap((QuerySnapshot reservationQuerySnapshot) async {
+      List<ReservationModel> reservations = [];
+
+      for (QueryDocumentSnapshot reservationDoc
+          in reservationQuerySnapshot.docs) {
+        ReservationModel reservationModel = ReservationModel.fromMap(
+            reservationDoc.data() as Map<String, dynamic>);
+        reservationModel.id = reservationDoc.reference.id;
+        reservations.add(reservationModel);
+      }
+      return reservations;
+    });
+  }
+
+  Future<void> updateReservation(ReservationModel reservation) async {
+    await _firestore
+        .collection('Reservation')
+        .doc(reservation.id!)
+        .update(reservation.toMap());
   }
 }
