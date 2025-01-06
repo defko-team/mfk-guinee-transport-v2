@@ -66,6 +66,7 @@
 	<string>Nous avons besoin d'accéder à votre caméra pour capturer une photo de profil.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Nous avons besoin d'accéder à votre microphone pour enregistrer des vidéos.</string>
-
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Nous avons besoin de votre position pour afficher votre position actuelle sur la carte.</string>
 </dict>
 </plist>
