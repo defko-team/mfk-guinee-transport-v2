@@ -10,6 +10,7 @@ import 'package:mfk_guinee_transport/models/travel.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';
+import 'package:mfk_guinee_transport/views/card_reservation.dart';
 
 class CustomerHome extends StatefulWidget {
   final String? userId;
@@ -52,62 +53,105 @@ class _CustomerHomeState extends State<CustomerHome> {
     }
   }
 
+  void _openModifyReservationBottomSheet(
+      {required ReservationModel reservation}) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 20,
+                  right: 20,
+                  top: 20),
+              child: const Text(''),
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     bool formIsValid = selectedDeparture != null &&
         selectedArrival != null &&
         selectedTransportTypeIndex != -1;
-    return Container(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LocationType(onTypeSelected: (type) {
-            setState(() {
-              selectedTransportTypeIndex = type;
-            });
-          }),
-          if (selectedTransportTypeIndex == 0) ...[
-            LocationForm(
-              onDepartureChanged: (departure) {
-                setState(() {
-                  var selectedDepartureFound = widget.locations.where(
-                      (location) =>
-                          location.name.toLowerCase() ==
-                          departure.toLowerCase());
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LocationType(onTypeSelected: (type) {
+          setState(() {
+            selectedTransportTypeIndex = type;
+          });
+        }),
+        if (selectedTransportTypeIndex == 0) ...[
+          LocationForm(
+            onDepartureChanged: (departure) {
+              setState(() {
+                var selectedDepartureFound = widget.locations.where(
+                    (location) =>
+                        location.name.toLowerCase() == departure.toLowerCase());
 
-                  selectedDeparture = selectedDepartureFound.isNotEmpty
-                      ? selectedDepartureFound.first
-                      : null;
-                });
-              },
-              onArrivalChanged: (arrival) {
-                setState(() {
-                  var selectedArrivalFound = widget.locations.where(
-                      (location) =>
-                          location.name.toLowerCase() == arrival.toLowerCase());
+                selectedDeparture = selectedDepartureFound.isNotEmpty
+                    ? selectedDepartureFound.first
+                    : null;
+              });
+            },
+            onArrivalChanged: (arrival) {
+              setState(() {
+                var selectedArrivalFound = widget.locations.where((location) =>
+                    location.name.toLowerCase() == arrival.toLowerCase());
 
-                  selectedArrival = selectedArrivalFound.isNotEmpty
-                      ? selectedArrivalFound.first
-                      : null;
-                });
-              },
-              locations: widget.locations,
-            ),
-            const Spacer(),
-            Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: CustomElevatedButton(
-                  onClick: formIsValid ? _onSearch : () {},
-                  backgroundColor:
-                      formIsValid ? AppColors.green : AppColors.grey,
-                  text: "Rechercher",
-                )),
-          ],
-          if (selectedTransportTypeIndex == 1)
-            AddVTCTravelForm(userId: widget.userId!)
+                selectedArrival = selectedArrivalFound.isNotEmpty
+                    ? selectedArrivalFound.first
+                    : null;
+              });
+            },
+            locations: widget.locations,
+          ),
+          Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: CustomElevatedButton(
+                onClick: formIsValid ? _onSearch : () {},
+                backgroundColor: formIsValid ? AppColors.green : AppColors.grey,
+                text: "Rechercher",
+              )),
         ],
-      ),
+        if (selectedTransportTypeIndex == 1)
+          AddVTCTravelForm(userId: widget.userId!),
+        Expanded(
+            child: SingleChildScrollView(
+          child: StreamBuilder<List<ReservationModel>>(
+              stream:
+                  ReservationService().userReservationStream(widget.userId!),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Padding(
+                      padding: EdgeInsets.only(
+                          left: MediaQuery.of(context).size.width / 2.5,
+                          top: MediaQuery.of(context).size.height / 2.5),
+                      child: const CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No Reservations found'));
+                }
+                return ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, int index) {
+                      return CardReservation(
+                          reservationModel: snapshot.data![index],
+                          onOpenModifyReservationBottonSheet:
+                              _openModifyReservationBottomSheet);
+                    });
+              }),
+        ))
+      ],
     );
   }
 }
@@ -204,6 +248,7 @@ class _AddVTCTravelFormState extends State<AddVTCTravelForm> {
         remainingSeats: 0, //  vtc user reserve all seats
       );
 
+      ReservationService().createReservation(reservation);
       setState(() {
         _isLoading = false;
       });
@@ -213,174 +258,183 @@ class _AddVTCTravelFormState extends State<AddVTCTravelForm> {
       _departureDateController.clear();
       _departureTimeController.clear();
       _destinationLocationController.clear();
+    } else {
+      print("error in formular");
     }
-/*
-    */
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-        elevation: 10,
-        color: Colors.white,
-        child: Padding(
-            padding: const EdgeInsets.only(left: 18, right: 18, bottom: 10),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 5,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                  const Center(
-                      child: Text("Ajouter votre reservation",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold))),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _departureLocationController,
-                    cursorColor: Colors.black,
-                    keyboardType: TextInputType.streetAddress,
-                    decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(0.0),
-                        labelText: 'Lieu de Depart',
-                        hintText: 'Adresse de depart',
-                        labelStyle: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14.0,
-                            fontWeight: FontWeight.w400),
-                        prefixIcon: const Icon(Icons.my_location_rounded,
-                            color: Colors.green, size: 18),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                const BorderSide(color: Colors.grey, width: 2),
-                            borderRadius: BorderRadius.circular(10.0)),
-                        floatingLabelStyle: const TextStyle(
-                            color: Colors.black, fontSize: 18.0),
-                        focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                                color: Colors.black, width: 1.5),
-                            borderRadius: BorderRadius.circular(10.0))),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _destinationLocationController,
-                    cursorColor: Colors.black,
-                    keyboardType: TextInputType.streetAddress,
-                    decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(0.0),
-                        labelText: 'Destination',
-                        hintText: 'Adresse d arrivee',
-                        labelStyle: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14.0,
-                            fontWeight: FontWeight.w400),
-                        prefixIcon: const Icon(Icons.place,
-                            color: Colors.black, size: 18),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                const BorderSide(color: Colors.grey, width: 2),
-                            borderRadius: BorderRadius.circular(10.0)),
-                        floatingLabelStyle: const TextStyle(
-                            color: Colors.black, fontSize: 18.0),
-                        focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                                color: Colors.black, width: 1.5),
-                            borderRadius: BorderRadius.circular(10.0))),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      children: [
+        Card(
+            elevation: 10,
+            color: Colors.white,
+            child: Padding(
+                padding: const EdgeInsets.only(left: 18, right: 18, bottom: 10),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _departureDateController,
-                          decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.all(0.0),
-                              labelText: 'Date de départ',
-                              hintText: 'Entrez la date de départ',
-                              labelStyle: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14.0,
-                                  fontWeight: FontWeight.w400),
-                              prefixIcon: const Icon(Icons.calendar_today,
-                                  color: Colors.black, size: 18),
-                              enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                      color: Colors.grey, width: 2),
-                                  borderRadius: BorderRadius.circular(10.0)),
-                              floatingLabelStyle: const TextStyle(
-                                  color: Colors.black, fontSize: 18.0),
-                              focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                      color: Colors.black, width: 1.5),
-                                  borderRadius: BorderRadius.circular(10.0))),
-                          readOnly: true,
-                          onTap: () => _selectDepartureDate(context),
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 5,
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
-                      const SizedBox(width: 16), // Space between fields
-                      Expanded(
-                        child: TextField(
-                            controller: _departureTimeController,
-                            decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.all(0.0),
-                                labelText: 'heure de départ',
-                                hintText: 'Entrez l\'heure de départ',
-                                labelStyle: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14.0,
-                                    fontWeight: FontWeight.w400),
-                                prefixIcon: const Icon(Icons.access_time,
-                                    color: Colors.black, size: 18),
-                                enabledBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                        color: Colors.grey, width: 2),
-                                    borderRadius: BorderRadius.circular(10.0)),
-                                floatingLabelStyle: const TextStyle(
-                                    color: Colors.black, fontSize: 18.0),
-                                focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                        color: Colors.black, width: 1.5),
-                                    borderRadius: BorderRadius.circular(10.0))),
-                            readOnly: true,
-                            onTap: () {
-                              _selectDepartureTime(context);
-                            }),
-                      )
+                      const Center(
+                          child: Text("Ajouter votre reservation",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold))),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _departureLocationController,
+                        cursorColor: Colors.black,
+                        keyboardType: TextInputType.streetAddress,
+                        decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(0.0),
+                            labelText: 'Lieu de Depart',
+                            hintText: 'Adresse de depart',
+                            labelStyle: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.w400),
+                            prefixIcon: const Icon(Icons.my_location_rounded,
+                                color: Colors.green, size: 18),
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: Colors.grey, width: 2),
+                                borderRadius: BorderRadius.circular(10.0)),
+                            floatingLabelStyle: const TextStyle(
+                                color: Colors.black, fontSize: 18.0),
+                            focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: Colors.black, width: 1.5),
+                                borderRadius: BorderRadius.circular(10.0))),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _destinationLocationController,
+                        cursorColor: Colors.black,
+                        keyboardType: TextInputType.streetAddress,
+                        decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(0.0),
+                            labelText: 'Destination',
+                            hintText: 'Adresse d arrivee',
+                            labelStyle: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 14.0,
+                                fontWeight: FontWeight.w400),
+                            prefixIcon: const Icon(Icons.place,
+                                color: Colors.black, size: 18),
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: Colors.grey, width: 2),
+                                borderRadius: BorderRadius.circular(10.0)),
+                            floatingLabelStyle: const TextStyle(
+                                color: Colors.black, fontSize: 18.0),
+                            focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: Colors.black, width: 1.5),
+                                borderRadius: BorderRadius.circular(10.0))),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _departureDateController,
+                              decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.all(0.0),
+                                  labelText: 'Date de départ',
+                                  hintText: 'Entrez la date de départ',
+                                  labelStyle: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.w400),
+                                  prefixIcon: const Icon(Icons.calendar_today,
+                                      color: Colors.black, size: 18),
+                                  enabledBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                          color: Colors.grey, width: 2),
+                                      borderRadius:
+                                          BorderRadius.circular(10.0)),
+                                  floatingLabelStyle: const TextStyle(
+                                      color: Colors.black, fontSize: 18.0),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                          color: Colors.black, width: 1.5),
+                                      borderRadius:
+                                          BorderRadius.circular(10.0))),
+                              readOnly: true,
+                              onTap: () => _selectDepartureDate(context),
+                            ),
+                          ),
+                          const SizedBox(width: 16), // Space between fields
+                          Expanded(
+                            child: TextField(
+                                controller: _departureTimeController,
+                                decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.all(0.0),
+                                    labelText: 'heure de départ',
+                                    hintText: 'Entrez l\'heure de départ',
+                                    labelStyle: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 14.0,
+                                        fontWeight: FontWeight.w400),
+                                    prefixIcon: const Icon(Icons.access_time,
+                                        color: Colors.black, size: 18),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey, width: 2),
+                                        borderRadius:
+                                            BorderRadius.circular(10.0)),
+                                    floatingLabelStyle: const TextStyle(
+                                        color: Colors.black, fontSize: 18.0),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: Colors.black, width: 1.5),
+                                        borderRadius:
+                                            BorderRadius.circular(10.0))),
+                                readOnly: true,
+                                onTap: () {
+                                  _selectDepartureTime(context);
+                                }),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      _isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                              onPressed: _submitVTCTrajet,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.green,
+                                padding:
+                                    const EdgeInsets.only(bottom: 15, top: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Enregistrer la reservation',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 16),
+                                ),
+                              ),
+                            ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          onPressed: _submitVTCTrajet,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.green,
-                            padding: const EdgeInsets.only(bottom: 15, top: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Enregistrer la reservation',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                          ),
-                        ),
-                ],
-              ),
-            )));
+                ))),
+      ],
+    );
   }
 }

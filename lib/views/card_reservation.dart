@@ -49,10 +49,13 @@ class CardReservation extends StatelessWidget {
                         Container(
                           width: 4,
                         ),
-                        Text(
-                          reservationModel.departureLocation!,
-                          style: const TextStyle(fontSize: 13),
-                        )
+                        SizedBox(
+                          width: 170,
+                          child: Text(
+                            reservationModel.departureLocation!,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
                       ],
                     ),
                     Row(
@@ -117,9 +120,12 @@ class CardReservation extends StatelessWidget {
                             Container(
                               width: 4,
                             ),
-                            Text(
-                              reservationModel.arrivalLocation!,
-                              style: const TextStyle(fontSize: 13),
+                            SizedBox(
+                              width: 170,
+                              child: Text(
+                                reservationModel.arrivalLocation!,
+                                style: const TextStyle(fontSize: 13),
+                              ),
                             ),
                           ],
                         ),
