@@ -3,8 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:mfk_guinee_transport/views/card_reservation.dart';
 
 class AdminReservationsManagementPage extends StatefulWidget {
@@ -39,14 +42,30 @@ class _AdminReservationsManagementPageState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reservations'),
-        backgroundColor: AppColors.green,
-        leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.arrow_back)),
-      ),
+          title: const Text('Reservations'),
+          backgroundColor: AppColors.green,
+          /*leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.arrow_back))*/
+          leading: IconButton(
+              onPressed: () async {
+                const fcmToken =
+                    "e5mDaopDRiiJp8xm7EbZ1r:APA91bFenzKCw8pgIf5gBTTojQUypw-OpNdWa_njo6JWi9QFP_wBcimOJ2Pill7jbFf7VwOZ-nZQBuj2u0yGOaTl0ZrNc4fiqt2sx15Wr20wf3ZmN55pDp4";
+                const title = "Test";
+                const body = "Test message";
+
+                if (fcmToken.isNotEmpty &&
+                    title.isNotEmpty &&
+                    body.isNotEmpty) {
+                  await NotificationsService()
+                      .sendNotification(fcmToken, title, body);
+                } else {
+                  print('Please fill out all fields.');
+                }
+              },
+              icon: const Icon(Icons.arrow_back, color: Colors.white))),
       body: StreamBuilder<List<ReservationModel>>(
           stream: ReservationService().reservationStream(),
           builder: (context, snapshot) {
@@ -190,6 +209,10 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
     }
 
     ReservationService().updateReservation(widget.reservation);
+
+    UserModel user = await UserService().getUserById(widget.reservation.userId);
+    await NotificationsService().sendNotification(user.fcmToken!,
+        "Confirmation reservation", "Votre reservation a ete mise a jour");
     Navigator.of(context).pop();
   }
 

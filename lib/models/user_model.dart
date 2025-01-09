@@ -37,6 +37,11 @@ class UserModel {
         photoProfil: map['photo_profil'],
         telephone: map['telephone'],
         idRole: map['id_role'],
-        fcmToken: map['fmc_token'] ?? '');
+        fcmToken: map['fcm_token'] ?? '');
+  }
+
+  @override
+  String toString() {
+    return 'UserModel{idUser: $idUser, prenom: $prenom, nom: $nom, photoProfil: $photoProfil, telephone: $telephone, idRole: $idRole, fcmToken: $fcmToken}';
   }
 }

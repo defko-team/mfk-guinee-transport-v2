@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mfk_guinee_transport/helper/firebase/firebase_options.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/admin_home_page.dart';
 import 'package:mfk_guinee_transport/views/home_page.dart';
@@ -33,15 +36,7 @@ Future<void> main() async {
 
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
-  var fcmToken = preferences.getString('fcmToken');
-  var userId = preferences.getString('userId');
-  print('userId ${userId}');
-  // UserModel currentUser =
-  //    await UserService().getUserById(preferences.getString('userId')!);
-  // print('User ${currentUser.nom}');
-  print('FCM TOKEN ${fcmToken}');
   Widget homePage;
-
   if (!isConnected && isProviderAuthenticated == true) {
     homePage = const NoNetwork(pageToGo: "/providerHome");
   } else if (!isConnected && isCustomerAuthenticated == true) {
@@ -60,7 +55,7 @@ Future<void> main() async {
 }
 
 Future<void> _initFirebase() async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -85,7 +80,12 @@ Future<void> _requestNotificationPermission() async {
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     String? token = await messaging.getToken();
-    preferences.setString('fcmToken', token!);
+    UserModel user = await UserService().getCurrentUser();
+    if (user.fcmToken! != token!) {
+      user.fcmToken = token;
+      await UserService().updateUser(user);
+    }
+    preferences.setString('fcmToken', token);
   }
 }
 
