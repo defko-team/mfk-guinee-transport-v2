@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/services/location_service.dart';
 
 class AddressAutocomplete extends StatefulWidget {
   final ValueChanged<String> onLocationChanged;
   final String hintText;
-  final String currentLocation;
+  final String? currentLocation;
   final String labelText;
   final bool isDeparture;
 
@@ -14,7 +13,7 @@ class AddressAutocomplete extends StatefulWidget {
       {super.key,
       required this.onLocationChanged,
       required this.hintText,
-      required this.currentLocation,
+      this.currentLocation,
       required this.labelText,
       this.isDeparture = true 
       });
@@ -35,8 +34,8 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
   Future<List<String>> _fetchAddressSuggestions(String query) async {
     var suggestions = await locationService.fetchAddressSuggestions(query);
 
-    if (widget.currentLocation != '') {
-      suggestions.insert(0, widget.currentLocation);
+    if (widget.currentLocation != null) {
+      suggestions.insert(0, widget.currentLocation!);
     }
 
     suggestions.forEach((add) {
@@ -49,8 +48,6 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
   @override
   Widget build(BuildContext context) {
     return Autocomplete<String>(
-      initialValue: widget.currentLocation != ''
-          ? TextEditingValue(text: widget.currentLocation ): null,
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
           return const Iterable<String>.empty();
@@ -64,6 +61,10 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
           TextEditingController textEditingController,
           FocusNode focusNode,
           VoidCallback onFieldSubmitted) {
+
+        if(widget.currentLocation != null) {
+          textEditingController.text = widget.currentLocation!;
+        }
         return TextField(
           controller:
               textEditingController,

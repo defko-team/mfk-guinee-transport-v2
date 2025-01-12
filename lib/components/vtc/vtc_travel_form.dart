@@ -190,7 +190,6 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                         _destinationLocation = val;
                       },
                       hintText: "Adresse d'arrivée",
-                      currentLocation: '',
                       labelText: 'Destination',
                       isDeparture: false,
                       ),
