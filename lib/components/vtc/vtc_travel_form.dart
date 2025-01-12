@@ -24,8 +24,8 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
   ReservationService reservationService = ReservationService();
   String currentLocation = '';
   final _formKey = GlobalKey<FormState>();
-  late String _departureLocation;
-  late String _destinationLocation;
+  late String _departureLocation = '';
+  late String _destinationLocation = '';
   final TextEditingController _departureDateController =
       TextEditingController();
   final TextEditingController _departureTimeController =
@@ -126,6 +126,10 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
 
   @override
   Widget build(BuildContext context) {
+    bool isFormValid = _departureLocation.isNotEmpty &&
+        _destinationLocation.isNotEmpty &&
+        _pickedDepartureDate != null &&
+        _pickedDepartureTime != null;
     return Card(
         elevation: 10,
         color: Colors.white,
@@ -234,9 +238,9 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : ElevatedButton(
-                          onPressed: _submitVTCTraject,
+                          onPressed: isFormValid ? _submitVTCTraject : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.green,
+                            backgroundColor: isFormValid ? AppColors.green : AppColors.grey,
                             padding: const EdgeInsets.only(bottom: 15, top: 10),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
