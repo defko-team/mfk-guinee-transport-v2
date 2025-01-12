@@ -130,7 +130,9 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
       builder: (BuildContext context) {
         _saveReservation();
         _loadTravels();
-        return BookingConfirmationDialog(book: () async{});
+        return BookingConfirmationDialog(book: () async {
+          Navigator.pop(context);
+        });
       },
     );
   }
