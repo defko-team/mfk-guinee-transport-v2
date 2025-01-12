@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mfk_guinee_transport/components/booking_confirmation.dart';
 import 'package:mfk_guinee_transport/components/vtc/address_autocomplete.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/services/location_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
+import 'package:mfk_guinee_transport/views/home_page.dart';
 
 class VTCTravelForm extends StatefulWidget {
   final ReservationModel? reservation;
   final String? userId;
-  const VTCTravelForm({super.key, this.userId, this.reservation});
+  final Function refreshData;
+
+  const VTCTravelForm({super.key, this.userId, this.reservation, required this.refreshData});
 
   @override
   State<StatefulWidget> createState() => _VTCTravelFormState();
@@ -18,7 +22,6 @@ class VTCTravelForm extends StatefulWidget {
 class _VTCTravelFormState extends State<VTCTravelForm> {
   LocationService locationService = LocationService();
   ReservationService reservationService = ReservationService();
-  List<String> _addressSuggestions = [];
   String currentLocation = '';
   final _formKey = GlobalKey<FormState>();
   late String _departureLocation;
@@ -51,25 +54,6 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
     }
   }
 
-  Future<void> _fetchAddressSuggestions(String query) async {
-    if (query.isNotEmpty) {
-      try {
-        List<String> suggestions =
-            await locationService.fetchAddressSuggestions(query);
-        setState(() {
-          _addressSuggestions = suggestions;
-        });
-        print("Address suggestions: ${suggestions.length}");
-      } catch (error) {
-        print("Error fetching address suggestions: $error");
-      }
-    } else {
-      setState(() {
-        _addressSuggestions = [];
-      });
-    }
-  }
-
   Future<void> _selectDepartureDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
         context: context,
@@ -99,18 +83,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
     }
   }
 
-  void _showSnackBar(String message) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 2),
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height - 100),
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void _submitVTCTrajet() async {
+  void _submitVTCTraject() async {
     setState(() {
       _isLoading = true;
     });
@@ -131,20 +104,22 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
         remainingSeats: 0,
       );
 
-      reservationService.createUserReservation(reservation);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return BookingConfirmationDialog(
+              book: () async{
+                  reservationService.createUserReservation(reservation);
+                  widget.refreshData();
+              },
+              displayText: "Votre réservation a été créée avec succès"
+          );
+        },
+      );
 
       setState(() {
         _isLoading = false;
       });
-
-      _formKey.currentState!.reset();
-      _departureDateController.clear();
-      _departureTimeController.clear();
-
-      setState(() {
-        _departureLocation = '';
-        _destinationLocation = '';
-      });      
 
     }
   }
@@ -186,13 +161,13 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                       labelText: 'Lieu de Depart'),
                   const SizedBox(height: 20),
                   AddressAutocomplete(
-                      onLocationChanged: (val) {
-                        _destinationLocation = val;
-                      },
-                      hintText: "Adresse d'arrivée",
-                      labelText: 'Destination',
-                      isDeparture: false,
-                      ),
+                    onLocationChanged: (val) {
+                      _destinationLocation = val;
+                    },
+                    hintText: "Adresse d'arrivée",
+                    labelText: 'Destination',
+                    isDeparture: false,
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -259,7 +234,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : ElevatedButton(
-                          onPressed: _submitVTCTrajet,
+                          onPressed: _submitVTCTraject,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.green,
                             padding: const EdgeInsets.only(bottom: 15, top: 10),

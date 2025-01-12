@@ -116,7 +116,12 @@ class _CustomerHomeState extends State<CustomerHome> {
                 )),
           ],
           if (selectedTransportTypeIndex == 1)
-            VTCTravelForm(userId: widget.userId!) 
+            VTCTravelForm(userId: widget.userId!,
+            refreshData: () {
+              setState(() {
+                selectedTransportTypeIndex = 0;
+              });
+            },) 
       ],
     );
   }
