@@ -26,6 +26,7 @@ class AvailableCarsPage extends StatefulWidget {
 class _AvailableCarsPageState extends State<AvailableCarsPage> {
   int selectedCarIndex = -1;
   ReservationModel? reservationModel;
+  TravelModel? selectedTravel;
 
   List<TravelModel> travels = [];
 
@@ -100,20 +101,20 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   void OnCarSelection() {
     // Action lors de la recherche
     if (selectedCarIndex != -1) {
-      TravelModel selectedTravel = travels[selectedCarIndex];
+      selectedTravel = travels[selectedCarIndex];
 
       this.reservationModel = ReservationModel(
-          departureStation: selectedTravel.departureStation?.address,
-          destinationStation: selectedTravel.destinationStation?.address,
-          departureLocation: selectedTravel.departureStation?.address,
-          arrivalLocation: selectedTravel.arrivalLocation,
-          startTime: selectedTravel.startTime,
-          arrivalTime: selectedTravel.arrivalTime,
-          remainingSeats: selectedTravel.remainingSeats,
-          ticketPrice: selectedTravel.ticketPrice,
-          airConditioned: selectedTravel.airConditioned,
-          driverName: selectedTravel.driverName,
-          carName: selectedTravel.carName,
+          departureStation: selectedTravel!.departureStation?.address,
+          destinationStation: selectedTravel!.destinationStation?.address,
+          departureLocation: selectedTravel!.departureStation?.address,
+          arrivalLocation: selectedTravel!.arrivalLocation,
+          startTime: selectedTravel!.startTime,
+          arrivalTime: selectedTravel!.arrivalTime,
+          remainingSeats: selectedTravel!.remainingSeats,
+          ticketPrice: selectedTravel!.ticketPrice,
+          airConditioned: selectedTravel!.airConditioned,
+          driverName: selectedTravel!.driverName,
+          carName: selectedTravel!.carName,
           status: ReservationStatus.completed,
           userId: widget.travelSearchInfo['userId'],
           distance: '2');
@@ -127,7 +128,9 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return BookingConfirmationDialog(book: _saveReservation);
+        _saveReservation();
+        _loadTravels();
+        return BookingConfirmationDialog(book: () async{});
       },
     );
   }
@@ -135,6 +138,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   Future<void> _saveReservation() async {
     if (reservationModel != null) {
       await reservationService.saveReservation(reservationModel!);
+      await travelService.decrementRemainingSeats(selectedTravel!.travelReference!.id);
     }
   }
 }
