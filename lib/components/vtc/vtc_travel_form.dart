@@ -112,7 +112,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                   reservationService.createUserReservation(reservation);
                   widget.refreshData();
               },
-              displayText: "Votre réservation a été créée avec succès"
+              displayText: "Votre réservation a été créée avec succès."
           );
         },
       );
