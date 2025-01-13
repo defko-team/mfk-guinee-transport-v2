@@ -20,7 +20,7 @@ class CustomerHome extends StatefulWidget {
 }
 
 class _CustomerHomeState extends State<CustomerHome> {
-  int selectedTransportTypeIndex = -1;
+  int selectedTransportTypeIndex = 0;
   StationModel? selectedDeparture;
   StationModel? selectedArrival;
 
@@ -98,25 +98,24 @@ class _CustomerHomeState extends State<CustomerHome> {
                 var selectedArrivalFound = widget.locations.where((location) =>
                     location.name.toLowerCase() == arrival.toLowerCase());
 
-                  selectedArrival = selectedArrivalFound.isNotEmpty
-                      ? selectedArrivalFound.first
-                      : null;
-                });
-              },
-              locations: widget.locations,
-            ),
-            const Spacer(),
-            Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: CustomElevatedButton(
-                  onClick: formIsValid ? _onSearch : () {},
-                  backgroundColor:
-                      formIsValid ? AppColors.green : AppColors.grey,
-                  text: "Rechercher",
-                )),
-          ],
-          if (selectedTransportTypeIndex == 1)
-            VTCTravelForm(userId: widget.userId!) 
+                selectedArrival = selectedArrivalFound.isNotEmpty
+                    ? selectedArrivalFound.first
+                    : null;
+              });
+            },
+            locations: widget.locations,
+          ),
+          const Spacer(),
+          Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: CustomElevatedButton(
+                onClick: formIsValid ? _onSearch : () {},
+                backgroundColor: formIsValid ? AppColors.green : AppColors.grey,
+                text: "Rechercher",
+              )),
+        ],
+        if (selectedTransportTypeIndex == 1)
+          VTCTravelForm(userId: widget.userId!)
       ],
     );
   }

@@ -7,11 +7,13 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/history_service.dart';
+import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
+import 'package:mfk_guinee_transport/views/card_reservation.dart';
 
 class HistoryPage extends StatefulWidget {
   final String title;
-  const HistoryPage({super.key, this.title = "Historique"});
+  const HistoryPage({super.key, this.title = "Reservations"});
 
   @override
   _HistoryPageState createState() => _HistoryPageState();
@@ -56,6 +58,7 @@ class _HistoryPageState extends State<HistoryPage> {
             userId: userId);
     setState(() {
       reservations = fetchedReservations;
+      userId = userId;
     });
   }
 
@@ -82,68 +85,175 @@ class _HistoryPageState extends State<HistoryPage> {
     }
   }
 
+  void _openModifyReservationBottomSheet(
+      {required ReservationModel reservation}) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 20,
+                  right: 20,
+                  top: 20),
+              child: const Text(''),
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BaseAppBar(
-        title: widget.title,
-        showBackArrow: false,
-      ),
-      body: Column(
-        children: [
-          FilterBar(
-              onFiltersChanged: onFiltersChanged,
-              users: users,
-              isAdmin: currentUser?.role?.toLowerCase() == 'admin'),
-          Expanded(
-              child: ListView.builder(
-            itemCount: reservations.length,
-            itemBuilder: (context, index) {
-              final reservation = reservations[index];
-              return TripCard(
-                origin: reservation.departureLocation ?? "",
-                destination: reservation.destinationStation ?? "",
-                vehicleName: reservation.carName!,
-                status: reservation.status.name,
-                statusColor: _getColorFromStatus(reservation.status.name),
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+        appBar: BaseAppBar(
+          title: widget.title,
+          showBackArrow: false,
+        ),
+        body: // Within your page's content
+            DefaultTabController(
+          length: 2,
+          child: Column(
+            children: [
+              TabBar(
+                labelColor: Colors.black, // Active tab color
+                unselectedLabelColor: Colors.grey, // Inactive tab color
+                // Add this if your background is light
+                indicator: UnderlineTabIndicator(
+                  borderSide: BorderSide(width: 2, color: Colors.black),
+                ),
+                tabs: [
+                  Tab(text: 'A venir'),
+                  Tab(text: 'Historique'),
+                ],
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    // First tab content
+                    Column(
+                      children: [
+                        FilterBar(
+                            onFiltersChanged: onFiltersChanged,
+                            users: users,
+                            isAdmin:
+                                currentUser?.role?.toLowerCase() == 'admin'),
+                        Expanded(
+                            child: SingleChildScrollView(
+                          child: StreamBuilder<List<ReservationModel>>(
+                              stream: ReservationService()
+                                  .userReservationStream(userId ?? ""),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Padding(
+                                      padding: EdgeInsets.only(
+                                          left: MediaQuery.of(context)
+                                                  .size
+                                                  .width /
+                                              2.5,
+                                          top: MediaQuery.of(context)
+                                                  .size
+                                                  .height /
+                                              2.5),
+                                      child: const CircularProgressIndicator());
+                                }
+                                if (snapshot.hasError) {
+                                  return Center(
+                                      child: Text('Error: ${snapshot.error}'));
+                                }
+                                if (!snapshot.hasData ||
+                                    snapshot.data!.isEmpty) {
+                                  return const Center(
+                                      child: Text('No Reservations found'));
+                                }
+                                return ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8),
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, int index) {
+                                      return CardReservation(
+                                          reservationModel:
+                                              snapshot.data![index],
+                                          onOpenModifyReservationBottonSheet:
+                                              _openModifyReservationBottomSheet);
+                                    });
+                              }),
+                        ))
+                      ],
                     ),
-                    builder: (BuildContext context) {
-                      return DraggableScrollableSheet(
-                        expand: false,
-                        builder: (context, scrollController) {
-                          return TripDetailCard(
-                            userName: reservation.driverName!,
-                            userAvatarUrl:
-                                "https://st3.depositphotos.com/15648834/17930/v/1600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg",
-                            rating: 4.9,
-                            origin: reservation.departureLocation ?? "",
-                            destination: reservation.destinationStation ?? "",
-                            distance: "${reservation.distance} km",
-                            time: "25 min", // Example data
-                            price: "${reservation.ticketPrice} CFA",
-                            status: reservation.status.name,
-                            onCancel: () {
-                              Navigator.of(context).pop();
-                            },
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-              );
-            },
-          )),
-        ],
-      ),
-    );
+                    // Second tab content
+                    Column(
+                      children: [
+                        FilterBar(
+                            onFiltersChanged: onFiltersChanged,
+                            users: users,
+                            isAdmin:
+                                currentUser?.role?.toLowerCase() == 'admin'),
+                        Expanded(
+                            child: ListView.builder(
+                          itemCount: reservations.length,
+                          itemBuilder: (context, index) {
+                            final reservation = reservations[index];
+                            return TripCard(
+                              origin: reservation.departureLocation ?? "",
+                              destination: reservation.destinationStation ?? "",
+                              vehicleName: reservation.carName!,
+                              status: reservation.status.name,
+                              statusColor:
+                                  _getColorFromStatus(reservation.status.name),
+                              onTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(20)),
+                                  ),
+                                  builder: (BuildContext context) {
+                                    return DraggableScrollableSheet(
+                                      expand: false,
+                                      builder: (context, scrollController) {
+                                        return TripDetailCard(
+                                          userName: reservation.driverName!,
+                                          userAvatarUrl:
+                                              "https://st3.depositphotos.com/15648834/17930/v/1600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg",
+                                          rating: 4.9,
+                                          origin:
+                                              reservation.departureLocation ??
+                                                  "",
+                                          destination:
+                                              reservation.destinationStation ??
+                                                  "",
+                                          distance:
+                                              "${reservation.distance} km",
+                                          time: "25 min", // Example data
+                                          price:
+                                              "${reservation.ticketPrice} CFA",
+                                          status: reservation.status.name,
+                                          onCancel: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        )),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ));
   }
 }
 
@@ -174,11 +284,14 @@ class _FilterBarState extends State<FilterBar> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildDatePicker(context),
+          // _buildDatePicker(context),
+          // const SizedBox(width: 16),
           _buildStatusDropdown(),
+          const SizedBox(width: 16), // Horizontal space
           _buildVehicleDropdown(),
+          const SizedBox(width: 16), // Horizontal space
           if (widget.isAdmin) _buildUsersDropdown(),
           if (_isAnyFilterSet()) // Conditionally render the IconButton
             IconButton(
