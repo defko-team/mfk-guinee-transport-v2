@@ -6,7 +6,7 @@ import 'package:mfk_guinee_transport/services/user_service.dart';
 class HistoriqueService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference reservationCollection =
-      FirebaseFirestore.instance.collection('reservation');
+      FirebaseFirestore.instance.collection('Reservation');
   final UserService userService = new UserService();
 
   // Method to get all reservations for a specific user with optional filters

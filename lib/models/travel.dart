@@ -37,44 +37,53 @@ class TravelModel {
       this.carName,
       this.nombreDePlace});
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'departure_station': departureStationId,
-      'destination_station': destinationStationId,
-      'departure_location': departureLocation,
-      'arrival_location': arrivalLocation,
-      'start_time': startTime,
-      'arrival_time': arrivalTime,
-      'remaining_seats': remainingSeats,
-      'ticket_price': ticketPrice,
-      'air_conditioned': airConditioned,
-      'driver_name': driverName,
-      'car_name': carName,
-      'nombre_de_place': nombreDePlace
-    };
-  }
+Map<String, dynamic> toMap() {
+  return {
+    'id': id,
+    'departure_station': FirebaseFirestore.instance
+        .collection('Station')
+        .doc(departureStationId),
+    'destination_station': FirebaseFirestore.instance
+        .collection('Station')
+        .doc(destinationStationId),
+    'departure_location': departureLocation,
+    'arrival_location': arrivalLocation,
+    'start_time': startTime,
+    'arrival_time': arrivalTime,
+    'remaining_seats': remainingSeats,
+    'ticket_price': ticketPrice,
+    'air_conditioned': airConditioned,
+    'driver_name': driverName,
+    'car_name': carName,
+    'nombre_de_place': nombreDePlace,
+  };
+}
+factory TravelModel.fromMap(Map<String, dynamic> map) {
+  return TravelModel(
+    id: map['id'],
+    departureStationId: (map['departure_station'] is DocumentReference)
+        ? (map['departure_station'] as DocumentReference).id
+        : (map['departure_station'] as String).split('/').last,
+    destinationStationId: (map['destination_station'] is DocumentReference)
+        ? (map['destination_station'] as DocumentReference).id
+        : (map['destination_station'] as String).split('/').last,
+    departureLocation: map['departure_location'] ?? '',
+    arrivalLocation: map['arrival_location'] ?? '',
+    startTime: (map['start_time'] as Timestamp).toDate(),
+    arrivalTime: map['arrival_time'] != null
+        ? (map['arrival_time'] as Timestamp).toDate()
+        : null,
+    remainingSeats: map['remaining_seats'] ?? 0,
+    ticketPrice: map['ticket_price'] != null
+        ? (map['ticket_price'] as num).toDouble()
+        : 0.0,
+    airConditioned: map['air_conditioned'] ?? false,
+    driverName: map['driver_name'] ?? '',
+    carName: map['car_name'] ?? '',
+    nombreDePlace: map['nombre_de_place'] ?? 0,
+  );
+}
 
-  factory TravelModel.fromMap(Map<String, dynamic> map) {
-    return TravelModel(
-        id: map['id'],
-        departureStationId: map['departure_station'],
-        destinationStationId: map['destination_station'],
-        departureLocation: map['departure_location'] ?? '',
-        arrivalLocation: map['arrival_location'] ?? '',
-        startTime: (map['start_time'] as Timestamp).toDate(),
-        arrivalTime: map['arrival_time'] != null
-            ? (map['arrival_time'] as Timestamp).toDate()
-            : null,
-        remainingSeats: map['remaining_seats'] ?? 0,
-        ticketPrice: map['ticket_price'] != null
-            ? (map['ticket_price'] as num).toDouble()
-            : 0.0,
-        airConditioned: map['air_conditioned'] ?? false,
-        driverName: map['driver_name'] ?? '',
-        carName: map['car_name'] ?? '',
-        nombreDePlace: map['nombre_de_place'] ?? 0);
-  }
 
   factory TravelModel.fromMapStation(Map<String, dynamic> map,
       StationModel departureStation, StationModel destinationStation) {

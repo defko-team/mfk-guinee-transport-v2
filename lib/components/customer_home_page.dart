@@ -25,9 +25,7 @@ class _CustomerHomeState extends State<CustomerHome> {
   StationModel? selectedArrival;
 
   void _onSearch() {
-    if (selectedDeparture != null &&
-        selectedArrival != null &&
-        selectedTransportTypeIndex != -1) {
+    if (selectedDeparture != null && selectedArrival != null) {
       // Here you can handle the search logic
       Navigator.push(
           context,
@@ -69,9 +67,7 @@ class _CustomerHomeState extends State<CustomerHome> {
 
   @override
   Widget build(BuildContext context) {
-    bool formIsValid = selectedDeparture != null &&
-        selectedArrival != null &&
-        selectedTransportTypeIndex != -1;
+    bool formIsValid = selectedDeparture != null && selectedArrival != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -79,7 +75,9 @@ class _CustomerHomeState extends State<CustomerHome> {
           setState(() {
             selectedTransportTypeIndex = type;
           });
-        }),
+        },
+        selectedType: selectedTransportTypeIndex,
+        ),
         if (selectedTransportTypeIndex == 0) ...[
           LocationForm(
             onDepartureChanged: (departure) {
@@ -115,7 +113,14 @@ class _CustomerHomeState extends State<CustomerHome> {
               )),
         ],
         if (selectedTransportTypeIndex == 1)
-          VTCTravelForm(userId: widget.userId!)
+          VTCTravelForm(
+            userId: widget.userId!,
+            refreshData: () {
+              setState(() {
+                selectedTransportTypeIndex = 0;
+              });
+            },
+          )
       ],
     );
   }
