@@ -70,38 +70,38 @@ Future<void> _initFirebase() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Request permission for notifications
-  await _requestNotificationPermission();
-  _setupForegroundNotificationListener();
+  // await _requestNotificationPermission();
+  // _setupForegroundNotificationListener();
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message: ${message.messageId}');
 }
 
-Future<void> _requestNotificationPermission() async {
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  SharedPreferences preferences = await SharedPreferences.getInstance();
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-  print('User granted permission: ${settings.authorizationStatus}');
+// Future<void> _requestNotificationPermission() async {
+//   FirebaseMessaging messaging = FirebaseMessaging.instance;
+//   SharedPreferences preferences = await SharedPreferences.getInstance();
+//   NotificationSettings settings = await messaging.requestPermission(
+//     alert: true,
+//     badge: true,
+//     sound: true,
+//   );
+//   print('User granted permission: ${settings.authorizationStatus}');
 
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    String? token = await messaging.getToken();
-    try {
-      UserModel user = await UserService().getCurrentUser();
-      if (user.fcmToken! != token!) {
-        user.fcmToken = token;
-        await UserService().updateUser(user);
-      }
-      preferences.setString('fcmToken', token);
-    } catch (e) {
-      print("error");
-    }
-  }
-}
+//   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+//     String? token = await messaging.getToken();
+//     try {
+//       UserModel user = await UserService().getCurrentUser();
+//       if (user.fcmToken! != token!) {
+//         user.fcmToken = token;
+//         await UserService().updateUser(user);
+//       }
+//       preferences.setString('fcmToken', token);
+//     } catch (e) {
+//       print("error");
+//     }
+//   }
+// }
 
 void _setupForegroundNotificationListener() {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {

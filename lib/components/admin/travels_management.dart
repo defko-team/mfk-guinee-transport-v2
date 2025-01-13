@@ -90,60 +90,81 @@ class _AdminTravelManagementPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Trajets"),
-        backgroundColor: AppColors.green,
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
-            }),
-      ),
-      body: StreamBuilder<List<TravelModel>>(
-          stream: TravelService().travelStream(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Padding(
-                  padding: EdgeInsets.only(
-                      left: MediaQuery.of(context).size.width / 2.5,
-                      top: MediaQuery.of(context).size.height / 2.5),
-                  child: const CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No travels found'));
-            }
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Trajets',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1,
+            ),
+          ),
+          elevation: 0,
+          backgroundColor: AppColors.green,
+          automaticallyImplyLeading: false,
+        ),
+        body: Container(
+          width: MediaQuery.of(context).size.width,
+          color: Colors.white,
+          padding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.of(context).size.width * 0.04,
+            vertical: 16
+          ),
+          child: StreamBuilder<List<TravelModel>>(
+            stream: TravelService().travelStream(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              }
+            
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text('No travels found'),
+                );
+              }
 
-            return ListView.builder(
+              return ListView.builder(
                 shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
                 itemCount: snapshot.data!.length,
-                itemBuilder: (context, int index) {
-                  return CardTravel(
+                itemBuilder: (context, index) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: CardTravel(
                       travelModel: snapshot.data![index],
                       onShowDeleteDialog: _showDeleteConfirmationDialog,
                       onDuration: duration,
                       onDistance: distance,
-                      onOpenAddTravelBottomSheet: _openAddTravelBottomSheet);
-                });
-          }),
-      floatingActionButton: AnimatedOpacity(
-        opacity: 0.7,
-        duration: const Duration(milliseconds: 300),
-        child: FloatingActionButton(
+                      onOpenAddTravelBottomSheet: _openAddTravelBottomSheet
+                    ),
+                  );
+                }
+              );
+            }
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
           onPressed: () => _openAddTravelBottomSheet(),
           backgroundColor: AppColors.green,
-          shape: const CircleBorder(),
-          elevation: 6.0,
+          elevation: 4,
           child: const Icon(
             Icons.add,
             color: Colors.white,
-            size: 30,
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

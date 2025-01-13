@@ -131,31 +131,43 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
         _pickedDepartureDate != null &&
         _pickedDepartureTime != null;
     return Card(
-        elevation: 10,
-        color: Colors.white,
-        child: Padding(
-            padding: const EdgeInsets.only(left: 18, right: 18, bottom: 10),
+        elevation: 4,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Center(
                     child: Container(
                       width: 40,
-                      height: 5,
-                      margin: const EdgeInsets.only(bottom: 10),
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(10)),
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
                   const Center(
-                      child: Text("Ajouter votre reservation",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold))),
-                  const SizedBox(height: 20),
+                    child: Text(
+                      "Ajouter votre réservation",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   AddressAutocomplete(
                       onLocationChanged: (val) {
                         _departureLocation = val;
@@ -163,7 +175,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                       hintText: 'Adresse de depart',
                       currentLocation: currentLocation,
                       labelText: 'Lieu de Depart'),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   AddressAutocomplete(
                     onLocationChanged: (val) {
                       _destinationLocation = val;
@@ -172,7 +184,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                     labelText: 'Destination',
                     isDeparture: false,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -234,28 +246,36 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                       )
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          onPressed: isFormValid ? _submitVTCTraject : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isFormValid ? AppColors.green : AppColors.grey,
-                            padding: const EdgeInsets.only(bottom: 15, top: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                      : SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isFormValid ? _submitVTCTraject : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isFormValid ? AppColors.green : AppColors.grey,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'Enregistrer la reservation',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 16),
+                            child: const Text(
+                              'Enregistrer la réservation',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
+                  const SizedBox(height: 16),
                 ],
               ),
-            )));
+            ),
+          ),
+        ),
+    );
   }
 }

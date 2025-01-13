@@ -43,7 +43,18 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Paramètres de l\'Admin'),
+        title: const Text(
+          'Paramètres',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1,
+          ),
+        ),
+        elevation: 0,
+        backgroundColor: const Color(0xFF34C759), // Assuming AppColors.green is 0xFF34C759
+        automaticallyImplyLeading: false,
       ),
       backgroundColor: const Color(0xFFF5F5F5),
       body: _userId == null

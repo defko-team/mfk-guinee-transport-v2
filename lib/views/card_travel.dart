@@ -22,340 +22,108 @@ class CardTravel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: const EdgeInsets.all(8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      color: Colors.white,
-      semanticContainer: true,
-      shadowColor: Colors.teal,
-      elevation: 1,
-      child: Container(
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
+      color: const Color.fromARGB(255, 245, 245, 245),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 2,
-                    ),
-                    const Icon(
-                      Icons.my_location_rounded,
-                      color: Colors.green,
-                      size: 21,
-                    ),
-                    Container(
-                      width: 4,
-                    ),
-                    Text(
-                      travelModel.departureStation?.name ??
-                          travelModel.departureLocation!,
-                      style: const TextStyle(fontSize: 13),
-                    )
-                  ],
+                const Icon(
+                  Icons.my_location_rounded,
+                  color: Colors.green,
+                  size: 18,
                 ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.social_distance,
-                      color: Colors.grey,
-                      size: 12,
-                    ),
-                    Container(
-                      width: 4,
-                    ),
-                    travelModel.departureStation != null
-                        ? Text(
-                            '${onDistance(travelModel.departureStation!, travelModel.destinationStation!)} km',
-                            style: const TextStyle(fontSize: 13),
-                          )
-                        : const Text('To be define'),
-                    Container(
-                      width: 4,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 11,
-                    ),
-                    const Dash(
-                      direction: Axis.vertical,
-                      length: 28,
-                      dashLength: 4,
-                      dashGap: 3,
-                      dashColor: Colors.grey,
-                      dashThickness: 2,
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.access_time_filled,
-                      color: Colors.grey,
-                      size: 12,
-                    ),
-                    Container(
-                      width: 4,
-                    ),
-                    (travelModel.arrivalTime != null)
-                        ? Text(
-                            onDuration(travelModel),
-                            style: const TextStyle(fontSize: 13),
-                          )
-                        : const Text("To Be Define"),
-                    Container(
-                      width: 4,
-                    ),
-                  ],
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.place,
-                      color: Colors.grey,
-                      size: 25,
-                    ),
-                    Container(
-                      width: 4,
-                    ),
-                    Text(
-                      travelModel.destinationStation?.name ??
-                          travelModel.arrivalLocation!,
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                  ],
-                ),
-                Row(children: [
-                  const Text(
-                    "XOF",
-                    style: TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey),
-                  ),
-                  Container(
-                    width: 4,
-                  ),
-                  Text(
-                    '${travelModel.ticketPrice}',
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    travelModel.departureStation?.name ?? travelModel.departureLocation!,
                     style: const TextStyle(fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  Container(
-                    width: 4,
-                  ),
-                ])
-              ],
-            ),
-            Divider(
-              thickness: 0.7,
-              color: Colors.grey.shade300,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(width: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade500,
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(1),
-                      child: const Icon(
-                        CupertinoIcons.person_alt_circle_fill,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Container(width: 8),
-                    Text(travelModel.driverName ?? '')
-                  ],
                 ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.event_seat,
+                const SizedBox(width: 8),
+                if (travelModel.departureStation != null)
+                  Text(
+                    '${onDistance(travelModel.departureStation!, travelModel.destinationStation!)} km',
+                    style: const TextStyle(
+                      fontSize: 12,
                       color: Colors.grey,
                     ),
-                    Container(
-                      width: 9,
-                    ),
-                    Text('xx/${travelModel.nombreDePlace}'),
-                    Container(
-                      width: 9,
-                    ),
-                  ],
-                )
+                  ),
               ],
             ),
+            const SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 9,
-                    ),
-                    const Icon(
-                      CupertinoIcons.car_detailed,
-                      color: Colors.grey, // icon color
-                    ),
-                    Container(width: 8),
-                    Text(travelModel.carName!)
-                  ],
+                const Icon(
+                  Icons.place,
+                  color: Colors.red,
+                  size: 18,
                 ),
-                travelModel.airConditioned!
-                    ? Row(
-                        children: [
-                          Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.white, // background color
-                                borderRadius: BorderRadius.circular(23),
-                                border: Border.all(
-                                  color: Colors.green.shade700,
-                                  width: 2,
-                                ),
-                              ),
-                              padding: const EdgeInsets.all(
-                                  1), // adjust padding as needed
-                              child: Icon(
-                                color: Colors.green.shade900,
-                                Icons.ac_unit_sharp,
-                              )),
-                          Container(width: 9),
-                          const Text('Climatisé'),
-                          Container(
-                            width: 5,
-                          )
-                        ],
-                      )
-                    : Row(
-                        children: [
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                  decoration: BoxDecoration(
-                                    color: AppColors.white, // background color
-                                    borderRadius: BorderRadius.circular(23),
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.all(
-                                      1), // adjust padding as needed
-                                  child: const Icon(
-                                    color: Colors.grey,
-                                    Icons.ac_unit_sharp,
-                                  )),
-                              Transform.rotate(
-                                angle: -0.785398, // 45 degrees in radians
-                                child: Container(
-                                  width: 30,
-                                  height: 2,
-                                  color: Colors.grey, // Diagonal line color
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            width: 5,
-                          ),
-                          const Text('Non climatisé'),
-                          Container(
-                            width: 5,
-                          ),
-                        ],
-                      )
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    travelModel.destinationStation?.name ?? travelModel.arrivalLocation!,
+                    style: const TextStyle(fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  onDuration(travelModel),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
               ],
             ),
+            const SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 4,
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: () =>
-                          onOpenAddTravelBottomSheet(travel: travelModel),
-                      icon: const Icon(
-                        Icons.edit_square,
-                        size: 14,
-                        color: Colors.black,
-                      ), // Icône à afficher
-                      label: const Text(
-                        "Modifier",
-                        style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500),
-                      ), // Texte à afficher
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(132, 33),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(40), // Bords arrondis
-                        ),
-                        side: const BorderSide(
-                            width: 1.0,
-                            color: Colors.black), // Bordure avec couleur
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => onOpenAddTravelBottomSheet(travel: travelModel),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  ],
+                    child: const Text(
+                      'Modifier',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
                 ),
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () =>
-                          onShowDeleteDialog(travelModel.travelReference!.id),
-                      icon: const Icon(
-                        Icons.delete_forever_outlined,
-                        size: 14,
-                        color: Colors.red,
-                      ), // Icône à afficher
-                      label: const Text(
-                        "Supprimer",
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500),
-                      ), // Texte à afficher
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(132, 33),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(40), // Bords arrondis
-                        ),
-                        side: const BorderSide(
-                            width: 1.0,
-                            color: Colors.red), // Bordure avec couleur
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => onShowDeleteDialog(travelModel.travelReference!.id),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    Container(width: 4)
-                  ],
-                )
+                    child: const Text(
+                      'Supprimer',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),

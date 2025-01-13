@@ -76,6 +76,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                   return CustomAppBar(
                     userName: userName,
                     avatarUrl: avatarUrl,
+                    idUser: _userId!,
                   );
                 },
               ),

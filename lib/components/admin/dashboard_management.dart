@@ -19,16 +19,21 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          'Dashboard',
-          style: GoogleFonts.sora(color: Colors.black87, fontSize: 20),
+        title: const Text(
+          'Tableau de bord',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1,
+          ),
         ),
-        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.green,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list, color: Colors.black87),
+            icon: Icon(Icons.filter_list, color: Colors.white),
             onPressed: _showFilterModal,
           ),
         ],
