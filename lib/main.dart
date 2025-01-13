@@ -70,8 +70,8 @@ Future<void> _initFirebase() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Request permission for notifications
-  await _requestNotificationPermission();
-  _setupForegroundNotificationListener();
+  // await _requestNotificationPermission();
+  // _setupForegroundNotificationListener();
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
