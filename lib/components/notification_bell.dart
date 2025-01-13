@@ -3,8 +3,9 @@ import 'package:mfk_guinee_transport/components/notifications_page.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
 class NotificationBell extends StatelessWidget {
+  final Stream<int> unReadNotificationCount;
   const NotificationBell({
-    super.key,
+    super.key, required this.unReadNotificationCount,
   });
 
   @override
@@ -26,22 +27,40 @@ class NotificationBell extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const NotificationsPage()),
+                    builder: (context) => NotificationsPage()),
               );
             },
           ),
           Positioned(
-            top: 12,
-            right: 12,
-            child: Container(
-              height: 12,
-              width: 12,
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
+            top: 4,
+            right: 4,
+              child: StreamBuilder<int>(
+                  stream: unReadNotificationCount,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data! > 0) {
+                      print("test ${snapshot.data!}");
+                      return Container(
+                        height: 20,
+                        width: 20,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          snapshot.data!.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold
+                          ),
+                        ),
+                      );
+                    } else {
+                      return const SizedBox();
+                    }
+                  })
             ),
-          )
         ],
       ),
     );

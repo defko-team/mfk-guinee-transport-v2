@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mfk_guinee_transport/models/notification.dart';
 import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -11,120 +14,49 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
   final FirebaseMessagingService _firebaseMessagingService =
-      FirebaseMessagingService();
-  final List<Map<String, dynamic>> notifications = [
-    {
-      "idNotifications": "notif001",
-      "id_user": "user001",
-      "dateHeure": DateTime.now().subtract(const Duration(minutes: 15)),
-      "context": "Ride Request",
-      "message": "You have a new ride request from downtown.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif002",
-      "id_user": "user002",
-      "dateHeure": DateTime.now().subtract(const Duration(hours: 1)),
-      "context": "Ride Completed",
-      "message": "Your recent ride from the airport has been completed.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif003",
-      "id_user": "user003",
-      "dateHeure": DateTime.now().subtract(const Duration(minutes: 30)),
-      "context": "Payment Received",
-      "message": "Payment of \$15.75 received for your last ride.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif004",
-      "id_user": "user004",
-      "dateHeure": DateTime.now().subtract(const Duration(minutes: 10)),
-      "context": "Ride Request",
-      "message": "You have a new ride request from the central station.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif005",
-      "id_user": "user005",
-      "dateHeure": DateTime.now().subtract(const Duration(hours: 2)),
-      "context": "Ride Canceled",
-      "message": "Your scheduled ride to the city center has been canceled.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif006",
-      "id_user": "user006",
-      "dateHeure": DateTime.now().subtract(const Duration(minutes: 5)),
-      "context": "Ride Request",
-      "message": "You have a new ride request from uptown.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif007",
-      "id_user": "user007",
-      "dateHeure": DateTime.now().subtract(const Duration(minutes: 45)),
-      "context": "Driver Feedback",
-      "message": "New feedback received for your recent ride. Rating: 5 stars.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif008",
-      "id_user": "user008",
-      "dateHeure": DateTime.now().subtract(const Duration(minutes: 20)),
-      "context": "Ride Completed",
-      "message": "Your ride to the hotel has been completed successfully.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif009",
-      "id_user": "user009",
-      "dateHeure": DateTime.now().subtract(const Duration(minutes: 12)),
-      "context": "Ride Request",
-      "message": "You have a new ride request from the business district.",
-      "status": false
-    },
-    {
-      "idNotifications": "notif010",
-      "id_user": "user010",
-      "dateHeure": DateTime.now().subtract(const Duration(days: 1)),
-      "context": "Promotion",
-      "message": "You have received a 10% discount on your next ride.",
-      "status": false
-    }
-  ];
-
+  FirebaseMessagingService();
+  String? _userId;
   @override
   void initState() {
     super.initState();
-    _firebaseMessagingService.initialize();
+    _loadUserInfo();
+    print("Initialisation");
   }
 
-  void markAsRead(int index) {
+  Future<void> _loadUserInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+    print("user found ${userId}");
     setState(() {
-      notifications[index]["status"] = true;
+      _userId = userId;
+    });
+  }
+
+  void markAsRead(NotificationModel notification) {
+    setState(() {
+      notification.status = true;
+      NotificationsService().updateNotification(notification);
     });
   }
 
   // Function to show a popup dialog with notification details
-  void _showNotificationDialog(
-      BuildContext context, Map<String, dynamic> notification) {
-    markAsRead(notifications.indexOf(notification));
+
+  void _showNotificationDialog(BuildContext context,
+     NotificationModel notification) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(notification['context']!),
+          title: Text(notification.context),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(notification['message']!),
+              Text(notification.message),
               const SizedBox(height: 10),
               Text(
                 DateFormat('yyyy-MM-dd – kk:mm')
-                    .format(notification['dateHeure']!),
+                    .format(notification.dateHeure),
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ],
@@ -132,7 +64,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           actions: [
             TextButton(
               onPressed: () {
-                //markAsRead(notifications.indexOf(notification)); // Mark as read on button press
+                markAsRead(notification); // Mark as read on button press
                 Navigator.of(context).pop(); // Close the dialog
               },
               child: const Text('Close'),
@@ -147,31 +79,55 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Notifications',
+          title: const Text('Notification',
               style: TextStyle(color: Colors.white)),
           iconTheme: const IconThemeData(
             color: Colors.white,
           ),
           backgroundColor: Colors.green,
         ),
-        body: ListView.builder(
-          itemCount: notifications.length,
-          itemBuilder: (context, index) {
-            final notification = notifications[index];
-            return NotificationTile(
-              context: notification["context"]!,
-              message: notification["message"]!,
-              dateHeure: notification["dateHeure"]!,
-              status: notification["status"]!,
-              onTap: () => _showNotificationDialog(context, notification),
-              idNotification: '',
-              idUser: '',
-            );
-          },
-        ));
+        body: StreamBuilder<List<NotificationModel>>(
+            stream: NotificationsService().notificationStreamByUserId(_userId!),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Padding(
+                    padding: EdgeInsets.only(
+                        left: MediaQuery
+                            .of(context)
+                            .size
+                            .width / 2.5,
+                        top: MediaQuery
+                            .of(context)
+                            .size
+                            .height / 2.5),
+                    child: const CircularProgressIndicator());
+              }
+
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No Notifications found'));
+              }
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, int index) {
+                  NotificationModel notification = snapshot.data![index];
+                  return NotificationTile(
+                    context: notification.context,
+                    status: notification.status,
+                    message: notification.message,
+                    dateHeure: notification.dateHeure,
+                    onTap: () => _showNotificationDialog(context, notification),
+                    idNotification: '',
+                    idUser: '',
+                  );
+                },
+              );
+            }));
   }
 }
-
 class NotificationTile extends StatelessWidget {
   final String idNotification;
   final String idUser;
@@ -181,23 +137,23 @@ class NotificationTile extends StatelessWidget {
   final bool status;
   final VoidCallback onTap;
 
-  const NotificationTile(
+   NotificationTile(
       {super.key,
       required this.context,
       required this.message,
       required this.dateHeure,
-      required this.status,
       required this.onTap,
       required this.idNotification,
+        required this.status,
       required this.idUser});
   @override
   Widget build(BuildContext buildContext) {
     // Format the date and time using intl package
     final formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(dateHeure);
-    final bool isNew = !status;
+    final bool isNew = !status!;
     final Color contextColor = isNew ? Colors.grey[850]! : Colors.grey[300]!;
     final String displayedBody =
-        !status ? '${message.substring(0, message.length ~/ 3)}...' : message;
+        !status! ? '${message.substring(0, message.length ~/ 3)}...' : message;
     return Card(
       color: !isNew ? Colors.grey[400] : Colors.grey[80],
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),

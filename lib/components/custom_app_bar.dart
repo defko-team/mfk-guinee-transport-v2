@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
 
 import 'notification_bell.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String userName;
+  final String idUser;
   final String avatarUrl;
 
   const CustomAppBar({
     super.key,
     required this.userName,
     required this.avatarUrl,
+    required this.idUser
   });
 
   @override
@@ -43,7 +46,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   // Greeting and name
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: MainAxisSize.max,
                     children: [
                       const Text(
                         "Bonjour 👋",
@@ -65,7 +68,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ],
               ),
               // Notification bell icon
-              const NotificationBell(),
+              NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(idUser)),
             ],
           ),
         ),

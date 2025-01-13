@@ -44,28 +44,11 @@ class _AdminReservationsManagementPageState
       appBar: AppBar(
           title: const Text('Reservations'),
           backgroundColor: AppColors.green,
-          /*leading: IconButton(
+          leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: const Icon(Icons.arrow_back))*/
-          leading: IconButton(
-              onPressed: () async {
-                const fcmToken =
-                    "e5mDaopDRiiJp8xm7EbZ1r:APA91bFenzKCw8pgIf5gBTTojQUypw-OpNdWa_njo6JWi9QFP_wBcimOJ2Pill7jbFf7VwOZ-nZQBuj2u0yGOaTl0ZrNc4fiqt2sx15Wr20wf3ZmN55pDp4";
-                const title = "Test";
-                const body = "Test message";
-
-                if (fcmToken.isNotEmpty &&
-                    title.isNotEmpty &&
-                    body.isNotEmpty) {
-                  await NotificationsService()
-                      .sendNotification(fcmToken, title, body);
-                } else {
-                  print('Please fill out all fields.');
-                }
-              },
-              icon: const Icon(Icons.arrow_back, color: Colors.white))),
+              icon: const Icon(Icons.arrow_back))),
       body: StreamBuilder<List<ReservationModel>>(
           stream: ReservationService().reservationStream(),
           builder: (context, snapshot) {
@@ -205,14 +188,21 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
         (widget.reservation.carName != null) &&
         (widget.reservation.ticketPrice != 0.0) &&
         (widget.reservation.airConditioned != null)) {
-      widget.reservation.status = ReservationStatus.completed;
+      widget.reservation.status = ReservationStatus.pending;
     }
 
     ReservationService().updateReservation(widget.reservation);
 
     UserModel user = await UserService().getUserById(widget.reservation.userId);
-    await NotificationsService().sendNotification(user.fcmToken!,
+    //print("User Token ${user.fcmToken}");
+    bool notificationStatus = await NotificationsService().sendNotification(user.fcmToken!,
         "Confirmation reservation", "Votre reservation a ete mise a jour");
+    notificationStatus ? NotificationsService().createNotification(
+        idUser: widget.reservation.userId,
+        context: "Confirmation reservation",
+        message: "Votre reservation a ete mise a jour",
+        status: false,
+        dateHeure: DateTime.now()) : print("Notification status ${notificationStatus}");
     Navigator.of(context).pop();
   }
 

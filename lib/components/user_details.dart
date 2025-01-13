@@ -130,7 +130,7 @@ void _updateProfile() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const BaseAppBar(title: 'Détails de l\'utilisateur'),
+      appBar: BaseAppBar(title: 'Détails de l\'utilisateur'),
       body: _isLoading || _isInfoLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

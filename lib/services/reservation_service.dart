@@ -7,7 +7,7 @@ class ReservationService {
   // Save a ReservationModel to Firestore
   Future<void> saveReservation(ReservationModel reservation) async {
     try {
-      DocumentReference docRef = _firestore.collection('reservation').doc();
+      DocumentReference docRef = _firestore.collection('Reservation').doc();
 
       // Assigning a new ID to the reservation object if it doesn't have one
       final reservationWithId = reservation.id == null

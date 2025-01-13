@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 class NotificationsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> sendNotification(
+  Future<bool> sendNotification(
       String fcmToken, String title, String body) async {
     const url =
         'https://us-central1-defko-mfk-guinee-transport.cloudfunctions.net/sendNotification';
@@ -23,8 +23,10 @@ class NotificationsService {
         await http.post(Uri.parse(url), headers: headers, body: bodyData);
     if (response.statusCode == 200) {
       print('Notification sent successfully: ${response.body}');
+      return true;
     } else {
       print('Failed to send notification: ${response.body}');
+      return false;
     }
   }
 
@@ -49,6 +51,34 @@ class NotificationsService {
     }
   }
 
+  Stream<int> getUnreadNotificationCountStream(String   idUser) {
+    return _firestore
+        .collection('Notification')
+        .where('idUser', isEqualTo: idUser)
+        .where('status', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.size);
+  }
+
+  Stream<List<NotificationModel>> notificationStreamByUserId(String idUser) {
+    print("id user from servervice ${idUser}");
+    return _firestore
+        .collection('Notification')
+        .where('id_user', isEqualTo: idUser)
+        .orderBy('dateHeure', descending: true)
+        .snapshots()
+        .asyncMap((QuerySnapshot notificationQuerySnapshot) async {
+        List<NotificationModel> notifications = [];
+
+        for (QueryDocumentSnapshot notificationDoc in notificationQuerySnapshot.docs) {
+          NotificationModel notification = NotificationModel.fromMap(
+            notificationDoc.data() as Map<String, dynamic>);
+          notification.idNotification = notificationDoc.reference.id;
+          notifications.add(notification);
+        }
+        return notifications;
+    });
+  }
   // Function to create a new notification
   Future<void> createNotification({
     required String idUser,
@@ -59,7 +89,7 @@ class NotificationsService {
   }) async {
     try {
       // Create a new document in 'notifications' collection
-      await _firestore.collection('notifications').add({
+      await _firestore.collection('Notification').add({
         'id_user': idUser,
         'context': context,
         'message': message,
@@ -74,6 +104,13 @@ class NotificationsService {
         print('Error creating notification: $e');
       }
     }
+  }
+
+  Future<void> updateNotification(NotificationModel notification) async {
+    await _firestore
+        .collection('Notification')
+        .doc(notification.idNotification!)
+        .update(notification.toMap());
   }
 
   /* Future<void> deleteNotification(String idNotification) async {

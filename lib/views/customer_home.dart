@@ -141,6 +141,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     return CustomAppBar(
                       userName: userName,
                       avatarUrl: avatarUrl,
+                      idUser: _userId!
                     );
                   },
                 ),

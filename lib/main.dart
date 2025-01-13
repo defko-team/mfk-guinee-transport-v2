@@ -80,12 +80,18 @@ Future<void> _requestNotificationPermission() async {
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     String? token = await messaging.getToken();
-    UserModel user = await UserService().getCurrentUser();
-    if (user.fcmToken! != token!) {
-      user.fcmToken = token;
-      await UserService().updateUser(user);
+    try {
+      UserModel user = await UserService().getCurrentUser();
+      if (user.fcmToken! != token!) {
+        user.fcmToken = token;
+        await UserService().updateUser(user);
+      }
+      preferences.setString('fcmToken', token);
+    } catch (e) {
+      print("error");
     }
-    preferences.setString('fcmToken', token);
+
+
   }
 }
 
@@ -109,8 +115,8 @@ void _showTopSnackbar(String? title, String? body) {
     overlayEntry = OverlayEntry(
       builder: (BuildContext context) => Positioned(
         top: 50.0,
-        left: 0.0,
-        right: 0.0,
+        left: 50.0,
+        right: 50.0,
         child: Material(
           color: Colors.transparent,
           child: Container(
