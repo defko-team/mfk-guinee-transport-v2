@@ -166,7 +166,10 @@ class LogoutButton extends StatelessWidget {
     try {
       AuthService authService = AuthService();
       await authService.signOut();
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/login',
+        (Route<dynamic> route) => false,
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

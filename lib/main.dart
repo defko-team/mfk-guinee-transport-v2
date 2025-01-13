@@ -5,6 +5,7 @@ import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/admin_home_page.dart';
+import 'package:mfk_guinee_transport/views/driver_home_page.dart';
 import 'package:mfk_guinee_transport/views/home_page.dart';
 import 'package:mfk_guinee_transport/views/no_network.dart';
 import 'package:mfk_guinee_transport/views/login.dart';
@@ -20,11 +21,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _initFirebase();
 
-  // Call the function to create the default admin
-
   bool isConnected = await isConnectedToInternet();
 
-  // Set the preferred orientations
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -33,20 +31,32 @@ Future<void> main() async {
   SharedPreferences preferences = await SharedPreferences.getInstance();
 
   // preferences.clear();
-
   var isProviderAuthenticated = preferences.getBool("isProviderAuthenticated");
   var isCustomerAuthenticated = preferences.getBool("isCustomerAuthenticated");
+  var isDriverAuthenticated = preferences.getBool("isDriverAuthenticated");
+  var fcmToken = preferences.getString('fcmToken');
+  var userId = preferences.getString('userId');
+  print('userId ${userId}');
+  print('FCM TOKEN ${fcmToken}');
+
   Widget homePage;
-  if (!isConnected && isProviderAuthenticated == true) {
-    homePage = const NoNetwork(pageToGo: "/providerHome");
-  } else if (!isConnected && isCustomerAuthenticated == true) {
-    homePage = const NoNetwork(pageToGo: "/customerHome");
-  } else if (!isConnected) {
-    homePage = const NoNetwork(pageToGo: "/login");
+
+  if (!isConnected) {
+    if (isProviderAuthenticated == true) {
+      homePage = const NoNetwork(pageToGo: "/providerHome");
+    } else if (isCustomerAuthenticated == true) {
+      homePage = const NoNetwork(pageToGo: "/customerHome");
+    } else if (isDriverAuthenticated == true) {
+      homePage = const NoNetwork(pageToGo: "/driverHome");
+    } else {
+      homePage = const NoNetwork(pageToGo: "/login");
+    }
   } else if (isProviderAuthenticated == true) {
     homePage = const AdminHomePage();
   } else if (isCustomerAuthenticated == true) {
     homePage = HomePage();
+  } else if (isDriverAuthenticated == true) {
+    homePage = const DriverHomePage();
   } else {
     homePage = const Login();
   }
@@ -90,8 +100,6 @@ Future<void> _requestNotificationPermission() async {
     } catch (e) {
       print("error");
     }
-
-
   }
 }
 

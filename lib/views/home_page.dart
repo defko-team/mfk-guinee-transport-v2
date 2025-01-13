@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
-            label: 'Historique',
+            label: 'Reservations',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.more_horiz),

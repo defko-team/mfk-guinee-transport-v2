@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/services/notifications_service.dart';
-
+import 'package:mfk_guinee_transport/views/user_profile.dart';
 import 'notification_bell.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -8,12 +8,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String idUser;
   final String avatarUrl;
 
-  const CustomAppBar({
-    super.key,
-    required this.userName,
-    required this.avatarUrl,
-    required this.idUser
-  });
+  const CustomAppBar(
+      {super.key,
+      required this.userName,
+      required this.avatarUrl,
+      required this.idUser});
 
   @override
   Widget build(BuildContext context) {
@@ -29,46 +28,58 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           decoration: const BoxDecoration(
             color: Color.fromRGBO(26, 188, 0, 1),
           ),
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 75, bottom: 20),
+          padding:
+              const EdgeInsets.only(left: 16, right: 16, top: 75, bottom: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  // Avatar
-                  CircleAvatar(
-                    backgroundImage: avatarUrl.startsWith('assets/')
-                        ? AssetImage(avatarUrl) as ImageProvider
-                        : NetworkImage(avatarUrl),
-                    radius: 30,
-                  ),
-                  const SizedBox(width: 12),
-                  // Greeting and name
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      const Text(
-                        "Bonjour 👋",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const UserProfilePage()),
+                  );
+                },
+                child: Row(
+                  children: [
+                    // Avatar
+                    CircleAvatar(
+                      backgroundImage: avatarUrl.startsWith('assets/')
+                          ? AssetImage(avatarUrl) as ImageProvider
+                          : NetworkImage(avatarUrl),
+                      radius: 30,
+                    ),
+                    const SizedBox(width: 12),
+                    // Greeting and name
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "Bonjour 👋",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Text(
-                        userName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 25,
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 25,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
               // Notification bell icon
-              NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(idUser)),
+              NotificationBell(
+                  unReadNotificationCount: NotificationsService()
+                      .getUnreadNotificationCountStream(idUser)),
             ],
           ),
         ),

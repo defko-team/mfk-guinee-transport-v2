@@ -29,7 +29,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   final int _selectedIndex = 0;
 
-  int selectedTransportTypeIndex = -1;
+  int selectedTransportTypeIndex = 0;
   List<StationModel> locations = [];
 
   final StationService _stationService = StationService();
