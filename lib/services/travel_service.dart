@@ -82,8 +82,12 @@ class TravelService {
       TravelModel travel = TravelModel.fromMapStation(
           travelData, departureStation, destinationStation);
 
+      travel.travelReference = travelDoc.reference;
       // Now you have both travel and station data
-      travels.add(travel);
+
+      if(travel.remainingSeats > 0) {
+        travels.add(travel);
+      }
     }
 
     return travels;
@@ -111,9 +115,13 @@ class TravelService {
     await _firestore.collection('Travel').doc(travel.id).update(travel.toMap());
   }
 
-  /*Future<void> deleteTravel(String travelId) async {
-    await _firestore.collection('Travel').doc(travelId).delete();
-  }*/
+  Future<void> decrementRemainingSeats(String travelId) async {
+    // Decrement the remaining seats property in travelModel
+    await _firestore.collection('Travel').doc(travelId).update({
+      'remaining_seats': FieldValue.increment(-1)
+    });
+    
+  }
 
   Future<bool> deleteTravel(String travelId) async {
     try {
