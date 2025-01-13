@@ -76,6 +76,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                   return CustomAppBar(
                     userName: userName,
                     avatarUrl: avatarUrl,
+                    idUser: _userId!,
                   );
                 },
               ),
@@ -126,7 +127,8 @@ class TravelsList extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
-            final travelData = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+            final travelData =
+                snapshot.data!.docs[index].data() as Map<String, dynamic>;
             final travel = TravelModel.fromMap(travelData);
 
             return TravelCard(
@@ -135,7 +137,8 @@ class TravelsList extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => TravelCustomersList(travelId: travel.id!),
+                    builder: (context) =>
+                        TravelCustomersList(travelId: travel.id!),
                   ),
                 );
               },
@@ -211,20 +214,30 @@ class TravelCard extends StatelessWidget {
                   Expanded(
                     child: FutureBuilder<List<DocumentSnapshot>>(
                       future: Future.wait([
-                        FirebaseFirestore.instance.collection('Station').doc(travel.departureStationId).get(),
-                        FirebaseFirestore.instance.collection('Station').doc(travel.destinationStationId).get(),
+                        FirebaseFirestore.instance
+                            .collection('Station')
+                            .doc(travel.departureStationId)
+                            .get(),
+                        FirebaseFirestore.instance
+                            .collection('Station')
+                            .doc(travel.destinationStationId)
+                            .get(),
                       ]),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
                           return const Text('Chargement des stations...');
                         }
                         if (!snapshot.hasData || snapshot.data == null) {
-                          return const Text('Erreur de chargement des stations');
+                          return const Text(
+                              'Erreur de chargement des stations');
                         }
 
                         try {
-                          final departureStation = StationModel.fromDocument(snapshot.data![0]);
-                          final destinationStation = StationModel.fromDocument(snapshot.data![1]);
+                          final departureStation =
+                              StationModel.fromDocument(snapshot.data![0]);
+                          final destinationStation =
+                              StationModel.fromDocument(snapshot.data![1]);
 
                           return Text(
                             '${departureStation.name} → ${destinationStation.name}',
@@ -293,7 +306,8 @@ class TravelCustomersList extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              final reservationData = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+              final reservationData =
+                  snapshot.data!.docs[index].data() as Map<String, dynamic>;
               final reservation = ReservationModel.fromMap(reservationData);
 
               return FutureBuilder<DocumentSnapshot>(
@@ -306,7 +320,8 @@ class TravelCustomersList extends StatelessWidget {
                     return const SizedBox.shrink();
                   }
 
-                  final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+                  final userData =
+                      userSnapshot.data!.data() as Map<String, dynamic>;
                   final userName = "${userData['prenom']} ${userData['nom']}";
 
                   return Card(
@@ -315,7 +330,8 @@ class TravelCustomersList extends StatelessWidget {
                       leading: CircleAvatar(
                         backgroundImage: userData['photo_profil'] != null
                             ? NetworkImage(userData['photo_profil'])
-                            : const AssetImage('assets/images/default_avatar.png')
+                            : const AssetImage(
+                                    'assets/images/default_avatar.png')
                                 as ImageProvider,
                       ),
                       title: Text(userName),

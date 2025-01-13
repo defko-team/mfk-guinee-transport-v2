@@ -80,6 +80,8 @@ class _HistoryPageState extends State<HistoryPage> {
         return AppColors.green;
       case 'canceled':
         return Colors.red;
+      case 'pending':
+        return Colors.orange;
       default:
         return Colors.blue;
     }
@@ -201,7 +203,7 @@ class _HistoryPageState extends State<HistoryPage> {
                             return TripCard(
                               origin: reservation.departureLocation ?? "",
                               destination: reservation.destinationStation ?? "",
-                              vehicleName: reservation.carName!,
+                              vehicleName: reservation.carName ?? "",
                               status: reservation.status.name,
                               statusColor:
                                   _getColorFromStatus(reservation.status.name),
@@ -340,7 +342,8 @@ class _FilterBarState extends State<FilterBar> {
     return DropdownButton<String>(
       hint: const Text('Status'),
       value: selectedStatus,
-      items: ['confirmed', 'completed', 'canceled'].map((String value) {
+      items:
+          ['confirmed', 'pending', 'completed', 'canceled'].map((String value) {
         return DropdownMenuItem<String>(
           value: value,
           child: Text(value),
