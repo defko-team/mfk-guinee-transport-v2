@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/notification_bell.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
+import '../services/notifications_service.dart';
+
 class BaseAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBackArrow;
   final String title;
@@ -27,11 +29,11 @@ class BaseAppBar extends StatelessWidget implements PreferredSizeWidget {
               },
             )
           : null,
-      actions: const [
-        Padding(
-          padding: EdgeInsets.only(right: 12),
-          child: NotificationBell(),
-        )
+      actions: [
+        /*Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(idUser),),
+        )*/
       ],
     );
   }

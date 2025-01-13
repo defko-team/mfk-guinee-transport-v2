@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mfk_guinee_transport/helper/firebase/firebase_options.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/admin_home_page.dart';
 import 'package:mfk_guinee_transport/views/driver_home_page.dart';
@@ -35,7 +38,7 @@ Future<void> main() async {
   var userId = preferences.getString('userId');
   print('userId ${userId}');
   print('FCM TOKEN ${fcmToken}');
-  
+
   Widget homePage;
 
   if (!isConnected) {
@@ -61,9 +64,8 @@ Future<void> main() async {
   runApp(MyApp(homePage: homePage));
 }
 
-
 Future<void> _initFirebase() async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -87,8 +89,17 @@ Future<void> _requestNotificationPermission() async {
   print('User granted permission: ${settings.authorizationStatus}');
 
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    //String? token = await messaging.getToken();
-    //preferences.setString('fcmToken', token!);
+    String? token = await messaging.getToken();
+    try {
+      UserModel user = await UserService().getCurrentUser();
+      if (user.fcmToken! != token!) {
+        user.fcmToken = token;
+        await UserService().updateUser(user);
+      }
+      preferences.setString('fcmToken', token);
+    } catch (e) {
+      print("error");
+    }
   }
 }
 
@@ -112,8 +123,8 @@ void _showTopSnackbar(String? title, String? body) {
     overlayEntry = OverlayEntry(
       builder: (BuildContext context) => Positioned(
         top: 50.0,
-        left: 0.0,
-        right: 0.0,
+        left: 50.0,
+        right: 50.0,
         child: Material(
           color: Colors.transparent,
           child: Container(

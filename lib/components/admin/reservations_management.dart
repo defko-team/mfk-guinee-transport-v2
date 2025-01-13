@@ -3,8 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:mfk_guinee_transport/views/card_reservation.dart';
 
 class AdminReservationsManagementPage extends StatefulWidget {
@@ -39,14 +42,13 @@ class _AdminReservationsManagementPageState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reservations'),
-        backgroundColor: AppColors.green,
-        leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.arrow_back)),
-      ),
+          title: const Text('Reservations'),
+          backgroundColor: AppColors.green,
+          leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.arrow_back))),
       body: StreamBuilder<List<ReservationModel>>(
           stream: ReservationService().reservationStream(),
           builder: (context, snapshot) {
@@ -186,10 +188,21 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
         (widget.reservation.carName != null) &&
         (widget.reservation.ticketPrice != 0.0) &&
         (widget.reservation.airConditioned != null)) {
-      widget.reservation.status = ReservationStatus.completed;
+      widget.reservation.status = ReservationStatus.pending;
     }
 
     ReservationService().updateReservation(widget.reservation);
+
+    UserModel user = await UserService().getUserById(widget.reservation.userId);
+    //print("User Token ${user.fcmToken}");
+    bool notificationStatus = await NotificationsService().sendNotification(user.fcmToken!,
+        "Confirmation reservation", "Votre reservation a ete mise a jour");
+    notificationStatus ? NotificationsService().createNotification(
+        idUser: widget.reservation.userId,
+        context: "Confirmation reservation",
+        message: "Votre reservation a ete mise a jour",
+        status: false,
+        dateHeure: DateTime.now()) : print("Notification status ${notificationStatus}");
     Navigator.of(context).pop();
   }
 
