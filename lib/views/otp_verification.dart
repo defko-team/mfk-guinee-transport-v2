@@ -79,59 +79,97 @@ class _OtpVerificationState extends State<OtpVerification> {
         context: context,
       );
 
-      String userId = FirebaseAuth.instance.currentUser!.uid;
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(userId)
-          .get();
-
-      String roleId = userDoc['id_role'];
-      DocumentSnapshot roleDoc = await FirebaseFirestore.instance
-          .collection('roles')
-          .doc(roleId)
-          .get();
-      String role = roleDoc['nom'];
-
       if (mounted) {
         setState(() {
           _isLoading = false;
           _isVerified = true;
         });
-
-      if (role == 'Client') {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/customerHome',
-          (Route<dynamic> route) => false,
-        );
-      } else if (role == 'Admin') {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/providerHome',
-          (Route<dynamic> route) => false,
-        );
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/login',
-          (Route<dynamic> route) => false,
-        );
       }
-      }
+      
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-      }
 
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Verification failed: $e')),
         );
       }
     }
-  }
+}
+
+  // void verify() async {
+  //   if (_code.length < 6) return;
+
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+
+  //   try {
+  //     await _authService.verifyOtpAndRegisterUser(
+  //       otp: _code,
+  //       verificationId: widget.verificationId,
+  //       prenom: widget.firstName,
+  //       nom: widget.lastName,
+  //       telephone: widget.phoneNumber,
+  //       isRegistration: widget.isRegistration,
+  //       context: context,
+  //     );
+
+  //     String userId = FirebaseAuth.instance.currentUser!.uid;
+  //     DocumentSnapshot userDoc = await FirebaseFirestore.instance
+  //         .collection('Users')
+  //         .doc(userId)
+  //         .get();
+
+  //     String roleId = userDoc['id_role'];
+  //     DocumentSnapshot roleDoc = await FirebaseFirestore.instance
+  //         .collection('roles')
+  //         .doc(roleId)
+  //         .get();
+  //     String role = roleDoc['nom'];
+
+  //     if (mounted) {
+  //       setState(() {
+  //         _isLoading = false;
+  //         _isVerified = true;
+  //       });
+
+  //     if (role == 'Client') {
+  //       Navigator.pushNamedAndRemoveUntil(
+  //         context,
+  //         '/customerHome',
+  //         (Route<dynamic> route) => false,
+  //       );
+  //     } else if (role == 'Admin') {
+  //       Navigator.pushNamedAndRemoveUntil(
+  //         context,
+  //         '/providerHome',
+  //         (Route<dynamic> route) => false,
+  //       );
+  //     } else {
+  //       Navigator.pushNamedAndRemoveUntil(
+  //         context,
+  //         '/login',
+  //         (Route<dynamic> route) => false,
+  //       );
+  //     }
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //     }
+
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Verification failed: $e')),
+  //       );
+  //     }
+  //   }
+  // }
 
   @override
   void initState() {
