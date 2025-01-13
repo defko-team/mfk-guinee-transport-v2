@@ -3,7 +3,8 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
 class BookingConfirmationDialog extends StatelessWidget {
   final Future<void> Function()? book;
-  const BookingConfirmationDialog({required this.book});
+  final String displayText;
+  const BookingConfirmationDialog({super.key, required this.book, this.displayText = 'Votre réservation a été confirmée. Le chauffeur viendra vous chercher dans 2 minutes.'});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,7 @@ class BookingConfirmationDialog extends StatelessWidget {
             Container(
               padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
               child: Text(
-                'Votre réservation a été confirmée. Le chauffeur viendra vous chercher dans 2 minutes.',
+                displayText,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15.0,

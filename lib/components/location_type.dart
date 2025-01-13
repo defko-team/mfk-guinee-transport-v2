@@ -2,15 +2,33 @@ import 'package:flutter/material.dart';
 
 class LocationType extends StatefulWidget {
   final ValueChanged<int> onTypeSelected;
+  final int selectedType;
 
-  const LocationType({super.key, required this.onTypeSelected});
+  const LocationType({super.key, required this.onTypeSelected, this.selectedType = 0});
 
   @override
   State<LocationType> createState() => _LocationTypeState();
 }
 
 class _LocationTypeState extends State<LocationType> {
-  int selectedType = -1;
+  late int selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedType = widget.selectedType;
+  }
+
+  @override
+  void didUpdateWidget(covariant LocationType oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Ensure the state is updated if the selectedType prop changes.
+    if (widget.selectedType != oldWidget.selectedType) {
+      setState(() {
+        selectedType = widget.selectedType;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +40,7 @@ class _LocationTypeState extends State<LocationType> {
             child: GestureDetector(
               onTap: () {
                 setState(() {
-                  selectedType = selectedType == 0 ? -1 : 0;
+                  selectedType = 0;
                   widget.onTypeSelected(selectedType); // Notify the parent about the change
                 });
               },
@@ -59,7 +77,7 @@ class _LocationTypeState extends State<LocationType> {
             child: GestureDetector(
               onTap: () {
                 setState(() {
-                  selectedType = selectedType == 1 ? -1 : 1;
+                  selectedType = 1;
                   widget.onTypeSelected(selectedType); // Notify the parent about the change
                 });
               },
