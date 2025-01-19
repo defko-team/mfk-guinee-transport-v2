@@ -258,7 +258,7 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
           widget.reservation.carName!.isNotEmpty &&
           widget.reservation.ticketPrice != null &&
           widget.reservation.ticketPrice! > 0) {
-        widget.reservation.status = ReservationStatus.pending;
+        widget.reservation.status = ReservationStatus.confirmed;
       }
 
       await ReservationService().updateReservation(widget.reservation);

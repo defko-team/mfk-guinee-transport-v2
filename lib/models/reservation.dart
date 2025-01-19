@@ -46,9 +46,10 @@ class ReservationModel {
             ? (map['arrival_time'] as Timestamp?)!.toDate()
             : null,
         remainingSeats: map['remaining_seats'],
-        ticketPrice: (map['ticket_price'] is int)
+        ticketPrice: map['ticket_price'],
+        /*    ticketPrice: (map['ticket_price'] is int)
             ? (map['ticket_price'] as int).toDouble()
-            : 0,
+            : 0,*/
         airConditioned: map['air_conditioned'],
         driverName: map['driver_name'],
         carName: map['car_name'],

@@ -47,6 +47,7 @@ class ReservationService {
             reservationDoc.data() as Map<String, dynamic>);
         reservationModel.id = reservationDoc.reference.id;
         reservations.add(reservationModel);
+        print("reservation: ${reservationModel.ticketPrice}");
       }
       return reservations;
     });
