@@ -34,7 +34,7 @@ class HistoriqueService {
       }
 
       if (statusFilter != null && statusFilter.isNotEmpty) {
-        query = query.where('status', isEqualTo: statusFilter);
+        query = query.where('status', whereIn: ['pending', 'confirmed']);
       }
 
       if (carNameFilter != null && carNameFilter.isNotEmpty) {

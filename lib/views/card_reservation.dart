@@ -24,7 +24,7 @@ class CardReservation extends StatelessWidget {
       case ReservationStatus.confirmed:
         return Colors.green;
       case ReservationStatus.completed:
-        return Colors.green;
+        return Colors.blue;
       case ReservationStatus.canceled:
         return Colors.red;
       default:
