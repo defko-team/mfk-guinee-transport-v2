@@ -130,6 +130,7 @@ class _LocationFormState extends State<LocationForm> {
             return TextField(
               controller: textEditingController,
               focusNode: focusNode,
+              autofocus: false,
               decoration: InputDecoration(
                 hintText: hintText,
                 border: OutlineInputBorder(

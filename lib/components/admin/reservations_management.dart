@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
-import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
@@ -14,27 +14,28 @@ class AdminReservationsManagementPage extends StatefulWidget {
   const AdminReservationsManagementPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => _AdminReservationsManagementPageState();
+  State<StatefulWidget> createState() =>
+      _AdminReservationsManagementPageState();
 }
 
-class _AdminReservationsManagementPageState extends State<AdminReservationsManagementPage> {
-  void _openModifyReservationBottomSheet({required ReservationModel reservation}) {
+class _AdminReservationsManagementPageState
+    extends State<AdminReservationsManagementPage> {
+  void _openModifyReservationBottomSheet(
+      {required ReservationModel reservation}) {
     showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 20,
-          right: 20,
-          top: 20
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: ModifyReservationForm(reservation: reservation),
-      )
-    );
+        builder: (context) => Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 20,
+                  right: 20,
+                  top: 20),
+              child: ModifyReservationForm(reservation: reservation),
+            ));
   }
 
   @override
@@ -42,64 +43,48 @@ class _AdminReservationsManagementPageState extends State<AdminReservationsManag
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Réservations',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1,
-            ),
-          ),
-          elevation: 0,
-          backgroundColor: AppColors.green,
-          automaticallyImplyLeading: false,
-        ),
+        appBar: const BaseAppBar(title: 'Réservations', showBackArrow: false),
         body: Container(
           width: MediaQuery.of(context).size.width,
           color: Colors.white,
           padding: EdgeInsets.symmetric(
-            horizontal: MediaQuery.of(context).size.width * 0.04,
-            vertical: 16
-          ),
+              horizontal: MediaQuery.of(context).size.width * 0.04,
+              vertical: 16),
           child: StreamBuilder<List<ReservationModel>>(
-            stream: ReservationService().reservationStream(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              
-              if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error: ${snapshot.error}'),
-                );
-              }
-              
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(
-                  child: Text('No Reservations found'),
-                );
-              }
-
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: CardReservation(
-                      reservationModel: snapshot.data![index],
-                      onOpenModifyReservationBottonSheet: _openModifyReservationBottomSheet
-                    ),
+              stream: ReservationService().reservationStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
                   );
                 }
-              );
-            }
-          ),
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
+                }
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text('No Reservations found'),
+                  );
+                }
+
+                return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: CardReservation(
+                            reservationModel: snapshot.data![index],
+                            onOpenModifyReservationBottonSheet:
+                                _openModifyReservationBottomSheet),
+                      );
+                    });
+              }),
         ),
       ),
     );
@@ -117,9 +102,12 @@ class ModifyReservationForm extends StatefulWidget {
 
 class _ModifyReservationFormState extends State<ModifyReservationForm> {
   final GlobalKey<FormState> formKey = GlobalKey();
-  final TextEditingController _departureLocationController = TextEditingController();
-  final TextEditingController _departureDateTimeController = TextEditingController();
-  final TextEditingController _destinationLocationController = TextEditingController();
+  final TextEditingController _departureLocationController =
+      TextEditingController();
+  final TextEditingController _departureDateTimeController =
+      TextEditingController();
+  final TextEditingController _destinationLocationController =
+      TextEditingController();
   final TextEditingController _arrivalDateController = TextEditingController();
   final TextEditingController _arrivalTimeController = TextEditingController();
   final TextEditingController _tecketPriceController = TextEditingController();
@@ -132,12 +120,15 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
   @override
   void initState() {
     super.initState();
-    _initializeData();
-    _departureLocationController.text = widget.reservation.departureLocation ?? '';
-    _destinationLocationController.text = widget.reservation.arrivalLocation ?? '';
-    _departureDateTimeController.text = DateFormat('dd/MM/yyyy HH:mm')
-        .format(widget.reservation.startTime);
-    _tecketPriceController.text = widget.reservation.ticketPrice?.toString() ?? '';
+    _loadCars();
+    _departureLocationController.text =
+        widget.reservation.departureLocation ?? '';
+    _destinationLocationController.text =
+        widget.reservation.arrivalLocation ?? '';
+    _departureDateTimeController.text =
+        DateFormat('dd/MM/yyyy HH:mm').format(widget.reservation.startTime);
+    _tecketPriceController.text =
+        widget.reservation.ticketPrice?.toString() ?? '';
   }
 
   @override
@@ -151,43 +142,37 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
     super.dispose();
   }
 
-  Future<void> _initializeData() async {
+  Future<void> _loadCars() async {
     try {
-      final allCars = await VoitureService().getAllVoitures();
-      if (mounted) {
-        setState(() {
-          cars = allCars;
-        });
-      }
+      final allCars = await CarService().getAllVoitures();
+      setState(() {
+        cars = allCars;
+      });
     } catch (e) {
-      if (mounted) {
-        _showSnackBar('Error loading cars: ${e.toString()}');
-      }
+      print('Error loading cars: $e');
     }
   }
 
   Future<void> _selectArrivalDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101)
-    );
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime.now(),
+        lastDate: DateTime(2101));
 
     if (pickedDate != null && mounted) {
       setState(() {
         _pickedArrivalDate = pickedDate;
-        _arrivalDateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+        _arrivalDateController.text =
+            DateFormat('yyyy-MM-dd').format(pickedDate);
       });
     }
   }
 
   Future<void> _selectArrivalTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now()
-    );
-    
+    final TimeOfDay? pickedTime =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+
     if (pickedTime != null && _pickedArrivalDate != null && mounted) {
       setState(() {
         final selectedArrivalDateTime = DateTime(
@@ -197,7 +182,8 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
           pickedTime.hour,
           pickedTime.minute,
         );
-        _arrivalTimeController.text = DateFormat('HH:mm').format(selectedArrivalDateTime);
+        _arrivalTimeController.text =
+            DateFormat('HH:mm').format(selectedArrivalDateTime);
         _pickedArrivalDate = selectedArrivalDateTime;
       });
     }
@@ -205,14 +191,12 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
 
   void _showSnackBar(String message) {
     if (!mounted) return;
-    
+
     final snackBar = SnackBar(
       content: Text(message),
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.only(
-        bottom: MediaQuery.of(context).size.height - 100
-      ),
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height - 100),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -220,7 +204,7 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
 
   Future<void> _modifyReservation() async {
     if (!mounted) return;
-    
+
     if (_selectedVoiture == null) {
       _showSnackBar('Please select a car');
       return;
@@ -245,12 +229,12 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
       widget.reservation.arrivalTime = _pickedArrivalDate;
       widget.reservation.carName = _selectedVoiture?.marque;
       widget.reservation.ticketPrice = price;
-      
+
       if (_selectedVoiture?.idChauffeur != null) {
-        widget.reservation.driverName = await VoitureService()
-            .getDriverNameById(_selectedVoiture!.idChauffeur);
+        widget.reservation.driverName =
+            await CarService().getDriverNameById(_selectedVoiture!.idChauffeur);
       }
-      
+
       widget.reservation.airConditioned = aircondtioned ?? false;
 
       if (widget.reservation.arrivalTime != null &&
@@ -264,22 +248,19 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
       await ReservationService().updateReservation(widget.reservation);
 
       final user = await UserService().getUserById(widget.reservation.userId);
-      
+
       if (user.fcmToken != null) {
-        final notificationStatus = await NotificationsService().sendNotification(
-          user.fcmToken!,
-          "Confirmation reservation",
-          "Votre reservation a ete mise a jour"
-        );
+        final notificationStatus = await NotificationsService()
+            .sendNotification(user.fcmToken!, "Confirmation reservation",
+                "Votre reservation a ete mise a jour");
 
         if (notificationStatus) {
           await NotificationsService().createNotification(
-            idUser: widget.reservation.userId,
-            context: "Confirmation de reservation",
-            message: "Votre reservation a ete mise a jour avec succes",
-            status: true,
-            dateHeure: DateTime.now()
-          );
+              idUser: widget.reservation.userId,
+              context: "Confirmation de reservation",
+              message: "Votre reservation a ete mise a jour avec succes",
+              status: true,
+              dateHeure: DateTime.now());
         }
       }
 
@@ -314,14 +295,12 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                 height: 5,
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10)
-                ),
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
             const Text("Modifier le trajet identifiant a mettre",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
-            ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             TextField(
               readOnly: true,
@@ -330,27 +309,25 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
               cursorColor: Colors.black,
               keyboardType: TextInputType.streetAddress,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(0.0),
-                labelText: 'Lieu de Depart',
-                hintText: 'Adresse de depart',
-                labelStyle: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w400
-                ),
-                prefixIcon: const Icon(Icons.my_location_rounded,
-                  color: Colors.green, size: 18
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.grey, width: 2),
-                  borderRadius: BorderRadius.circular(10.0)
-                ),
-                floatingLabelStyle: const TextStyle(color: Colors.black, fontSize: 18.0),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
-                  borderRadius: BorderRadius.circular(10.0)
-                )
-              ),
+                  contentPadding: const EdgeInsets.all(0.0),
+                  labelText: 'Lieu de Depart',
+                  hintText: 'Adresse de depart',
+                  labelStyle: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w400),
+                  prefixIcon: const Icon(Icons.my_location_rounded,
+                      color: Colors.green, size: 18),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10.0)),
+                  floatingLabelStyle:
+                      const TextStyle(color: Colors.black, fontSize: 18.0),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(10.0))),
             ),
             const SizedBox(height: 20),
             TextField(
@@ -360,27 +337,25 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
               cursorColor: Colors.black,
               keyboardType: TextInputType.streetAddress,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(0.0),
-                labelText: 'Destination',
-                hintText: 'Adresse de destination',
-                labelStyle: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w400
-                ),
-                prefixIcon: const Icon(Icons.my_location_rounded,
-                  color: Colors.green, size: 18
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.grey, width: 2),
-                  borderRadius: BorderRadius.circular(10.0)
-                ),
-                floatingLabelStyle: const TextStyle(color: Colors.black, fontSize: 18.0),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
-                  borderRadius: BorderRadius.circular(10.0)
-                )
-              ),
+                  contentPadding: const EdgeInsets.all(0.0),
+                  labelText: 'Destination',
+                  hintText: 'Adresse de destination',
+                  labelStyle: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w400),
+                  prefixIcon: const Icon(Icons.my_location_rounded,
+                      color: Colors.green, size: 18),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10.0)),
+                  floatingLabelStyle:
+                      const TextStyle(color: Colors.black, fontSize: 18.0),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(10.0))),
             ),
             const SizedBox(height: 20),
             TextField(
@@ -390,27 +365,25 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
               cursorColor: Colors.black,
               keyboardType: TextInputType.streetAddress,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(0.0),
-                labelText: 'Date et heure de depart',
-                hintText: 'Adresse de depart',
-                labelStyle: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w400
-                ),
-                prefixIcon: const Icon(Icons.my_location_rounded,
-                  color: Colors.green, size: 18
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.grey, width: 2),
-                  borderRadius: BorderRadius.circular(10.0)
-                ),
-                floatingLabelStyle: const TextStyle(color: Colors.black, fontSize: 18.0),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
-                  borderRadius: BorderRadius.circular(10.0)
-                )
-              ),
+                  contentPadding: const EdgeInsets.all(0.0),
+                  labelText: 'Date et heure de depart',
+                  hintText: 'Adresse de depart',
+                  labelStyle: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w400),
+                  prefixIcon: const Icon(Icons.my_location_rounded,
+                      color: Colors.green, size: 18),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10.0)),
+                  floatingLabelStyle:
+                      const TextStyle(color: Colors.black, fontSize: 18.0),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(10.0))),
             ),
             const SizedBox(height: 20),
             Autocomplete<VoitureModel>(
@@ -420,8 +393,8 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                 }
                 return cars.where((VoitureModel option) {
                   return option.marque
-                    .toLowerCase()
-                    .contains(textEditingValue.text.toLowerCase());
+                      .toLowerCase()
+                      .contains(textEditingValue.text.toLowerCase());
                 });
               },
               displayStringForOption: (VoitureModel option) => option.marque,
@@ -431,34 +404,29 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                 });
               },
               fieldViewBuilder: (BuildContext context,
-                TextEditingController textEditingController,
-                FocusNode focusNode,
-                VoidCallback onFieldSubmitted
-              ) {
+                  TextEditingController textEditingController,
+                  FocusNode focusNode,
+                  VoidCallback onFieldSubmitted) {
                 if (_selectedVoiture != null &&
-                  textEditingController.text.isEmpty) {
+                    textEditingController.text.isEmpty) {
                   textEditingController.text = _selectedVoiture!.marque;
                 }
                 return TextField(
                   controller: textEditingController,
                   focusNode: focusNode,
                   decoration: InputDecoration(
-                    labelText: 'Voiture',
-                    prefixIcon: const Icon(Icons.directions_car_outlined,
-                      color: Colors.black, size: 18
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.black)
-                    ),
-                    hintText: 'Tapez pour rechercher....'
-                  ),
+                      labelText: 'Voiture',
+                      prefixIcon: const Icon(Icons.directions_car_outlined,
+                          color: Colors.black, size: 18),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.black)),
+                      hintText: 'Tapez pour rechercher....'),
                 );
               },
               optionsViewBuilder: (BuildContext context,
-                AutocompleteOnSelected<VoitureModel> onSelected,
-                Iterable<VoitureModel> options
-              ) {
+                  AutocompleteOnSelected<VoitureModel> onSelected,
+                  Iterable<VoitureModel> options) {
                 return Align(
                   alignment: Alignment.topLeft,
                   child: Material(
@@ -467,19 +435,19 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                       width: MediaQuery.of(context).size.width - 80,
                       constraints: const BoxConstraints(maxHeight: 200.0),
                       child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        itemCount: options.length,
-                        shrinkWrap: true,
-                        itemBuilder: (BuildContext context, int index) {
-                          final VoitureModel option = options.elementAt(index);
-                          return ListTile(
-                            title: Text(option.marque),
-                            onTap: () {
-                              onSelected(option);
-                            },
-                          );
-                        }
-                      ),
+                          padding: EdgeInsets.zero,
+                          itemCount: options.length,
+                          shrinkWrap: true,
+                          itemBuilder: (BuildContext context, int index) {
+                            final VoitureModel option =
+                                options.elementAt(index);
+                            return ListTile(
+                              title: Text(option.marque),
+                              onTap: () {
+                                onSelected(option);
+                              },
+                            );
+                          }),
                     ),
                   ),
                 );
@@ -491,27 +459,25 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
               cursorColor: Colors.black,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(0.0),
-                labelText: 'Prix trajet',
-                hintText: 'Entrez prix du trajet',
-                labelStyle: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w400
-                ),
-                prefixIcon: const Icon(Icons.price_change_outlined,
-                  color: Colors.black, size: 18
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.grey, width: 2),
-                  borderRadius: BorderRadius.circular(10.0)
-                ),
-                floatingLabelStyle: const TextStyle(color: Colors.black, fontSize: 18.0),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
-                  borderRadius: BorderRadius.circular(10.0)
-                )
-              ),
+                  contentPadding: const EdgeInsets.all(0.0),
+                  labelText: 'Prix trajet',
+                  hintText: 'Entrez prix du trajet',
+                  labelStyle: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w400),
+                  prefixIcon: const Icon(Icons.price_change_outlined,
+                      color: Colors.black, size: 18),
+                  enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10.0)),
+                  floatingLabelStyle:
+                      const TextStyle(color: Colors.black, fontSize: 18.0),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(10.0))),
             ),
             const SizedBox(height: 20),
             Row(
@@ -520,7 +486,8 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                   child: TextField(
                     controller: _arrivalDateController,
                     decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 12),
                       labelText: 'Date d\'arrivée',
                       hintText: 'Entrez la date',
                       labelStyle: const TextStyle(
@@ -533,11 +500,13 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                         size: 18,
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.grey, width: 2),
+                        borderSide:
+                            const BorderSide(color: Colors.grey, width: 2),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                        borderSide:
+                            const BorderSide(color: Colors.black, width: 1.5),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
@@ -550,7 +519,8 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                   child: TextField(
                     controller: _arrivalTimeController,
                     decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 12),
                       labelText: 'Heure d\'arrivée',
                       hintText: 'Entrez l\'heure',
                       labelStyle: const TextStyle(
@@ -563,11 +533,13 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                         size: 18,
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.grey, width: 2),
+                        borderSide:
+                            const BorderSide(color: Colors.grey, width: 2),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                        borderSide:
+                            const BorderSide(color: Colors.black, width: 1.5),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
@@ -599,34 +571,34 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
                   inactiveThumbColor: Colors.red,
                   value: aircondtioned ?? false,
                   onChanged: _selectedVoiture?.airConditioner == true
-                    ? (value) {
-                        setState(() {
-                          aircondtioned = value;
-                        });
-                      }
-                    : null,
+                      ? (value) {
+                          setState(() {
+                            aircondtioned = value;
+                          });
+                        }
+                      : null,
                 ),
               ],
             ),
             const SizedBox(height: 20),
             _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ElevatedButton(
-                onPressed: _modifyReservation,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.green,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                ? const Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    onPressed: _modifyReservation,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Enregistrer le trajet',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
                   ),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Enregistrer le trajet',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              ),
             const SizedBox(height: 20),
           ],
         ),

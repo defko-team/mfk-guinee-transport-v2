@@ -43,6 +43,26 @@ class _DriverHomePageState extends State<DriverHomePage> {
     }
   }
 
+  void _showFilterModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (BuildContext context) {
+        return const Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text('Sélectionner une période')]),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,10 +93,11 @@ class _DriverHomePageState extends State<DriverHomePage> {
                   String avatarUrl = userData['photo_profil'] ??
                       'assets/images/default_avatar.png';
 
-                  return CustomAppBar(
-                    userName: userName,
-                    avatarUrl: avatarUrl,
-                    idUser: _userId!,
+                  return CurrentUserAppBar(
+                    actions: IconButton(
+                      icon: const Icon(Icons.filter_list, color: Colors.white),
+                      onPressed: _showFilterModal,
+                    ),
                   );
                 },
               ),

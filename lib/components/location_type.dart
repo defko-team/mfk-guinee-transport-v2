@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
 class LocationType extends StatefulWidget {
   final ValueChanged<int> onTypeSelected;
   final int selectedType;
 
-  const LocationType({super.key, required this.onTypeSelected, this.selectedType = 0});
+  const LocationType(
+      {super.key, required this.onTypeSelected, this.selectedType = 0});
 
   @override
   State<LocationType> createState() => _LocationTypeState();
@@ -41,13 +43,15 @@ class _LocationTypeState extends State<LocationType> {
               onTap: () {
                 setState(() {
                   selectedType = 0;
-                  widget.onTypeSelected(selectedType); // Notify the parent about the change
+                  widget.onTypeSelected(
+                      selectedType); // Notify the parent about the change
                 });
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 decoration: BoxDecoration(
-                  color: selectedType == 0 ? Colors.green.shade50 : Colors.white,
+                  color:
+                      selectedType == 0 ? Colors.green.shade50 : Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: selectedType == 0 ? Colors.green : Colors.grey,
@@ -58,7 +62,7 @@ class _LocationTypeState extends State<LocationType> {
                 child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.local_taxi, color: Colors.yellow, size: 40),
+                    Icon(Icons.local_taxi, color: AppColors.yellow, size: 40),
                     SizedBox(height: 10),
                     Text(
                       'Taxi groupé',
@@ -78,13 +82,15 @@ class _LocationTypeState extends State<LocationType> {
               onTap: () {
                 setState(() {
                   selectedType = 1;
-                  widget.onTypeSelected(selectedType); // Notify the parent about the change
+                  widget.onTypeSelected(
+                      selectedType); // Notify the parent about the change
                 });
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 decoration: BoxDecoration(
-                  color: selectedType == 1 ? Colors.green.shade50 : Colors.white,
+                  color:
+                      selectedType == 1 ? Colors.green.shade50 : Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: selectedType == 1 ? Colors.green : Colors.grey,

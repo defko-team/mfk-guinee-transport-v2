@@ -16,6 +16,7 @@ class ReservationModel {
   ReservationStatus status;
   final String userId;
   final String distance;
+  final DateTime createdAt;
 
   ReservationModel(
       {this.id,
@@ -32,7 +33,9 @@ class ReservationModel {
       this.carName,
       required this.status,
       required this.userId,
-      required this.distance});
+      required this.distance,
+      DateTime? createdAt})
+      : this.createdAt = createdAt ?? DateTime.now();
 
   factory ReservationModel.fromMap(Map<String, dynamic> map) {
     return ReservationModel(
@@ -54,7 +57,10 @@ class ReservationModel {
         carName: map['car_name'],
         status: _getStatusFromString(map['status'] as String),
         userId: map['user_id'],
-        distance: map['distance']);
+        distance: map['distance'],
+        createdAt: map['created_at'] != null
+            ? (map['created_at'] as Timestamp).toDate()
+            : DateTime.now());
   }
 
   Map<String, dynamic> toMap() {
@@ -73,7 +79,8 @@ class ReservationModel {
       'car_name': carName,
       'status': status.name,
       'user_id': userId,
-      'distance': distance
+      'distance': distance,
+      'created_at': createdAt
     };
   }
 
@@ -92,7 +99,8 @@ class ReservationModel {
       String? carName,
       ReservationStatus? status,
       String? userId,
-      String? distances}) {
+      String? distance,
+      DateTime? createdAt}) {
     return ReservationModel(
         id: id ?? this.id,
         departureStation: departureStation ?? this.departureStation,
@@ -108,7 +116,8 @@ class ReservationModel {
         carName: carName ?? this.carName,
         status: status ?? this.status,
         userId: userId ?? this.userId,
-        distance: distance ?? this.distance);
+        distance: distance ?? this.distance,
+        createdAt: createdAt ?? this.createdAt);
   }
 
   // Helper function to convert string to enum

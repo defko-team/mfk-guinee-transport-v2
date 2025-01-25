@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
@@ -35,7 +36,8 @@ class _AdminChauffeurManagementPageState
           .listen((snapshot) {
         setState(() {
           chauffeurs = snapshot.docs
-              .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
+              .map((doc) =>
+                  UserModel.fromMap(doc.data() as Map<String, dynamic>))
               .toList();
           _isExpanded = List<bool>.filled(chauffeurs.length, false);
         });
@@ -94,21 +96,12 @@ class _AdminChauffeurManagementPageState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          'Gestion des Chauffeurs',
-          style: GoogleFonts.sora(color: Colors.black87, fontSize: 20),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
+      appBar: BaseAppBar(
+        title: 'Gestion des Chauffeurs',
+        showBackArrow: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list, color: Colors.black87),
+            icon: const Icon(Icons.filter_list, color: AppColors.white),
             onPressed: () {
               // Fonction pour filtrer ou effectuer une action
             },
@@ -155,11 +148,11 @@ class _AdminChauffeurManagementPageState
                               children: [
                                 CircleAvatar(
                                   radius: 30,
-                                  backgroundImage: chauffeur.photoProfil !=
-                                              null &&
-                                          chauffeur.photoProfil!.isNotEmpty
-                                      ? NetworkImage(chauffeur.photoProfil!)
-                                      : null,
+                                  backgroundImage:
+                                      chauffeur.photoProfil != null &&
+                                              chauffeur.photoProfil!.isNotEmpty
+                                          ? NetworkImage(chauffeur.photoProfil!)
+                                          : null,
                                   child: chauffeur.photoProfil == null ||
                                           chauffeur.photoProfil!.isEmpty
                                       ? const Icon(Icons.person,
@@ -416,7 +409,8 @@ class _AddChauffeurFormState extends State<AddChauffeurForm> {
             const SizedBox(height: 20),
             InternationalPhoneNumberInput(
               onInputChanged: (PhoneNumber number) {
-                setState(() => _fullPhoneNumber = number.phoneNumber?.replaceAll(' ', ''));
+                setState(() =>
+                    _fullPhoneNumber = number.phoneNumber?.replaceAll(' ', ''));
               },
               textFieldController: _phoneNumberController,
               focusNode: _phoneFocus,

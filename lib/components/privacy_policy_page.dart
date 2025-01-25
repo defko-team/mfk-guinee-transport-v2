@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
@@ -7,19 +8,7 @@ class PrivacyPolicyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Politique de confidentialité',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1,
-          ),
-        ),
-        backgroundColor: AppColors.green,
-        elevation: 0,
-      ),
+      appBar: const BaseAppBar(title: 'Politique de confidentialité'),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -28,9 +17,10 @@ class PrivacyPolicyPage extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
               _buildTitle('MFK_GUINEE_TRANSPORT'),
-              _buildSubtitle('Politique de Confidentialité de MFK_GUINEE_TRANSPORT'),
-              _buildSection('1. Introduction', 
-                'Chez MFK_GUINEE_TRANSPORT, nous nous engageons à protéger et à respecter la vie privée de nos clients. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos données personnelles.'),
+              _buildSubtitle(
+                  'Politique de Confidentialité de MFK_GUINEE_TRANSPORT'),
+              _buildSection('1. Introduction',
+                  'Chez MFK_GUINEE_TRANSPORT, nous nous engageons à protéger et à respecter la vie privée de nos clients. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos données personnelles.'),
               _buildSection('2. Types de Données Collectées', '''
 Nous collectons les types de données suivants lors de l'utilisation de nos services :
 • Données d'identification : nom, prénom, adresse, numéro de téléphone, adresse e-mail
@@ -55,8 +45,8 @@ Nous pouvons partager vos données avec :
 • Prestataires de services
 • Partenaires commerciaux
 • Autorités légales (si requis)'''),
-              _buildSection('6. Protection des Données', 
-                'Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données personnelles.'),
+              _buildSection('6. Protection des Données',
+                  'Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données personnelles.'),
               _buildSection('7. Durée de Conservation des Données', '''
 • Données liées aux trajets : 12 mois
 • Données financières : 5 ans (conformément à la législation guinéenne)'''),

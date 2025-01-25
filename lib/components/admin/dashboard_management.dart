@@ -2,50 +2,59 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
+import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 class AdminDashboardManagementPage extends StatefulWidget {
   const AdminDashboardManagementPage({super.key});
 
   @override
-  State<AdminDashboardManagementPage> createState() => _AdminDashboardManagementPageState();
+  State<AdminDashboardManagementPage> createState() =>
+      _AdminDashboardManagementPageState();
 }
 
-class _AdminDashboardManagementPageState extends State<AdminDashboardManagementPage> {
+class _AdminDashboardManagementPageState
+    extends State<AdminDashboardManagementPage> {
   DateTime? _startDate;
   DateTime? _endDate;
+
+  UserModel? user;
+  UserService userService = UserService();
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCurrentUser();
+  }
+
+  Future<void> fetchCurrentUser() async {
+    user = await userService.getCurrentUser();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Tableau de bord',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1,
-          ),
+      appBar: CurrentUserAppBar(
+        actions: IconButton(
+          icon: const Icon(Icons.filter_list, color: Colors.white),
+          onPressed: _showFilterModal,
         ),
-        elevation: 0,
-        backgroundColor: Colors.green,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.filter_list, color: Colors.white),
-            onPressed: _showFilterModal,
-          ),
-        ],
       ),
       backgroundColor: Colors.grey[200],
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildTile('Total réservations', '432', '+13 par rapport à hier', Iconsax.chart, Colors.red),
+            _buildTile('Total réservations', '432', '+13 par rapport à hier',
+                Iconsax.chart, Colors.red),
             SizedBox(height: 16),
-            _buildTile('Total encaissé', '439.500 XOF', '+43k par rapport à hier', Iconsax.wallet, Colors.blue),
+            _buildTile('Total encaissé', '439.500 XOF',
+                '+43k par rapport à hier', Iconsax.wallet, Colors.blue),
             SizedBox(height: 16),
             Expanded(child: _buildChartTile()),
           ],
@@ -69,7 +78,8 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Sélectionner une période', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text('Sélectionner une période',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               SizedBox(height: 10),
               SfDateRangePicker(
                 selectionMode: DateRangePickerSelectionMode.range,
@@ -77,18 +87,23 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
                 initialSelectedRange: PickerDateRange(_startDate, _endDate),
                 backgroundColor: Colors.white,
                 startRangeSelectionColor: Colors.blue, // Start date color
-                endRangeSelectionColor: Colors.blue,   // End date color
-                rangeSelectionColor: Colors.blue.withOpacity(0.15), // Range color
+                endRangeSelectionColor: Colors.blue, // End date color
+                rangeSelectionColor:
+                    Colors.blue.withOpacity(0.15), // Range color
                 todayHighlightColor: Colors.blue,
                 selectionTextStyle: TextStyle(color: Colors.white),
                 monthCellStyle: DateRangePickerMonthCellStyle(
-                  todayTextStyle: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                  todayTextStyle: TextStyle(
+                      color: Colors.blue, fontWeight: FontWeight.bold),
                   textStyle: TextStyle(color: Colors.black),
                 ),
                 headerStyle: DateRangePickerHeaderStyle(
                   backgroundColor: Colors.white,
                   textAlign: TextAlign.center,
-                  textStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+                  textStyle: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
                 ),
                 monthViewSettings: DateRangePickerMonthViewSettings(
                   firstDayOfWeek: 1, // Start the week on Monday
@@ -111,7 +126,6 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
                   ),
                 ),
               ),
-
             ],
           ),
         );
@@ -128,13 +142,16 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
     });
   }
 
-  Widget _buildTile(String title, String value, String subtitle, IconData icon, Color iconColor) {
+  Widget _buildTile(String title, String value, String subtitle, IconData icon,
+      Color iconColor) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)],
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,7 +161,9 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
             children: [
               Text(title, style: GoogleFonts.sora(fontSize: 16)),
               SizedBox(height: 8),
-              Text(value, style: GoogleFonts.sora(fontSize: 24, fontWeight: FontWeight.bold)),
+              Text(value,
+                  style: GoogleFonts.sora(
+                      fontSize: 24, fontWeight: FontWeight.bold)),
               SizedBox(height: 4),
               Text(subtitle, style: TextStyle(color: Colors.green)),
             ],
@@ -155,84 +174,96 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
     );
   }
 
-Widget _buildChartTile() {
-  return Container(
-    padding: EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Réservations par jours', style: GoogleFonts.sora(fontSize: 16)),
-        SizedBox(height: 16),
-        Expanded(
-          child: LineChart(
-            LineChartData(
-              borderData: FlBorderData(show: false), // Pas de bordures
-              gridData: FlGridData(show: false), // Pas de grilles
-              titlesData: FlTitlesData(
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 28,
-                    interval: 4,
-                    getTitlesWidget: (value, _) => Text(
-                      '${value.toInt()}',
-                      style: TextStyle(fontSize: 12),
+  Widget _buildChartTile() {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Réservations par jours', style: GoogleFonts.sora(fontSize: 16)),
+          SizedBox(height: 16),
+          Expanded(
+            child: LineChart(
+              LineChartData(
+                borderData: FlBorderData(show: false), // Pas de bordures
+                gridData: FlGridData(show: false), // Pas de grilles
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      interval: 4,
+                      getTitlesWidget: (value, _) => Text(
+                        '${value.toInt()}',
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ),
                   ),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    interval: 1,
-                    getTitlesWidget: (value, _) {
-                      switch (value.toInt()) {
-                        case 0: return Text('Lun');
-                        case 1: return Text('Mar');
-                        case 2: return Text('Mer');
-                        case 3: return Text('Jeu');
-                        case 4: return Text('Ven');
-                        case 5: return Text('Sam');
-                        case 6: return Text('Dim');
-                        default: return Text('');
-                      }
-                    },
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1,
+                      getTitlesWidget: (value, _) {
+                        switch (value.toInt()) {
+                          case 0:
+                            return Text('Lun');
+                          case 1:
+                            return Text('Mar');
+                          case 2:
+                            return Text('Mer');
+                          case 3:
+                            return Text('Jeu');
+                          case 4:
+                            return Text('Ven');
+                          case 5:
+                            return Text('Sam');
+                          case 6:
+                            return Text('Dim');
+                          default:
+                            return Text('');
+                        }
+                      },
+                    ),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                        showTitles: false), // Désactive les titres à droite
+                  ),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                        showTitles: false), // Désactive les titres en haut
                   ),
                 ),
-                rightTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false), // Désactive les titres à droite
-                ),
-                topTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false), // Désactive les titres en haut
-                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    isCurved: true,
+                    color: Colors.teal,
+                    barWidth: 4,
+                    belowBarData: BarAreaData(
+                        show: true, color: Colors.teal.withOpacity(0.3)),
+                    spots: [
+                      FlSpot(0, 4),
+                      FlSpot(1, 8),
+                      FlSpot(2, 12),
+                      FlSpot(3, 15),
+                      FlSpot(4, 10),
+                      FlSpot(5, 5),
+                      FlSpot(6, 7),
+                    ],
+                  ),
+                ],
               ),
-              lineBarsData: [
-                LineChartBarData(
-                  isCurved: true,
-                  color: Colors.teal,
-                  barWidth: 4,
-                  belowBarData: BarAreaData(show: true, color: Colors.teal.withOpacity(0.3)),
-                  spots: [
-                    FlSpot(0, 4),
-                    FlSpot(1, 8),
-                    FlSpot(2, 12),
-                    FlSpot(3, 15),
-                    FlSpot(4, 10),
-                    FlSpot(5, 5),
-                    FlSpot(6, 7),
-                  ],
-                ),
-              ],
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+        ],
+      ),
+    );
+  }
 }

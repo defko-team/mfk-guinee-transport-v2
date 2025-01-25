@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
 import 'package:mfk_guinee_transport/components/customer_home_page.dart';
-import 'package:mfk_guinee_transport/components/customer_home_page_old.dart';
+import 'package:mfk_guinee_transport/components/notification_bell.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/views/available_cars.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -114,7 +115,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         appBar: _userId == null
             ? null
             : PreferredSize(
-                preferredSize: const Size.fromHeight(135),
+                preferredSize:
+                    Size.fromHeight(MediaQuery.of(context).size.height * 0.20),
                 child: StreamBuilder<DocumentSnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('Users')
@@ -138,11 +140,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     String avatarUrl = userData['photo_profil'] ??
                         'assets/images/default_avatar.png';
 
-                    return CustomAppBar(
-                      userName: userName,
-                      avatarUrl: avatarUrl,
-                      idUser: _userId!
-                    );
+                    return CurrentUserAppBar(
+                        actions: NotificationBell(
+                            unReadNotificationCount: NotificationsService.new()
+                                .getUnreadNotificationCountStream(_userId!)));
                   },
                 ),
               ),

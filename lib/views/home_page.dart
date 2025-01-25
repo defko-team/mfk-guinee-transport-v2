@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
-            label: 'Gares',
+            label: 'Destinations',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),

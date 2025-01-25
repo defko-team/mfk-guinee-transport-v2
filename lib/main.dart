@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_options.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
+import 'package:mfk_guinee_transport/views/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/admin_home_page.dart';
 import 'package:mfk_guinee_transport/views/driver_home_page.dart';
@@ -58,7 +59,8 @@ Future<void> main() async {
   } else if (isDriverAuthenticated == true) {
     homePage = const DriverHomePage();
   } else {
-    homePage = const Login();
+    // homePage = const Login();
+    homePage = const SplashScreen();
   }
 
   runApp(MyApp(homePage: homePage));

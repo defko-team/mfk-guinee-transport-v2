@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
 import 'package:mfk_guinee_transport/components/custom_outlined_button.dart';
@@ -23,7 +25,7 @@ void showReservationDialog(BuildContext context, ReservationModel reservation,
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                color: AppColors.veryLightGrey,
+                color: AppColors.green,
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
@@ -37,11 +39,18 @@ void showReservationDialog(BuildContext context, ReservationModel reservation,
                       children: [
                         Text(reservation.driverName!,
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        const Row(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.white)),
+                        Row(
                           children: [
-                            Icon(Icons.star, color: Colors.yellow, size: 16),
-                            Text('4.9'),
+                            const Icon(Icons.star,
+                                color: Colors.yellow, size: 16),
+                            Text(
+                                '${(3.9 + Random().nextDouble() * 1.1).toStringAsFixed(1)}',
+                                style: const TextStyle(
+                                  color: AppColors.white,
+                                )),
                           ],
                         ),
                       ],

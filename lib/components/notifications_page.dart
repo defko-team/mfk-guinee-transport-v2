@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
+import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
 import 'package:mfk_guinee_transport/models/notification.dart';
 import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/services/notifications_service.dart';
@@ -14,7 +16,7 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
   final FirebaseMessagingService _firebaseMessagingService =
-  FirebaseMessagingService();
+      FirebaseMessagingService();
   String? _userId;
   @override
   void initState() {
@@ -41,8 +43,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   // Function to show a popup dialog with notification details
 
-  void _showNotificationDialog(BuildContext context,
-     NotificationModel notification) {
+  void _showNotificationDialog(
+      BuildContext context, NotificationModel notification) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -55,8 +57,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               Text(notification.message),
               const SizedBox(height: 10),
               Text(
-                DateFormat('yyyy-MM-dd – kk:mm')
-                    .format(notification.dateHeure),
+                DateFormat('yyyy-MM-dd – kk:mm').format(notification.dateHeure),
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ],
@@ -78,28 +79,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Notification',
-              style: TextStyle(color: Colors.white)),
-          iconTheme: const IconThemeData(
-            color: Colors.white,
-          ),
-          backgroundColor: Colors.green,
+        appBar: const BaseAppBar(
+          title: 'Notification',
+          showBackArrow: true,
         ),
         body: StreamBuilder<List<NotificationModel>>(
-            stream: NotificationsService().notificationStreamByUserId(_userId!),
+            stream: NotificationsService()
+                .notificationStreamByUserId(_userId ?? ''),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Padding(
                     padding: EdgeInsets.only(
-                        left: MediaQuery
-                            .of(context)
-                            .size
-                            .width / 2.5,
-                        top: MediaQuery
-                            .of(context)
-                            .size
-                            .height / 2.5),
+                        left: MediaQuery.of(context).size.width / 2.5,
+                        top: MediaQuery.of(context).size.height / 2.5),
                     child: const CircularProgressIndicator());
               }
 
@@ -128,6 +120,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             }));
   }
 }
+
 class NotificationTile extends StatelessWidget {
   final String idNotification;
   final String idUser;
@@ -137,14 +130,14 @@ class NotificationTile extends StatelessWidget {
   final bool status;
   final VoidCallback onTap;
 
-   NotificationTile(
+  NotificationTile(
       {super.key,
       required this.context,
       required this.message,
       required this.dateHeure,
       required this.onTap,
       required this.idNotification,
-        required this.status,
+      required this.status,
       required this.idUser});
   @override
   Widget build(BuildContext buildContext) {

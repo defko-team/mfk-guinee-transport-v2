@@ -80,8 +80,9 @@ class _LoginState extends State<Login> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.network(
-                  'https://ouch-cdn2.icons8.com/n9XQxiCMz0_zpnfg9oldMbtSsG7X6NwZi_kLccbLOKw/rs:fit:392:392/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9zdmcvNDMv/MGE2N2YwYzMtMjQw/NC00MTFjLWE2MTct/ZDk5MTNiY2IzNGY0/LnN2Zw.png',
+                Image.asset(
+                  'assets/images/splash_screen_image.png',
+                  // 'https://ouch-cdn2.icons8.com/n9XQxiCMz0_zpnfg9oldMbtSsG7X6NwZi_kLccbLOKw/rs:fit:392:392/czM6Ly9pY29uczgu/b3VjaC1wcm9kLmFz/c2V0cy9zdmcvNDMv/MGE2N2YwYzMtMjQw/NC00MTFjLWE2MTct/ZDk5MTNiY2IzNGY0/LnN2Zw.png',
                   fit: BoxFit.cover,
                   width: 280,
                 ),
@@ -103,7 +104,8 @@ class _LoginState extends State<Login> {
                     child: Text(
                       'Entrez votre numéro de téléphone pour continuer. Nous vous enverrons un code pour vérification.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                      style:
+                          TextStyle(fontSize: 14, color: Colors.grey.shade700),
                     ),
                   ),
                 ),
@@ -185,8 +187,8 @@ class _LoginState extends State<Login> {
                     color: AppColors.green,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5)),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 30),
                     child: _isLoading
                         ? const SizedBox(
                             width: 20,
