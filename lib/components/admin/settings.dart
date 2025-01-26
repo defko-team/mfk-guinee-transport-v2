@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/components/admin/user_management.dart';
@@ -42,20 +43,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Paramètres',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1,
-          ),
-        ),
-        elevation: 0,
-        backgroundColor: const Color(0xFF34C759), // Assuming AppColors.green is 0xFF34C759
-        automaticallyImplyLeading: false,
-      ),
+      appBar: const BaseAppBar(title: 'Paramètres', showBackArrow: false),
       backgroundColor: const Color(0xFFF5F5F5),
       body: _userId == null
           ? const Center(child: CircularProgressIndicator())
@@ -68,22 +56,26 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-                  return const Center(child: Text("Erreur lors du chargement des données"));
+                if (snapshot.hasError ||
+                    !snapshot.hasData ||
+                    !snapshot.data!.exists) {
+                  return const Center(
+                      child: Text("Erreur lors du chargement des données"));
                 }
-                
+
                 var userData = snapshot.data!.data() as Map<String, dynamic>;
                 String firstName = userData['prenom'] ?? 'Prénom';
                 String lastName = userData['nom'] ?? 'Nom';
                 String role = userData['role'] ?? 'Admin';
-                String profileImageUrl = userData['photo_profil'] ?? 'assets/images/default_avatar.png';
+                String profileImageUrl = userData['photo_profil'] ??
+                    'assets/images/default_avatar.png';
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 20),
                     GestureDetector(
-                      onTap: _navigateToProfile,  // Navigate to ProfilePage
+                      onTap: _navigateToProfile, // Navigate to ProfilePage
                       child: ProfileHeader(
                         firstName: firstName,
                         lastName: lastName,
@@ -184,7 +176,8 @@ class LogoutButton extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
+          SnackBar(
+              content: Text('Erreur lors de la déconnexion : ${e.toString()}')),
         );
       }
     }
@@ -262,13 +255,15 @@ class _AdminOptionTileState extends State<AdminOptionTile> {
       case 'Gérer Utilisateurs':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AdminChauffeurManagementPage()),
+          MaterialPageRoute(
+              builder: (context) => const AdminChauffeurManagementPage()),
         );
         break;
       case 'Gérer Voitures':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const AdminCarManagementPage()),
+          MaterialPageRoute(
+              builder: (context) => const AdminCarManagementPage()),
         );
         break;
       default:

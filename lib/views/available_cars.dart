@@ -89,7 +89,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
                 onClick: OnCarSelection,
                 backgroundColor:
                     selectedCarIndex != -1 ? AppColors.green : AppColors.grey,
-                text: "Continuer",
+                text: "Choisir cette voiture",
               ),
             ),
           ],
@@ -115,7 +115,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
           airConditioned: selectedTravel!.airConditioned,
           driverName: selectedTravel!.driverName,
           carName: selectedTravel!.carName,
-          status: ReservationStatus.completed,
+          status: ReservationStatus.pending,
           userId: widget.travelSearchInfo['userId'],
           distance: '2');
 
@@ -140,7 +140,8 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   Future<void> _saveReservation() async {
     if (reservationModel != null) {
       await reservationService.saveReservation(reservationModel!);
-      await travelService.decrementRemainingSeats(selectedTravel!.travelReference!.id);
+      await travelService
+          .decrementRemainingSeats(selectedTravel!.travelReference!.id);
     }
   }
 }

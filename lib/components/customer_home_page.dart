@@ -12,13 +12,15 @@ class CustomerHome extends StatefulWidget {
   final String? userId;
   final List<StationModel> locations;
 
-  const CustomerHome({super.key, required this.userId, required this.locations});
+  const CustomerHome(
+      {super.key, required this.userId, required this.locations});
 
   @override
   State<CustomerHome> createState() => _CustomerHomeState();
 }
 
-class _CustomerHomeState extends State<CustomerHome> with SingleTickerProviderStateMixin {
+class _CustomerHomeState extends State<CustomerHome>
+    with SingleTickerProviderStateMixin {
   int selectedTransportTypeIndex = 0;
   StationModel? selectedDeparture;
   StationModel? selectedArrival;
@@ -77,7 +79,8 @@ class _CustomerHomeState extends State<CustomerHome> with SingleTickerProviderSt
     }
   }
 
-  void _openModifyReservationBottomSheet({required ReservationModel reservation}) {
+  void _openModifyReservationBottomSheet(
+      {required ReservationModel reservation}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -101,102 +104,128 @@ class _CustomerHomeState extends State<CustomerHome> with SingleTickerProviderSt
     bool formIsValid = selectedDeparture != null && selectedArrival != null;
     return Container(
       color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(bottom: 24.0),
-                child: Text(
-                  'Où souhaitez-vous aller ?',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: IntrinsicHeight(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: 20.0,
+                right: 20.0,
+                top: 16.0,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
               ),
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: AppColors.green.withOpacity(0.1),
-                    width: 1,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      LocationType(
-                        onTypeSelected: (type) {
-                          setState(() {
-                            selectedTransportTypeIndex = type;
-                          });
-                          _animationController.reset();
-                          _animationController.forward();
-                        },
-                        selectedType: selectedTransportTypeIndex,
-                      ),
-                      const SizedBox(height: 16),
-                      if (selectedTransportTypeIndex == 0) ...[
-                        LocationForm(
-                          onDepartureChanged: (departure) {
-                            setState(() {
-                              var selectedDepartureFound = widget.locations.where(
-                                (location) => location.name.toLowerCase() == departure.toLowerCase(),
-                              );
-                              selectedDeparture = selectedDepartureFound.isNotEmpty
-                                  ? selectedDepartureFound.first
-                                  : null;
-                            });
-                          },
-                          onArrivalChanged: (arrival) {
-                            setState(() {
-                              var selectedArrivalFound = widget.locations.where(
-                                (location) => location.name.toLowerCase() == arrival.toLowerCase(),
-                              );
-                              selectedArrival = selectedArrivalFound.isNotEmpty
-                                  ? selectedArrivalFound.first
-                                  : null;
-                            });
-                          },
-                          locations: widget.locations,
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 24.0),
+                      child: Text(
+                        'Où souhaitez-vous aller ?',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
                         ),
-                      ],
+                      ),
+                    ),
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: AppColors.green.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            LocationType(
+                              onTypeSelected: (type) {
+                                setState(() {
+                                  selectedTransportTypeIndex = type;
+                                });
+                                _animationController.reset();
+                                _animationController.forward();
+                              },
+                              selectedType: selectedTransportTypeIndex,
+                            ),
+                            const SizedBox(height: 16),
+                            if (selectedTransportTypeIndex == 0) ...[
+                              LocationForm(
+                                onDepartureChanged: (departure) {
+                                  setState(() {
+                                    var selectedDepartureFound =
+                                        widget.locations.where(
+                                      (location) =>
+                                          location.name.toLowerCase() ==
+                                          departure.toLowerCase(),
+                                    );
+                                    selectedDeparture =
+                                        selectedDepartureFound.isNotEmpty
+                                            ? selectedDepartureFound.first
+                                            : null;
+                                  });
+                                },
+                                onArrivalChanged: (arrival) {
+                                  setState(() {
+                                    var selectedArrivalFound =
+                                        widget.locations.where(
+                                      (location) =>
+                                          location.name.toLowerCase() ==
+                                          arrival.toLowerCase(),
+                                    );
+                                    selectedArrival =
+                                        selectedArrivalFound.isNotEmpty
+                                            ? selectedArrivalFound.first
+                                            : null;
+                                  });
+                                },
+                                locations: widget.locations,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (selectedTransportTypeIndex == 0) ...[
+                      const SizedBox(height: 24),
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: CustomElevatedButton(
+                          onClick: formIsValid ? _onSearch : () {},
+                          backgroundColor: formIsValid
+                              ? AppColors.green
+                              : Colors.grey.shade300,
+                          text: "Rechercher les départs",
+                        ),
+                      ),
                     ],
-                  ),
+                    if (selectedTransportTypeIndex == 1)
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: VTCTravelForm(
+                          userId: widget.userId!,
+                          refreshData: () {
+                            setState(() {
+                              selectedTransportTypeIndex = 0;
+                            });
+                            _animationController.reset();
+                            _animationController.forward();
+                          },
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              if (selectedTransportTypeIndex == 0) ...[
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: CustomElevatedButton(
-                    onClick: formIsValid ? _onSearch : () {},
-                    backgroundColor: formIsValid ? AppColors.green : AppColors.grey,
-                    text: "Rechercher",
-                  ),
-                ),
-              ],
-              if (selectedTransportTypeIndex == 1)
-                Expanded(
-                  child: VTCTravelForm(
-                    userId: widget.userId!,
-                    refreshData: () {
-                      setState(() {
-                        selectedTransportTypeIndex = 0;
-                      });
-                      _animationController.reset();
-                      _animationController.forward();
-                    },
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
       ),

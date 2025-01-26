@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
+import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import '../../services/dashboard_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,21 +16,17 @@ class AdminDashboardManagementPage extends StatefulWidget {
   const AdminDashboardManagementPage({super.key});
 
   @override
-  State<AdminDashboardManagementPage> createState() => _AdminDashboardManagementPageState();
+  State<AdminDashboardManagementPage> createState() =>
+      _AdminDashboardManagementPageState();
 }
 
-class _AdminDashboardManagementPageState extends State<AdminDashboardManagementPage> {
+class _AdminDashboardManagementPageState
+    extends State<AdminDashboardManagementPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   final DashboardService _dashboardService = DashboardService();
   Map<String, dynamic>? _dashboardStats;
   Map<int, int>? _weeklyStats;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDashboardData();
-  }
 
   Future<void> _loadDashboardData() async {
     final stats = await _dashboardService.getDashboardStats(
@@ -41,60 +43,44 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
     });
   }
 
+  UserModel? user;
+  UserService userService = UserService();
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCurrentUser();
+    _loadDashboardData();
+  }
+
+  Future<void> fetchCurrentUser() async {
+    user = await userService.getCurrentUser();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Tableau de bord',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1,
-          ),
+      appBar: CurrentUserAppBar(
+        actions: IconButton(
+          icon: const Icon(Icons.filter_list, color: Colors.white),
+          onPressed: _showFilterModal,
         ),
-        elevation: 0,
-        backgroundColor: Colors.green,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _loadDashboardData,
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.white),
-            onPressed: _showFilterModal,
-          ),
-        ],
       ),
       backgroundColor: Colors.grey[200],
-      body: _dashboardStats == null
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _buildTile(
-                    'Total réservations',
-                    '${_dashboardStats!['totalReservations']}',
-                    '${_dashboardStats!['reservationsDiff'] >= 0 ? '+' : ''}${_dashboardStats!['reservationsDiff']} par rapport à hier',
-                    Iconsax.chart,
-                    Colors.red,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTile(
-                    'Total encaissé',
-                    '${_dashboardStats!['totalRevenue'].toStringAsFixed(0)} XOF',
-                    '${_dashboardStats!['revenueDiff'] >= 0 ? '+' : ''}${_dashboardStats!['revenueDiff'].toStringAsFixed(0)} XOF par rapport à hier',
-                    Iconsax.wallet,
-                    Colors.blue,
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(child: _buildChartTile()),
-                ],
-              ),
-            ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildTile('Total réservations', '432', '+13 par rapport à hier',
+                Iconsax.chart, Colors.red),
+            SizedBox(height: 16),
+            _buildTile('Total encaissé', '439.500 XOF',
+                '+43k par rapport à hier', Iconsax.wallet, Colors.blue),
+            SizedBox(height: 16),
+            Expanded(child: _buildChartTile()),
+          ],
+        ),
+      ),
     );
   }
 
@@ -129,13 +115,17 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
                 todayHighlightColor: Colors.blue,
                 selectionTextStyle: TextStyle(color: Colors.white),
                 monthCellStyle: DateRangePickerMonthCellStyle(
-                  todayTextStyle: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                  todayTextStyle: TextStyle(
+                      color: Colors.blue, fontWeight: FontWeight.bold),
                   textStyle: TextStyle(color: Colors.black),
                 ),
                 headerStyle: DateRangePickerHeaderStyle(
                   backgroundColor: Colors.white,
                   textAlign: TextAlign.center,
-                  textStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+                  textStyle: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
                 ),
                 monthViewSettings: DateRangePickerMonthViewSettings(
                   firstDayOfWeek: 1,
@@ -192,13 +182,16 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
     }
   }
 
-  Widget _buildTile(String title, String value, String subtitle, IconData icon, Color iconColor) {
+  Widget _buildTile(String title, String value, String subtitle, IconData icon,
+      Color iconColor) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)],
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -208,7 +201,9 @@ class _AdminDashboardManagementPageState extends State<AdminDashboardManagementP
             children: [
               Text(title, style: GoogleFonts.sora(fontSize: 16)),
               SizedBox(height: 8),
-              Text(value, style: GoogleFonts.sora(fontSize: 24, fontWeight: FontWeight.bold)),
+              Text(value,
+                  style: GoogleFonts.sora(
+                      fontSize: 24, fontWeight: FontWeight.bold)),
               SizedBox(height: 4),
               Text(subtitle, style: TextStyle(color: Colors.green)),
             ],

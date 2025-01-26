@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/helper/utils/utils.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
@@ -93,67 +94,93 @@ class _AdminTravelManagementPageState
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Trajets',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1,
-            ),
-          ),
-          elevation: 0,
-          backgroundColor: AppColors.green,
-          automaticallyImplyLeading: false,
-        ),
+        appBar: const BaseAppBar(title: 'Trajets', showBackArrow: false),
         body: Container(
           width: MediaQuery.of(context).size.width,
           color: Colors.white,
           padding: EdgeInsets.symmetric(
-            horizontal: MediaQuery.of(context).size.width * 0.04,
-            vertical: 16
-          ),
+              horizontal: MediaQuery.of(context).size.width * 0.04,
+              vertical: 16),
           child: StreamBuilder<List<TravelModel>>(
-            stream: TravelService().travelStream(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-            
-              if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error: ${snapshot.error}'),
-                );
-              }
-            
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(
-                  child: Text('No travels found'),
-                );
-              }
-
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: CardTravel(
-                      travelModel: snapshot.data![index],
-                      onShowDeleteDialog: _showDeleteConfirmationDialog,
-                      onDuration: duration,
-                      onDistance: distance,
-                      onOpenAddTravelBottomSheet: _openAddTravelBottomSheet
-                    ),
+              stream: TravelService().travelStream(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
                   );
                 }
-              );
-            }
-          ),
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
+                }
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text('No travels found'),
+                  );
+                }
+
+                // Group travels by itinerary
+                Map<String, List<TravelModel>> groupedTravels = {};
+                for (var travel in snapshot.data!) {
+                  String key = '${travel.departureStation?.id}-${travel.destinationStation?.id}';
+                  if (!groupedTravels.containsKey(key)) {
+                    groupedTravels[key] = [];
+                  }
+                  groupedTravels[key]!.add(travel);
+                }
+
+                // Sort each group by start time
+                groupedTravels.forEach((key, travels) {
+                  travels.sort((a, b) => a.startTime.compareTo(b.startTime));
+                });
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: groupedTravels.length,
+                  itemBuilder: (context, index) {
+                    String key = groupedTravels.keys.elementAt(index);
+                    List<TravelModel> travels = groupedTravels[key]!;
+                    TravelModel firstTravel = travels.first;
+
+                    return ExpansionTile(
+                      title: Text(
+                        '${firstTravel.departureStation?.name} → ${firstTravel.destinationStation?.name}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${travels.length} voyages disponibles',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      children: travels.map((travel) {
+                        return Container(
+                          width: MediaQuery.of(context).size.width,
+                          margin: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 8,
+                          ),
+                          child: CardTravel(
+                            travelModel: travel,
+                            onShowDeleteDialog: _showDeleteConfirmationDialog,
+                            onDuration: duration,
+                            onDistance: distance,
+                            onOpenAddTravelBottomSheet: _openAddTravelBottomSheet,
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                );
+              }),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _openAddTravelBottomSheet(),
@@ -221,7 +248,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
   }
 
   Future<void> _loadCars() async {
-    final allCars = await VoitureService().getAllVoitures();
+    final allCars = await CarService().getAllVoitures();
     setState(() {
       cars = allCars;
     });
@@ -361,8 +388,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
         //remainingSeats: remainingSeats,
         ticketPrice: double.parse(_tecketPriceController.text),
         airConditioned: aircondtioned!,
-        driverName: await VoitureService()
-            .getDriverNameById(_selectedVoiture!.idChauffeur),
+        driverName: await CarService().getDriverNameById(_selectedVoiture!.idChauffeur),
         remainingSeats: 2,
         nombreDePlace: _selectedVoiture!.nombreDePlace,
         carName: _selectedVoiture!.marque);
@@ -768,11 +794,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
               'Air Conditionnée',
               style: TextStyle(fontSize: 16.0),
             ),
-
-            // Add space between label and switch
             const SizedBox(width: 10),
-
-            // Switch widget
             Switch(
                 activeColor: AppColors.green,
                 inactiveThumbColor: Colors.red,
