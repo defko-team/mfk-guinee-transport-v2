@@ -46,6 +46,14 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 
+	<!-- Location permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Cette application a besoin d'accéder à votre position pour vous fournir des services de transport précis.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Cette application a besoin d'accéder à votre position en arrière-plan pour vous fournir des mises à jour en temps réel sur vos réservations.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Cette application a besoin d'accéder à votre position pour vous fournir la meilleure expérience de transport possible.</string>
+
 	<key>CFBundleURLTypes</key>
 	<array>
 	<dict>

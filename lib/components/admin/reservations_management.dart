@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
@@ -19,7 +20,23 @@ class AdminReservationsManagementPage extends StatefulWidget {
 }
 
 class _AdminReservationsManagementPageState
-    extends State<AdminReservationsManagementPage> {
+    extends State<AdminReservationsManagementPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final List<String> _tabs = [
+    'Tous',
+    'En attente',
+    'Confirmées',
+    'Terminées',
+    'Annulées'
+  ];
+  final Map<String, ReservationStatus> _statusMap = {
+    'En attente': ReservationStatus.pending,
+    'Confirmées': ReservationStatus.confirmed,
+    'Terminées': ReservationStatus.completed,
+    'Annulées': ReservationStatus.canceled
+  };
+
   void _openModifyReservationBottomSheet(
       {required ReservationModel reservation}) {
     showModalBottomSheet(
@@ -38,53 +55,190 @@ class _AdminReservationsManagementPageState
             ));
   }
 
+  Color _getStatusColor(String status) {
+    final reservationStatus = _statusMap[status];
+    switch (reservationStatus) {
+      case ReservationStatus.pending:
+        return Colors.orange;
+      case ReservationStatus.confirmed:
+        return Colors.green;
+      case ReservationStatus.completed:
+        return Colors.blue;
+      case ReservationStatus.canceled:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget _buildReservationsList(
+      List<ReservationModel> reservations, String? filterStatus) {
+    // Filter reservations by status if needed
+    var filteredReservations = filterStatus != null && filterStatus != 'Tous'
+        ? reservations
+            .where((r) => r.status == _statusMap[filterStatus])
+            .toList()
+        : reservations;
+
+    // Debug print to check filtering
+    print('Filter Status: $filterStatus');
+    print('Status Map Value: ${_statusMap[filterStatus]}');
+    print('Filtered Count: ${filteredReservations.length}');
+    print('Original Count: ${reservations.length}');
+    if (filteredReservations.isNotEmpty) {
+      print('Sample Status: ${filteredReservations.first.status}');
+    }
+
+    if (filteredReservations.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              filterStatus == 'Tous'
+                  ? 'Aucune réservation trouvée'
+                  : 'Aucune réservation ${filterStatus?.toLowerCase() ?? ''} trouvée',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Group reservations by date
+    Map<String, List<ReservationModel>> groupedReservations = {};
+    for (var reservation in filteredReservations) {
+      String dateKey =
+          DateFormat('dd MMMM yyyy', 'fr_FR').format(reservation.startTime);
+      if (!groupedReservations.containsKey(dateKey)) {
+        groupedReservations[dateKey] = [];
+      }
+      groupedReservations[dateKey]!.add(reservation);
+    }
+
+    // Sort dates in descending order
+    var sortedDates = groupedReservations.keys.toList()
+      ..sort((a, b) => DateFormat('dd MMMM yyyy', 'fr_FR')
+          .parse(b)
+          .compareTo(DateFormat('dd MMMM yyyy', 'fr_FR').parse(a)));
+
+    return ListView.builder(
+      itemCount: sortedDates.length,
+      itemBuilder: (context, index) {
+        String dateKey = sortedDates[index];
+        List<ReservationModel> dayReservations = groupedReservations[dateKey]!;
+
+        // Sort reservations by time for each date
+        dayReservations.sort((a, b) => b.startTime.compareTo(a.startTime));
+
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          elevation: 2,
+          child: ExpansionTile(
+            title: Row(
+              children: [
+                Icon(Icons.event, color: AppColors.green),
+                const SizedBox(width: 8),
+                Text(
+                  dateKey,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            subtitle: Text(
+              '${dayReservations.length} réservation${dayReservations.length > 1 ? 's' : ''}',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+            children: dayReservations.map((reservation) {
+              return Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                ),
+                child: CardReservation(
+                  reservationModel: reservation,
+                  onOpenModifyReservationBottonSheet:
+                      _openModifyReservationBottomSheet,
+                  isAdmin: true,
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initializeDateFormatting('fr_FR', null);
+    _tabController = TabController(length: _tabs.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Scaffold(
-        appBar: const BaseAppBar(title: 'Réservations', showBackArrow: false),
-        body: Container(
-          width: MediaQuery.of(context).size.width,
-          color: Colors.white,
-          padding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.of(context).size.width * 0.04,
-              vertical: 16),
-          child: StreamBuilder<List<ReservationModel>>(
-              stream: ReservationService().reservationStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
+    return Scaffold(
+      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
+      appBar: const BaseAppBar(
+          title: 'Gestion des réservations', showBackArrow: false),
+      body: SafeArea(
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              labelColor: Colors.green,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Colors.green,
+              tabs: _tabs.map((String tab) => Tab(text: tab)).toList(),
+            ),
+            Expanded(
+              child: StreamBuilder<List<ReservationModel>>(
+                stream: ReservationService().reservationStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
 
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text('No Reservations found'),
-                  );
-                }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                        child: Text('Aucune réservation trouvée'));
+                  }
 
-                return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: CardReservation(
-                            reservationModel: snapshot.data![index],
-                            onOpenModifyReservationBottonSheet:
-                                _openModifyReservationBottomSheet),
-                      );
-                    });
-              }),
+                  return TabBarView(
+                    controller: _tabController,
+                    children: _tabs.map((String tab) {
+                      return _buildReservationsList(
+                          snapshot.data!, tab == 'Tous' ? null : tab);
+                    }).toList(),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -190,34 +344,38 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
   }
 
   void _showSnackBar(String message) {
-    if (!mounted) return;
-
-    final snackBar = SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 2),
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height - 100),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
     );
-
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   Future<void> _modifyReservation() async {
     if (!mounted) return;
 
     if (_selectedVoiture == null) {
-      _showSnackBar('Please select a car');
+      _showSnackBar(
+          'Pour confirmer la réservation, veuillez enregistrer une voiture.');
       return;
     }
 
     if (_pickedArrivalDate == null) {
-      _showSnackBar('Please select arrival date and time');
+      _showSnackBar(
+          'Pour confirmer la réservation, veuillez sélectionner la date et l\'heure d\'arrivée.');
       return;
     }
 
     final price = double.tryParse(_tecketPriceController.text);
     if (price == null || price <= 0) {
-      _showSnackBar('Please enter a valid ticket price');
+      _showSnackBar(
+          'Pour confirmer la réservation, veuillez entrer un prix de ticket valide.');
       return;
     }
 

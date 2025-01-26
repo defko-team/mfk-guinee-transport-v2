@@ -122,7 +122,7 @@ class _HistoryPageState extends State<HistoryPage>
             userId: userId);
 
     // Sort reservations by start time
-    fetchedReservations.sort((a, b) => a.startTime.compareTo(b.startTime));
+    fetchedReservations.sort((b, a) => a.startTime.compareTo(b.startTime));
 
     if (mounted) {
       setState(() {
@@ -571,26 +571,32 @@ class _FilterBarState extends State<FilterBar> {
         isExpanded: true,
         underline: const SizedBox(),
         icon: const Icon(Icons.arrow_drop_down),
-        items: statusOptions.map((ReservationStatus status) {
-          final statusValue = status.toString().split('.').last;
-          return DropdownMenuItem<String>(
-            value: statusValue,
-            child: Row(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: getStatusColor(statusValue),
-                    shape: BoxShape.circle,
+        items: [
+          DropdownMenuItem<String>(
+            value: null,
+            child: Text('Tous les statuts'),
+          ),
+          ...statusOptions.map((ReservationStatus status) {
+            final statusValue = status.toString().split('.').last;
+            return DropdownMenuItem<String>(
+              value: statusValue,
+              child: Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: getStatusColor(statusValue),
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Text(getStatusFrenchLabel(statusValue)),
-              ],
-            ),
-          );
-        }).toList(),
+                  const SizedBox(width: 8),
+                  Text(getStatusFrenchLabel(statusValue)),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
         onChanged: (String? newValue) {
           setState(() {
             selectedStatus = newValue;

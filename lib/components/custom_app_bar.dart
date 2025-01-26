@@ -15,7 +15,7 @@ class CurrentUserAppBar extends StatefulWidget implements PreferredSizeWidget {
   State<CurrentUserAppBar> createState() => _CurrentUserAppBarState();
 
   @override
-  Size get preferredSize => const Size.fromHeight(135);
+  Size get preferredSize => const Size.fromHeight(145);
 }
 
 class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
@@ -74,7 +74,7 @@ class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
                       color: AppColors.green,
                     ),
                     padding: const EdgeInsets.only(
-                        left: 16, right: 16, top: 75, bottom: 20),
+                        left: 16, right: 16, top: 35, bottom: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -108,17 +108,16 @@ class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
                                     "Bonjour 👋",
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      height: 1.2,
                                     ),
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
                                     "$firstName ${lastName[0].toUpperCase()}.",
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
-                                      height: 1.2,
+                                      fontSize: 16,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),

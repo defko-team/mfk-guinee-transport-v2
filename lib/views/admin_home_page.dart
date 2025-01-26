@@ -32,7 +32,24 @@ class _AdminHomePageState extends State<AdminHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _adminPages[_selectedIndex],
+      body: SafeArea(
+        child: Stack(
+          children: [
+            _adminPages[_selectedIndex],
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 80, // Position above bottom navigation bar
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: Builder(
+                  builder: (context) => Container(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
@@ -40,6 +57,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+        elevation: 8,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),

@@ -122,22 +122,64 @@ class _AdminTravelManagementPageState
                   );
                 }
 
+                // Group travels by itinerary
+                Map<String, List<TravelModel>> groupedTravels = {};
+                for (var travel in snapshot.data!) {
+                  String key = '${travel.departureStation?.id}-${travel.destinationStation?.id}';
+                  if (!groupedTravels.containsKey(key)) {
+                    groupedTravels[key] = [];
+                  }
+                  groupedTravels[key]!.add(travel);
+                }
+
+                // Sort each group by start time
+                groupedTravels.forEach((key, travels) {
+                  travels.sort((a, b) => a.startTime.compareTo(b.startTime));
+                });
+
                 return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: CardTravel(
-                            travelModel: snapshot.data![index],
+                  shrinkWrap: true,
+                  itemCount: groupedTravels.length,
+                  itemBuilder: (context, index) {
+                    String key = groupedTravels.keys.elementAt(index);
+                    List<TravelModel> travels = groupedTravels[key]!;
+                    TravelModel firstTravel = travels.first;
+
+                    return ExpansionTile(
+                      title: Text(
+                        '${firstTravel.departureStation?.name} → ${firstTravel.destinationStation?.name}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${travels.length} voyages disponibles',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                      children: travels.map((travel) {
+                        return Container(
+                          width: MediaQuery.of(context).size.width,
+                          margin: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 8,
+                          ),
+                          child: CardTravel(
+                            travelModel: travel,
                             onShowDeleteDialog: _showDeleteConfirmationDialog,
                             onDuration: duration,
                             onDistance: distance,
-                            onOpenAddTravelBottomSheet:
-                                _openAddTravelBottomSheet),
-                      );
-                    });
+                            onOpenAddTravelBottomSheet: _openAddTravelBottomSheet,
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                );
               }),
         ),
         floatingActionButton: FloatingActionButton(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
@@ -294,7 +295,7 @@ class _StationPageState extends State<StationPage> {
                       Icons.event_seat,
                       'Places',
                       travelGroup.isNotEmpty
-                          ? '${travelGroup.first.nombreDePlace ?? "N/A"}'
+                          ? '${travelGroup.fold<int>(0, (previousValue, element) => previousValue + element.remainingSeats).toString()}'
                           : 'N/A',
                       Colors.orange,
                     ),

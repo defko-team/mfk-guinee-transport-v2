@@ -115,7 +115,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
           airConditioned: selectedTravel!.airConditioned,
           driverName: selectedTravel!.driverName,
           carName: selectedTravel!.carName,
-          status: ReservationStatus.completed,
+          status: ReservationStatus.pending,
           userId: widget.travelSearchInfo['userId'],
           distance: '2');
 
