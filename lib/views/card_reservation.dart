@@ -69,8 +69,8 @@ class CardReservation extends StatelessWidget {
                 userAvatarUrl:
                     'https://ui-avatars.com/api/?background=random&color=fff&name=${Uri.encodeComponent(reservationModel.driverName ?? "Chauffeur")}',
                 rating: 4.5,
-                origin: reservationModel.departureLocation ?? '',
-                destination: reservationModel.arrivalLocation ?? '',
+                origin: reservationModel.departureStation ?? reservationModel.departureLocation ?? '',
+                destination: reservationModel.destinationStation ?? reservationModel.departureLocation ?? '',
                 distance: reservationModel.distance,
                 time: DateFormat('dd/MM/yyyy HH:mm')
                     .format(reservationModel.startTime),
@@ -103,7 +103,7 @@ class CardReservation extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        reservationModel.departureLocation ?? '',
+                        reservationModel.departureStation ?? reservationModel.departureLocation ?? '',
                         style: const TextStyle(fontSize: 13),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -131,7 +131,7 @@ class CardReservation extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        reservationModel.arrivalLocation ?? '',
+                        reservationModel.destinationStation ?? reservationModel.departureLocation ?? '',
                         style: const TextStyle(fontSize: 13),
                         overflow: TextOverflow.ellipsis,
                       ),

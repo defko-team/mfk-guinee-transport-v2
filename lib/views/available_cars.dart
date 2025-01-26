@@ -99,14 +99,13 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
   }
 
   void OnCarSelection() {
-    // Action lors de la recherche
     if (selectedCarIndex != -1) {
       selectedTravel = travels[selectedCarIndex];
 
       this.reservationModel = ReservationModel(
           departureStation: selectedTravel!.departureStation?.address,
           destinationStation: selectedTravel!.destinationStation?.address,
-          departureLocation: selectedTravel!.departureStation?.address,
+          departureLocation: selectedTravel!.departureLocation,
           arrivalLocation: selectedTravel!.arrivalLocation,
           startTime: selectedTravel!.startTime,
           arrivalTime: selectedTravel!.arrivalTime,

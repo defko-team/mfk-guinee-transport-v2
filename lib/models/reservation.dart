@@ -9,7 +9,7 @@ class ReservationModel {
   final DateTime startTime;
   DateTime? arrivalTime;
   final int remainingSeats;
-  double? ticketPrice;
+  int? ticketPrice;
   bool? airConditioned;
   String? driverName;
   String? carName;
@@ -49,7 +49,7 @@ class ReservationModel {
             ? (map['arrival_time'] as Timestamp?)!.toDate()
             : null,
         remainingSeats: map['remaining_seats'],
-        ticketPrice: map['ticket_price'].toDouble(),
+        ticketPrice: map['ticket_price'].toInt(),
         airConditioned: map['air_conditioned'],
         driverName: map['driver_name'],
         carName: map['car_name'],
@@ -91,7 +91,7 @@ class ReservationModel {
       DateTime? startTime,
       DateTime? arrivalTime,
       int? remainingSeats,
-      double? ticketPrice,
+      int? ticketPrice,
       bool? airConditioned,
       String? driverName,
       String? carName,
@@ -118,7 +118,6 @@ class ReservationModel {
         createdAt: createdAt ?? this.createdAt);
   }
 
-  // Helper function to convert string to enum
   static ReservationStatus _getStatusFromString(String status) {
     switch (status) {
       case 'completed':

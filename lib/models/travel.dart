@@ -11,7 +11,7 @@ class TravelModel {
   late final DateTime startTime;
   late final DateTime? arrivalTime;
   late final int remainingSeats;
-  late final double? ticketPrice;
+  late final int? ticketPrice;
   late StationModel? departureStation;
   late StationModel? destinationStation;
   late final bool? airConditioned;
@@ -75,8 +75,8 @@ factory TravelModel.fromMap(Map<String, dynamic> map) {
         : null,
     remainingSeats: map['remaining_seats'] ?? 0,
     ticketPrice: map['ticket_price'] != null
-        ? (map['ticket_price'] as num).toDouble()
-        : 0.0,
+        ? (map['ticket_price'] as num).toInt()
+        : 0,
     airConditioned: map['air_conditioned'] ?? false,
     driverName: map['driver_name'] ?? '',
     carName: map['car_name'] ?? '',
@@ -97,7 +97,7 @@ factory TravelModel.fromMap(Map<String, dynamic> map) {
       startTime: (map['start_time'] as Timestamp).toDate(),
       arrivalTime: (map['arrival_time'] as Timestamp).toDate(),
       remainingSeats: map['remaining_seats'] ?? 0,
-      ticketPrice: map['ticket_price']?.toDouble() ?? 0.0,
+      ticketPrice: map['ticket_price']?.toInt() ?? 0,
       airConditioned: map['air_conditioned'] ?? false,
       driverName: map['driver_name'] ?? '',
       carName: map['car_name'] ?? '',

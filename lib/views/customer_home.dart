@@ -95,7 +95,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               },
             ),
           ));
-      // You might want to navigate to another page or make a request with the gathered data
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez remplir tous les champs')),

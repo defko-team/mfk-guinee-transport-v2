@@ -381,15 +381,12 @@ class _AddTravelFormState extends State<AddTravelForm> {
         id: currentTravelReference?.id ?? '',
         departureStationId: _selectedDepartureStation!.stationRef!.id,
         destinationStationId: _selectedDestinationStation!.stationRef!.id,
-        //departureLocation: departureLocation,
-        // arrivalLocation: arrivalLocation,
         startTime: _pickedDepartureDate!,
         arrivalTime: _pickedArrivalDate!,
-        //remainingSeats: remainingSeats,
-        ticketPrice: double.parse(_tecketPriceController.text),
+        ticketPrice: int.parse(_tecketPriceController.text),
         airConditioned: aircondtioned!,
         driverName: await CarService().getDriverNameById(_selectedVoiture!.idChauffeur),
-        remainingSeats: 2,
+        remainingSeats: _selectedVoiture!.nombreDePlace,
         nombreDePlace: _selectedVoiture!.nombreDePlace,
         carName: _selectedVoiture!.marque);
     if (isUpdate!) {
@@ -401,10 +398,6 @@ class _AddTravelFormState extends State<AddTravelForm> {
 
       Navigator.of(context).pop();
     }
-    // FirebaseMessagingService().sendMessage(
-    //   "c5yEM7e4T2WX8XJ2D9zukJ:APA91bEf-2PQ-eOBNzQ5sMnwn1qOITbsChPGNbTyRhw3nd33GmA-pndsWPARfKSyp_2OxY3zRrA0mDoEb-XrwXN3TH92efEFJ8sD0zW8mtdXsrt9fhqNWeI",
-    // "title",
-    // "body");
   }
 
   @override

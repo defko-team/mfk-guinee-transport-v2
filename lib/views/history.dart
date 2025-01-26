@@ -337,7 +337,6 @@ class _HistoryPageState extends State<HistoryPage>
             child: TabBarView(
               controller: _tabController,
               children: [
-                // First tab content (À venir)
                 FadeInUp(
                   child: Column(
                     children: [
@@ -361,6 +360,7 @@ class _HistoryPageState extends State<HistoryPage>
                                     itemCount: reservations.length,
                                     itemBuilder: (context, index) {
                                       final reservation = reservations[index];
+                                      print(reservation.toMap());
                                       if (reservation.status !=
                                               ReservationStatus.pending &&
                                           reservation.status !=
@@ -369,7 +369,7 @@ class _HistoryPageState extends State<HistoryPage>
                                       }
                                       return FadeInUp(
                                         delay:
-                                            Duration(milliseconds: index * 100),
+                                            Duration(milliseconds: index * 10),
                                         child: Padding(
                                           padding: const EdgeInsets.only(
                                               bottom: 8.0),

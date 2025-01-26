@@ -372,7 +372,7 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
       return;
     }
 
-    final price = double.tryParse(_tecketPriceController.text);
+    final price = int.tryParse(_tecketPriceController.text);
     if (price == null || price <= 0) {
       _showSnackBar(
           'Pour confirmer la réservation, veuillez entrer un prix de ticket valide.');

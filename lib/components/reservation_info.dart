@@ -17,10 +17,10 @@ void showReservationDialog(BuildContext context, ReservationModel reservation,
           borderRadius: BorderRadius.circular(0),
         ),
         child: Container(
-          width: MediaQuery.of(context).size.width *
-              0.91, // 90% de la largeur de l'écran
-          height: MediaQuery.of(context).size.height *
-              0.50, // 50% de la hauteur de l'écran
+          width: MediaQuery.of(context).size.width * 0.91,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.80,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -34,119 +34,143 @@ void showReservationDialog(BuildContext context, ReservationModel reservation,
                       child: Icon(Icons.person),
                     ),
                     const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(reservation.driverName!,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            reservation.driverName!,
                             style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.white)),
-                        Row(
-                          children: [
-                            const Icon(Icons.star,
-                                color: Colors.yellow, size: 16),
-                            Text(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.star, color: Colors.yellow, size: 16),
+                              Text(
                                 '${(3.9 + Random().nextDouble() * 1.1).toStringAsFixed(1)}',
-                                style: const TextStyle(
-                                  color: AppColors.white,
-                                )),
-                          ],
-                        ),
-                      ],
+                                style: const TextStyle(color: AppColors.white),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.message),
+                      icon: const Icon(Icons.message, color: AppColors.white),
                       onPressed: () {},
                     ),
                     IconButton(
-                      icon: const Icon(Icons.call),
+                      icon: const Icon(Icons.call, color: AppColors.white),
                       onPressed: () {},
                     ),
                   ],
                 ),
               ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        leading:
-                            const Icon(Icons.my_location, color: Colors.green),
-                        title: Text(reservation.departureStation ?? ''),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.location_on),
-                        title: Text(reservation.destinationStation ?? ''),
-                      ),
-                      const Divider(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Column(
-                            children: [
-                              Image.asset("assets/images/taxi.jpeg",
-                                  width: 60, height: 60),
-                            ],
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.my_location, color: Colors.green),
+                          title: Text(
+                            reservation.departureStation ?? '',
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          Column(
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.location_on),
+                          title: Text(
+                            reservation.destinationStation ?? '',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const Divider(),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const reservationTitle(title: 'DISTANCE'),
-                              Text(
-                                '${reservation.distance} km',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  children: [
+                                    const reservationTitle(title: 'DISTANCE'),
+                                    Text(
+                                      '${reservation.distance} km',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  ],
                                 ),
-                              )
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              const reservationTitle(title: 'TEMPS'),
-                              Text(
-                                getTimeDifference(reservation.startTime,
-                                    reservation.arrivalTime!),
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  children: [
+                                    const reservationTitle(title: 'TEMPS'),
+                                    Text(
+                                      getTimeDifference(
+                                        reservation.startTime,
+                                        reservation.arrivalTime!,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  ],
                                 ),
-                              )
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              const reservationTitle(title: 'PRIX'),
-                              Text(
-                                '${reservation.ticketPrice} CFA',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black,
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  children: [
+                                    const reservationTitle(title: 'PRIX'),
+                                    Text(
+                                      '${reservation.ticketPrice} CFA',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  ],
                                 ),
-                              )
+                              ),
                             ],
                           ),
-                        ],
-                      ),
-                      const Spacer(),
-                      CustomElevatedButton(
+                        ),
+                        const SizedBox(height: 20),
+                        CustomElevatedButton(
                           onClick: onBooking,
                           backgroundColor: AppColors.green,
-                          text: 'Réserver'),
-                      const SizedBox(height: 10),
-                      CustomOutlinedButton(
+                          text: 'Réserver',
+                        ),
+                        const SizedBox(height: 10),
+                        CustomOutlinedButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
                           color: AppColors.green,
-                          text: 'Quitter')
-                    ],
+                          text: 'Quitter',
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
