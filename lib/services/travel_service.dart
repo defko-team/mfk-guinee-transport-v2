@@ -116,7 +116,6 @@ class TravelService {
   }
 
   Future<void> decrementRemainingSeats(String travelId) async {
-    // Decrement the remaining seats property in travelModel
     await _firestore.collection('Travel').doc(travelId).update({
       'remaining_seats': FieldValue.increment(-1)
     });
@@ -126,7 +125,7 @@ class TravelService {
   Future<bool> deleteTravel(String travelId) async {
     try {
       await _firestore.collection('Travel').doc(travelId).delete();
-      return true; // Return true if deletion is successful
+      return true;
     } catch (error) {
       return false;
     }
