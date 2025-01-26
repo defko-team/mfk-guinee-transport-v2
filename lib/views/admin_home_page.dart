@@ -31,25 +31,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            _adminPages[_selectedIndex],
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 80, // Position above bottom navigation bar
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: Builder(
-                  builder: (context) => Container(),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: _adminPages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
