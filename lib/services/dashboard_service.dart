@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/reservation.dart';
+import 'dart:async';
 
 class DashboardService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -55,6 +56,46 @@ class DashboardService {
     };
   }
 
+  Stream<Map<String, dynamic>> getDashboardStatsStream() {
+    return _firestore
+        .collection('Reservations')
+        .snapshots()
+        .map((snapshot) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      int totalReservations = snapshot.docs.length;
+      double totalAmount = 0;
+      int todayReservations = 0;
+      int yesterdayReservations = 0;
+      double todayAmount = 0;
+      double yesterdayAmount = 0;
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final DateTime reservationDate = (data['start_time'] as Timestamp).toDate();
+        final amount = (data['amount'] as num).toDouble();
+
+        if (reservationDate.isAfter(today)) {
+          todayReservations++;
+          todayAmount += amount;
+        } else if (reservationDate.isAfter(yesterday) && reservationDate.isBefore(today)) {
+          yesterdayReservations++;
+          yesterdayAmount += amount;
+        }
+        totalAmount += amount;
+      }
+
+      return {
+        'totalReservations': totalReservations,
+        'reservationsDiff': todayReservations - yesterdayReservations,
+        'totalAmount': totalAmount,
+        'amountDiff': todayAmount - yesterdayAmount,
+      };
+    });
+  }
+
   Future<Map<int, int>> getWeeklyReservationsCount({DateTime? startDate, DateTime? endDate}) async {
     final now = DateTime.now();
     final weekStart = startDate ?? now.subtract(Duration(days: now.weekday - 1));
@@ -75,5 +116,33 @@ class DashboardService {
     }
 
     return dailyCounts;
+  }
+
+  Stream<Map<int, int>> getWeeklyReservationsStream() {
+    return _firestore
+        .collection('Reservations')
+        .snapshots()
+        .map((snapshot) {
+      final Map<int, int> weeklyStats = {};
+      final now = DateTime.now();
+      final weekStart = now.subtract(Duration(days: now.weekday - 1));
+
+      // Initialize all days of the week with 0
+      for (int i = 1; i <= 7; i++) {
+        weeklyStats[i] = 0;
+      }
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final DateTime reservationDate = (data['start_time'] as Timestamp).toDate();
+        
+        if (reservationDate.isAfter(weekStart)) {
+          final int weekday = reservationDate.weekday;
+          weeklyStats[weekday] = (weeklyStats[weekday] ?? 0) + 1;
+        }
+      }
+
+      return weeklyStats;
+    });
   }
 }

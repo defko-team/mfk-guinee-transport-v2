@@ -15,7 +15,7 @@ class CurrentUserAppBar extends StatefulWidget implements PreferredSizeWidget {
   State<CurrentUserAppBar> createState() => _CurrentUserAppBarState();
 
   @override
-  Size get preferredSize => const Size.fromHeight(145);
+  Size get preferredSize => const Size.fromHeight(135);
 }
 
 class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
@@ -60,7 +60,6 @@ class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
                 var userData = snapshot.data!.data() as Map<String, dynamic>;
                 String firstName = userData['prenom'] ?? 'Prénom';
                 String lastName = userData['nom'] ?? 'Nom';
-                // String role = userData['role'] ?? 'Admin';
                 String profileImageUrl = userData['photo_profil'] ??
                     'assets/images/default_avatar.png';
 
@@ -74,7 +73,11 @@ class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
                       color: AppColors.green,
                     ),
                     padding: const EdgeInsets.only(
-                        left: 16, right: 16, top: 35, bottom: 16),
+                      left: 16,
+                      right: 16,
+                      top: 55,
+                      bottom: 16,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -89,17 +92,15 @@ class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
                           },
                           child: Row(
                             children: [
-                              // Avatar
                               CircleAvatar(
                                 backgroundImage:
                                     profileImageUrl.startsWith('assets/')
                                         ? AssetImage(profileImageUrl)
                                             as ImageProvider
                                         : NetworkImage(profileImageUrl),
-                                radius: 25,
+                                radius: 20,
                               ),
                               const SizedBox(width: 12),
-                              // Greeting and name
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,31 +109,31 @@ class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
                                     "Bonjour 👋",
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    "$firstName ${lastName[0].toUpperCase()}.",
+                                    "Khadim D.",
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 16,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                        // Notification bell icon
                         widget.actions,
                       ],
                     ),
                   ),
                 );
-              }),
+              },
+            ),
     );
   }
 }

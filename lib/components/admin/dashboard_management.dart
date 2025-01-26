@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,33 +26,48 @@ class _AdminDashboardManagementPageState
   DateTime? _startDate;
   DateTime? _endDate;
   final DashboardService _dashboardService = DashboardService();
+  StreamSubscription? _statsSubscription;
+  StreamSubscription? _weeklyStatsSubscription;
   Map<String, dynamic>? _dashboardStats;
   Map<int, int>? _weeklyStats;
-
-  Future<void> _loadDashboardData() async {
-    final stats = await _dashboardService.getDashboardStats(
-      startDate: _startDate,
-      endDate: _endDate,
-    );
-    final weeklyStats = await _dashboardService.getWeeklyReservationsCount(
-      startDate: _startDate,
-      endDate: _endDate,
-    );
-    setState(() {
-      _dashboardStats = stats;
-      _weeklyStats = weeklyStats;
-    });
-  }
-
-  UserModel? user;
-  UserService userService = UserService();
 
   @override
   void initState() {
     super.initState();
     fetchCurrentUser();
-    _loadDashboardData();
+    _subscribeToStats();
   }
+
+  @override
+  void dispose() {
+    _statsSubscription?.cancel();
+    _weeklyStatsSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _subscribeToStats() {
+    _statsSubscription?.cancel();
+    _weeklyStatsSubscription?.cancel();
+
+    _statsSubscription = _dashboardService
+        .getDashboardStatsStream()
+        .listen((stats) {
+      setState(() {
+        _dashboardStats = stats;
+      });
+    });
+
+    _weeklyStatsSubscription = _dashboardService
+        .getWeeklyReservationsStream()
+        .listen((stats) {
+      setState(() {
+        _weeklyStats = stats;
+      });
+    });
+  }
+
+  UserModel? user;
+  UserService userService = UserService();
 
   Future<void> fetchCurrentUser() async {
     user = await userService.getCurrentUser();
@@ -59,6 +75,22 @@ class _AdminDashboardManagementPageState
 
   @override
   Widget build(BuildContext context) {
+    if (_dashboardStats == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final totalReservations = _dashboardStats!['totalReservations'].toString();
+    final reservationsDiff = _dashboardStats!['reservationsDiff'];
+    final totalAmount = _dashboardStats!['totalAmount'].toStringAsFixed(0);
+    final amountDiff = _dashboardStats!['amountDiff'];
+
+    final reservationDiffText = '${reservationsDiff >= 0 ? '+' : ''}$reservationsDiff par rapport à hier';
+    final amountDiffText = '${amountDiff >= 0 ? '+' : ''}${amountDiff.toStringAsFixed(0)}k par rapport à hier';
+
     return Scaffold(
       appBar: CurrentUserAppBar(
         actions: IconButton(
@@ -71,12 +103,22 @@ class _AdminDashboardManagementPageState
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildTile('Total réservations', '432', '+13 par rapport à hier',
-                Iconsax.chart, Colors.red),
-            SizedBox(height: 16),
-            _buildTile('Total encaissé', '439.500 XOF',
-                '+43k par rapport à hier', Iconsax.wallet, Colors.blue),
-            SizedBox(height: 16),
+            _buildTile(
+              'Total réservations', 
+              totalReservations,
+              reservationDiffText,
+              Iconsax.chart, 
+              Colors.red
+            ),
+            const SizedBox(height: 16),
+            _buildTile(
+              'Total encaissé', 
+              '$totalAmount XOF',
+              amountDiffText,
+              Iconsax.wallet, 
+              Colors.blue
+            ),
+            const SizedBox(height: 16),
             Expanded(child: _buildChartTile()),
           ],
         ),
@@ -141,7 +183,7 @@ class _AdminDashboardManagementPageState
                         _startDate = null;
                         _endDate = null;
                       });
-                      _loadDashboardData();
+                      _subscribeToStats();
                       Navigator.pop(context);
                     },
                     child: Text('Réinitialiser', 
@@ -150,7 +192,7 @@ class _AdminDashboardManagementPageState
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      _loadDashboardData();
+                      _subscribeToStats();
                       Navigator.pop(context);
                     },
                     child: Text('Appliquer', 
