@@ -7,37 +7,39 @@ import '../services/notifications_service.dart';
 class BaseAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBackArrow;
   final String title;
-  const BaseAppBar({super.key, required this.title, this.showBackArrow = true});
+  final List<Widget> actions;
+  const BaseAppBar(
+      {super.key,
+      required this.title,
+      this.showBackArrow = true,
+      this.actions = const []});
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      toolbarHeight: 70,
+      centerTitle: true,
       title: Text(
         title,
         style: const TextStyle(
-            color: AppColors.white, fontWeight: FontWeight.bold),
+          color: AppColors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       backgroundColor: AppColors.green,
-      leading: this.showBackArrow
+      leading: showBackArrow
           ? IconButton(
               icon: const Icon(
                 Icons.arrow_back,
                 color: AppColors.white,
               ),
-              onPressed: () {
-                Navigator.of(context).pop(); // Retour à l'écran précédent
-              },
+              onPressed: () => Navigator.pop(context),
             )
           : null,
-      actions: [
-        /*Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(idUser),),
-        )*/
-      ],
+      actions: actions,
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(80);
+  Size get preferredSize => const Size.fromHeight(70);
 }

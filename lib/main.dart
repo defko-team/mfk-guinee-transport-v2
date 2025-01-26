@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_options.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
+import 'package:mfk_guinee_transport/views/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/views/admin_home_page.dart';
 import 'package:mfk_guinee_transport/views/driver_home_page.dart';
@@ -58,59 +60,44 @@ Future<void> main() async {
   } else if (isDriverAuthenticated == true) {
     homePage = const DriverHomePage();
   } else {
-    homePage = const Login();
+    // homePage = const Login();
+    homePage = const SplashScreen();
   }
 
   runApp(MyApp(homePage: homePage));
 }
 
 Future<void> _initFirebase() async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // Set the background message handler first
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // Request permission for notifications
-  // await _requestNotificationPermission();
-  // _setupForegroundNotificationListener();
+  
+  // Initialize Firebase Messaging Service
+  final messagingService = FirebaseMessagingService();
+  await messagingService.initialize();
+  
+  // Setup foreground notification listener
+  await _setupForegroundNotificationListener();
 }
 
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('Handling a background message: ${message.messageId}');
+  // Need to initialize Firebase here as well
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('Handling background message: ${message.messageId}');
 }
 
-// Future<void> _requestNotificationPermission() async {
-//   FirebaseMessaging messaging = FirebaseMessaging.instance;
-//   SharedPreferences preferences = await SharedPreferences.getInstance();
-//   NotificationSettings settings = await messaging.requestPermission(
-//     alert: true,
-//     badge: true,
-//     sound: true,
-//   );
-//   print('User granted permission: ${settings.authorizationStatus}');
-
-//   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-//     String? token = await messaging.getToken();
-//     try {
-//       UserModel user = await UserService().getCurrentUser();
-//       if (user.fcmToken! != token!) {
-//         user.fcmToken = token;
-//         await UserService().updateUser(user);
-//       }
-//       preferences.setString('fcmToken', token);
-//     } catch (e) {
-//       print("error");
-//     }
-//   }
-// }
-
-void _setupForegroundNotificationListener() {
+Future<void> _setupForegroundNotificationListener() async {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Message received in foreground: ${message.notification?.title}');
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
     if (message.notification != null) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        _showTopSnackbar(
-            message.notification!.title, message.notification!.body);
-      });
+      print('Message also contained a notification: ${message.notification}');
+      _showTopSnackbar(message.notification?.title, message.notification?.body);
     }
   });
 }

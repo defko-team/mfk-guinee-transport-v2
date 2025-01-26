@@ -3,7 +3,7 @@ import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 
-class VoitureService {
+class CarService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Get all voitures
@@ -82,6 +82,21 @@ class VoitureService {
       return true;
     } catch (error) {
       return false;
+    }
+  }
+
+  // Get available cars count for a specific route
+  Future<int> getAvailableCarsCount(
+      String departureId, String arrivalId) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('Travel')
+          .where('departure_station', isEqualTo: departureId)
+          .where('destination_station', isEqualTo: arrivalId)
+          .get();
+      return querySnapshot.docs.length;
+    } catch (error) {
+      return 0;
     }
   }
 }

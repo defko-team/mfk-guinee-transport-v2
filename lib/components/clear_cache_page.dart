@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,7 +43,9 @@ class _ClearCachePageState extends State<ClearCachePage> {
     int totalSize = 0;
     try {
       if (dir.existsSync()) {
-        dir.listSync(recursive: true, followLinks: false).forEach((FileSystemEntity entity) {
+        dir
+            .listSync(recursive: true, followLinks: false)
+            .forEach((FileSystemEntity entity) {
           if (entity is File) {
             totalSize += entity.lengthSync();
           }
@@ -65,7 +68,9 @@ class _ClearCachePageState extends State<ClearCachePage> {
 
       // Suppression du cache temporaire
       if (tempDir.existsSync()) {
-        tempDir.listSync(recursive: true, followLinks: false).forEach((FileSystemEntity entity) {
+        tempDir
+            .listSync(recursive: true, followLinks: false)
+            .forEach((FileSystemEntity entity) {
           if (entity.existsSync()) {
             entity.deleteSync(recursive: true);
           }
@@ -74,7 +79,9 @@ class _ClearCachePageState extends State<ClearCachePage> {
 
       // Suppression du cache de l'application
       if (cacheDir.existsSync()) {
-        cacheDir.listSync(recursive: true, followLinks: false).forEach((FileSystemEntity entity) {
+        cacheDir
+            .listSync(recursive: true, followLinks: false)
+            .forEach((FileSystemEntity entity) {
           if (entity.existsSync()) {
             entity.deleteSync(recursive: true);
           }
@@ -112,7 +119,8 @@ class _ClearCachePageState extends State<ClearCachePage> {
     try {
       await FirebaseAuth.instance.signOut();
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', (route) => false);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -127,19 +135,7 @@ class _ClearCachePageState extends State<ClearCachePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Effacer le cache',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1,
-          ),
-        ),
-        backgroundColor: AppColors.green,
-        elevation: 0,
-      ),
+      appBar: const BaseAppBar(title: 'Effacer le cache'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -204,6 +200,7 @@ class _ClearCachePageState extends State<ClearCachePage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        color: AppColors.white,
                       ),
                     ),
             ),

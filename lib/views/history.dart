@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
-import 'package:mfk_guinee_transport/components/trip_card.dart';
-import 'package:mfk_guinee_transport/components/trip_card_detail.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/models/car.dart';
+import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/history_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
@@ -13,53 +13,124 @@ import 'package:mfk_guinee_transport/views/card_reservation.dart';
 
 class HistoryPage extends StatefulWidget {
   final String title;
-  const HistoryPage({super.key, this.title = "Reservations"});
+  const HistoryPage({super.key, this.title = "Réservations"});
 
   @override
   _HistoryPageState createState() => _HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
+class _HistoryPageState extends State<HistoryPage>
+    with SingleTickerProviderStateMixin {
   List<ReservationModel> reservations = [];
-  UserService userService = new UserService();
+  UserService userService = UserService();
   DateTime? selectedDate;
   String? selectedStatus;
   String? selectedVehicle;
   String? userId;
   List<UserModel> users = [];
+  List<VoitureModel> cars = [];
   UserModel? currentUser;
+  late TabController _tabController;
+  bool isLoading = false;
+  CarService carService = CarService();
+
+  // Helper function to get French label for status
+  String getStatusFrenchLabel(String status) {
+    switch (status) {
+      case 'pending':
+        return 'En attente';
+      case 'confirmed':
+        return 'Confirmé';
+      case 'completed':
+        return 'Terminé';
+      case 'canceled':
+        return 'Annulé';
+      default:
+        return status;
+    }
+  }
+
+  Color getStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return Colors.green;
+      case 'completed':
+        return Colors.blue;
+      case 'canceled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    fetchReservations();
-    fetUsers();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => isLoading = true);
+    try {
+      final usersData = await userService.getAllUsers();
+      final carsData = await carService.getAllVoitures();
+      if (mounted) {
+        setState(() {
+          users = usersData;
+          cars = carsData;
+        });
+      }
+      currentUser = await userService.getCurrentUser();
+      fetchReservations();
+    } catch (e) {
+      print('Error loading data: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> fetUsers() async {
     currentUser = await userService.getCurrentUser();
-
     List<UserModel> fetchedUsers = await UserService().getAllUsers();
     if (mounted) {
       setState(() {
         users = fetchedUsers;
+        isLoading = false;
       });
     }
   }
 
-  // Fetch reservations using ReservationService
-
   void fetchReservations() async {
+    setState(() => isLoading = true);
     List<ReservationModel> fetchedReservations = await HistoriqueService()
         .fetchReservation(
             startTimeFilter: selectedDate,
             statusFilter: selectedStatus,
             carNameFilter: selectedVehicle,
             userId: userId);
-    setState(() {
-      reservations = fetchedReservations;
-      userId = userId;
-    });
+
+    // Sort reservations by start time
+    fetchedReservations.sort((b, a) => a.startTime.compareTo(b.startTime));
+
+    if (mounted) {
+      setState(() {
+        reservations = fetchedReservations;
+        userId = userId;
+        isLoading = false;
+      });
+    }
   }
 
   void onFiltersChanged(
@@ -70,206 +141,330 @@ class _HistoryPageState extends State<HistoryPage> {
       selectedVehicle = vehicle;
       userId = selectedId;
     });
-    fetchReservations(); // Fetch reservations with the new filters
-  }
-
-  // Helper function to get color from status
-  static Color _getColorFromStatus(String status) {
-    switch (status) {
-      case 'completed':
-        return AppColors.green;
-      case 'canceled':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.blue;
-    }
+    fetchReservations();
   }
 
   void _openModifyReservationBottomSheet(
       {required ReservationModel reservation}) {
     showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        builder: (context) => Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 20,
-                  right: 20,
-                  top: 20),
-              child: const Text(''),
-            ));
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Text('Modifier la réservation'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return FadeInUp(
+      duration: const Duration(milliseconds: 500),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.history,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Aucune réservation trouvée',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Les réservations apparaîtront ici',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[400],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.green),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Chargement...',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final upcomingCount = reservations
+        .where((res) =>
+            res.status == ReservationStatus.pending ||
+            res.status == ReservationStatus.confirmed)
+        .length;
+
+    final historyCount = reservations
+        .where((res) =>
+            res.status == ReservationStatus.completed ||
+            res.status == ReservationStatus.canceled)
+        .length;
+
     return Scaffold(
-        appBar: BaseAppBar(
-          title: widget.title,
-          showBackArrow: false,
-        ),
-        body: // Within your page's content
-            DefaultTabController(
-          length: 2,
-          child: Column(
-            children: [
-              TabBar(
-                labelColor: Colors.black, // Active tab color
-                unselectedLabelColor: Colors.grey, // Inactive tab color
-                // Add this if your background is light
-                indicator: UnderlineTabIndicator(
-                  borderSide: BorderSide(width: 2, color: Colors.black),
-                ),
-                tabs: [
-                  Tab(text: 'A venir'),
-                  Tab(text: 'Historique'),
-                ],
+      appBar: BaseAppBar(
+        title: widget.title,
+        showBackArrow: true,
+      ),
+      body: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: AppColors.green,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: AppColors.green,
+              indicatorWeight: 3,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    // First tab content
-                    Column(
-                      children: [
-                        FilterBar(
-                            onFiltersChanged: onFiltersChanged,
-                            users: users,
-                            isAdmin:
-                                currentUser?.role?.toLowerCase() == 'admin'),
-                        Expanded(
-                            child: SingleChildScrollView(
-                          child: StreamBuilder<List<ReservationModel>>(
-                              stream: ReservationService()
-                                  .userReservationStream(userId ?? ""),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Padding(
-                                      padding: EdgeInsets.only(
-                                          left: MediaQuery.of(context)
-                                                  .size
-                                                  .width /
-                                              2.5,
-                                          top: MediaQuery.of(context)
-                                                  .size
-                                                  .height /
-                                              2.5),
-                                      child: const CircularProgressIndicator());
-                                }
-                                if (snapshot.hasError) {
-                                  return Center(
-                                      child: Text('Error: ${snapshot.error}'));
-                                }
-                                if (!snapshot.hasData ||
-                                    snapshot.data!.isEmpty) {
-                                  return const Center(
-                                      child: Text('No Reservations found'));
-                                }
-                                return ListView.builder(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8),
-                                    itemCount: snapshot.data!.length,
-                                    itemBuilder: (context, int index) {
-                                      return CardReservation(
-                                          reservationModel:
-                                              snapshot.data![index],
-                                          onOpenModifyReservationBottonSheet:
-                                              _openModifyReservationBottomSheet);
-                                    });
-                              }),
-                        ))
-                      ],
-                    ),
-                    // Second tab content
-                    Column(
-                      children: [
-                        FilterBar(
-                            onFiltersChanged: onFiltersChanged,
-                            users: users,
-                            isAdmin:
-                                currentUser?.role?.toLowerCase() == 'admin'),
-                        Expanded(
-                            child: ListView.builder(
-                          itemCount: reservations.length,
-                          itemBuilder: (context, index) {
-                            final reservation = reservations[index];
-                            return TripCard(
-                              origin: reservation.departureLocation ?? "",
-                              destination: reservation.destinationStation ?? "",
-                              vehicleName: reservation.carName ?? "",
-                              status: reservation.status.name,
-                              statusColor:
-                                  _getColorFromStatus(reservation.status.name),
-                              onTap: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(20)),
-                                  ),
-                                  builder: (BuildContext context) {
-                                    return DraggableScrollableSheet(
-                                      expand: false,
-                                      builder: (context, scrollController) {
-                                        return TripDetailCard(
-                                          userName: reservation.driverName!,
-                                          userAvatarUrl:
-                                              "https://st3.depositphotos.com/15648834/17930/v/1600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg",
-                                          rating: 4.9,
-                                          origin:
-                                              reservation.departureLocation ??
-                                                  "",
-                                          destination:
-                                              reservation.destinationStation ??
-                                                  "",
-                                          distance:
-                                              "${reservation.distance} km",
-                                          time: "25 min", // Example data
-                                          price:
-                                              "${reservation.ticketPrice} CFA",
-                                          status: reservation.status.name,
-                                          onCancel: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                        );
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            );
-                          },
-                        )),
-                      ],
-                    ),
-                  ],
-                ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
               ),
-            ],
+              tabs: [
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('À venir'),
+                      if (upcomingCount > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.green,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            upcomingCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Historique'),
+                      if (historyCount > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.green,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            historyCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ));
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // First tab content (À venir)
+                FadeInUp(
+                  child: Column(
+                    children: [
+                      FilterBar(
+                        onFiltersChanged: onFiltersChanged,
+                        users: users,
+                        cars: cars,
+                        isAdmin: currentUser?.role?.toLowerCase() == 'admin',
+                        isUpcomingTab: true,
+                      ),
+                      Expanded(
+                        child: isLoading
+                            ? _buildLoadingState()
+                            : reservations.isEmpty
+                                ? _buildEmptyState()
+                                : ListView.builder(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    itemCount: reservations.length,
+                                    itemBuilder: (context, index) {
+                                      final reservation = reservations[index];
+                                      if (reservation.status !=
+                                              ReservationStatus.pending &&
+                                          reservation.status !=
+                                              ReservationStatus.confirmed) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return FadeInUp(
+                                        delay:
+                                            Duration(milliseconds: index * 100),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          child: CardReservation(
+                                            reservationModel: reservation,
+                                            onOpenModifyReservationBottonSheet:
+                                                _openModifyReservationBottomSheet,
+                                            isAdmin: currentUser?.role
+                                                    ?.toLowerCase() ==
+                                                'admin',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Second tab content (History)
+                FadeInUp(
+                  child: Column(
+                    children: [
+                      FilterBar(
+                        onFiltersChanged: onFiltersChanged,
+                        users: users,
+                        cars: cars,
+                        isAdmin: currentUser?.role?.toLowerCase() == 'admin',
+                        isUpcomingTab: false,
+                      ),
+                      Expanded(
+                        child: isLoading
+                            ? _buildLoadingState()
+                            : reservations.isEmpty
+                                ? _buildEmptyState()
+                                : ListView.builder(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    itemCount: reservations.length,
+                                    itemBuilder: (context, index) {
+                                      final reservation = reservations[index];
+                                      if (reservation.status !=
+                                              ReservationStatus.completed &&
+                                          reservation.status !=
+                                              ReservationStatus.canceled) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return FadeInUp(
+                                        delay:
+                                            Duration(milliseconds: index * 100),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          child: CardReservation(
+                                            reservationModel: reservation,
+                                            onOpenModifyReservationBottonSheet:
+                                                _openModifyReservationBottomSheet,
+                                            isAdmin: currentUser?.role
+                                                    ?.toLowerCase() ==
+                                                'admin',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
 class FilterBar extends StatefulWidget {
   final Function(DateTime?, String?, String?, String?) onFiltersChanged;
   final List<UserModel> users;
+  final List<VoitureModel> cars;
   final bool isAdmin;
+  final bool isUpcomingTab;
 
-  const FilterBar(
-      {Key? key,
-      required this.onFiltersChanged,
-      required this.users,
-      required this.isAdmin})
-      : super(key: key);
+  const FilterBar({
+    Key? key,
+    required this.onFiltersChanged,
+    required this.users,
+    required this.cars,
+    required this.isAdmin,
+    required this.isUpcomingTab,
+  }) : super(key: key);
 
   @override
   _FilterBarState createState() => _FilterBarState();
@@ -279,176 +474,227 @@ class _FilterBarState extends State<FilterBar> {
   DateTime? selectedDate;
   String? selectedStatus;
   String? selectedVehicle;
-  String? userId;
+  String? selectedUserId;
+
+  // Helper function to get French label for status
+  String getStatusFrenchLabel(String status) {
+    switch (status) {
+      case 'pending':
+        return 'En attente';
+      case 'confirmed':
+        return 'Confirmé';
+      case 'completed':
+        return 'Terminé';
+      case 'canceled':
+        return 'Annulé';
+      default:
+        return status;
+    }
+  }
+
+  // Helper function to get status value from French label
+  String? getStatusValueFromLabel(String label) {
+    switch (label) {
+      case 'En attente':
+        return 'pending';
+      case 'Confirmé':
+        return 'confirmed';
+      case 'Terminé':
+        return 'completed';
+      case 'Annulé':
+        return 'canceled';
+      default:
+        return label;
+    }
+  }
+
+  Color getStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return Colors.green;
+      case 'completed':
+        return Colors.blue;
+      case 'canceled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      child: Column(
         children: [
-          // _buildDatePicker(context),
-          // const SizedBox(width: 16),
-          _buildStatusDropdown(),
-          const SizedBox(width: 16), // Horizontal space
-          _buildVehicleDropdown(),
-          const SizedBox(width: 16), // Horizontal space
-          if (widget.isAdmin) _buildUsersDropdown(),
-          if (_isAnyFilterSet()) // Conditionally render the IconButton
-            IconButton(
-              icon: const Icon(Icons.clear), // "X" icon to clear filters
-              onPressed: _clearFilters, // Clear filters when pressed
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatusDropdown(),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildVehicleDropdown(),
+              ),
+            ],
+          ),
+          if (widget.isAdmin) ...[
+            const SizedBox(height: 8),
+            _buildUsersDropdown(),
+          ],
+          if (_isAnyFilterSet()) ...[
+            const SizedBox(height: 8),
+            _buildClearButton(),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildDatePicker(BuildContext context) {
-    return GestureDetector(
-      onTap: () async {
-        DateTime? picked = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now(),
-          firstDate: DateTime(2000),
-          lastDate: DateTime(2101),
-        );
-        if (picked != null && picked != selectedDate) {
+  Widget _buildStatusDropdown() {
+    final statusOptions = widget.isUpcomingTab
+        ? [ReservationStatus.pending, ReservationStatus.confirmed]
+        : [ReservationStatus.completed, ReservationStatus.canceled];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButton<String>(
+        value: selectedStatus,
+        hint: const Text('Statut'),
+        isExpanded: true,
+        underline: const SizedBox(),
+        icon: const Icon(Icons.arrow_drop_down),
+        items: [
+          DropdownMenuItem<String>(
+            value: null,
+            child: Text('Tous les statuts'),
+          ),
+          ...statusOptions.map((ReservationStatus status) {
+            final statusValue = status.toString().split('.').last;
+            return DropdownMenuItem<String>(
+              value: statusValue,
+              child: Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: getStatusColor(statusValue),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(getStatusFrenchLabel(statusValue)),
+                ],
+              ),
+            );
+          }).toList(),
+        ],
+        onChanged: (String? newValue) {
           setState(() {
-            selectedDate = picked;
+            selectedStatus = newValue;
           });
           widget.onFiltersChanged(
-              selectedDate, selectedStatus, selectedVehicle, userId);
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          selectedDate != null
-              ? DateFormat('dd/MM/yyyy').format(selectedDate!)
-              : 'Date',
-          style: const TextStyle(fontSize: 16),
-        ),
+              selectedDate, newValue, selectedVehicle, selectedUserId);
+        },
       ),
-    );
-  }
-
-  Widget _buildStatusDropdown() {
-    return DropdownButton<String>(
-      hint: const Text('Status'),
-      value: selectedStatus,
-      items:
-          ['confirmed', 'pending', 'completed', 'canceled'].map((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
-      onChanged: (newValue) {
-        setState(() {
-          selectedStatus = newValue;
-        });
-        widget.onFiltersChanged(
-            selectedDate, selectedStatus, selectedVehicle, userId);
-      },
     );
   }
 
   Widget _buildVehicleDropdown() {
-    return DropdownButton<String>(
-      hint: const Text('Véhicule'),
-      value: selectedVehicle,
-      items: ['Voiture X1', 'Voiture X2'].map((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        );
-      }).toList(),
-      onChanged: (newValue) {
-        setState(() {
-          selectedVehicle = newValue;
-        });
-        widget.onFiltersChanged(
-            selectedDate, selectedStatus, selectedVehicle, userId);
-      },
-    );
-  }
-
-  Widget _buildUsersDropdown() {
-    return Expanded(
-      child: Autocomplete<UserModel>(
-        optionsBuilder: (TextEditingValue textEditingValue) {
-          if (textEditingValue.text.isEmpty) {
-            return widget.users;
-          }
-          return widget.users.where((UserModel user) {
-            final fullName = '${user.prenom} ${user.nom}'.toLowerCase();
-            return fullName.contains(textEditingValue.text.toLowerCase());
-          });
-        },
-        displayStringForOption: (UserModel user) =>
-            '${user.prenom} ${user.nom}',
-        fieldViewBuilder: (BuildContext context,
-            TextEditingController textEditingController,
-            FocusNode focusNode,
-            VoidCallback onFieldSubmitted) {
-          return TextField(
-            controller: textEditingController,
-            focusNode: focusNode,
-            decoration: InputDecoration(
-              hintText: 'Utilisateurs',
-              suffixIcon: textEditingController.text.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(Icons.clear_rounded),
-                      onPressed: () {
-                        textEditingController.clear(); // Clear the text field
-                        setState(() {
-                          userId = null; // Reset the selected product
-                        });
-                        widget.onFiltersChanged(selectedDate, selectedStatus,
-                            selectedVehicle, userId);
-                        FocusScope.of(context).unfocus();
-                      },
-                    )
-                  : null,
-            ),
-            onTapOutside: (PointerDownEvent event) {
-              FocusScope.of(context).unfocus();
-            },
-          );
-        },
-        onSelected: (UserModel selectedUser) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButton<String>(
+        value: selectedVehicle,
+        hint: const Text('Véhicules'),
+        isExpanded: true,
+        underline: const SizedBox(),
+        icon: const Icon(Icons.arrow_drop_down),
+        items: [
+          DropdownMenuItem<String>(
+            value: null,
+            child: Text('Tous les véhicules'),
+          ),
+          ...widget.cars.map((VoitureModel car) {
+            return DropdownMenuItem<String>(
+              value: car.marque,
+              child: Text(car.marque),
+            );
+          }).toList(),
+        ],
+        onChanged: (String? newValue) {
           setState(() {
-            userId = selectedUser.idUser;
+            selectedVehicle = newValue;
           });
           widget.onFiltersChanged(
-              selectedDate, selectedStatus, selectedVehicle, userId);
+              selectedDate, selectedStatus, newValue, selectedUserId);
         },
       ),
     );
   }
 
-  // Function to clear all filters
+  Widget _buildUsersDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButton<String>(
+        value: selectedUserId,
+        hint: const Text('Utilisateur'),
+        isExpanded: true,
+        underline: const SizedBox(),
+        icon: const Icon(Icons.arrow_drop_down),
+        items: widget.users.map((UserModel user) {
+          return DropdownMenuItem<String>(
+            value: user.idUser,
+            child: Text(user.nom ?? 'Unknown User'),
+          );
+        }).toList(),
+        onChanged: (String? newValue) {
+          setState(() {
+            selectedUserId = newValue;
+          });
+          widget.onFiltersChanged(
+              selectedDate, selectedStatus, selectedVehicle, newValue);
+        },
+      ),
+    );
+  }
+
+  Widget _buildClearButton() {
+    return TextButton(
+      onPressed: _clearFilters,
+      child: const Text('Effacer les filtres'),
+    );
+  }
+
   void _clearFilters() {
     setState(() {
       selectedDate = null;
       selectedStatus = null;
       selectedVehicle = null;
+      selectedUserId = null;
     });
-    // Notify parent widget about filter clearing
-    widget.onFiltersChanged(
-        selectedDate, selectedStatus, selectedVehicle, userId);
+    widget.onFiltersChanged(null, null, null, null);
   }
 
-  // Check if any filter is set
   bool _isAnyFilterSet() {
     return selectedDate != null ||
         selectedStatus != null ||
-        selectedVehicle != null;
+        selectedVehicle != null ||
+        selectedUserId != null;
   }
 }
