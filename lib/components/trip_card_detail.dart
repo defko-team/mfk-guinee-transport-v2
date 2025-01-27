@@ -58,15 +58,15 @@ class TripDetailCard extends StatelessWidget {
                       // Fallback to first letter of name if image fails to load
                       return;
                     },
-                    child: Text(
-                      userName.isNotEmpty ? userName[0].toUpperCase() : '',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
                     backgroundColor: Colors.blue,
+                    // child: Text(
+                    //   userName.isNotEmpty ? userName[0].toUpperCase() : '',
+                    //   style: const TextStyle(
+                    //     fontSize: 24,
+                    //     fontWeight: FontWeight.bold,
+                    //     color: Colors.white,
+                    //   ),
+                    // ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -210,10 +210,10 @@ class TripDetailCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {},
                       icon: const Icon(Icons.message_outlined, size: 20),
-                      label: const Text('Message'),
+                      label: const Text('Annuler'),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Colors.red[200],
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),

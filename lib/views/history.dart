@@ -182,7 +182,7 @@ class _HistoryPageState extends State<HistoryPage>
 
   Widget _buildEmptyState() {
     return FadeInUp(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 100),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -421,7 +421,7 @@ class _HistoryPageState extends State<HistoryPage>
                                       }
                                       return FadeInUp(
                                         delay:
-                                            Duration(milliseconds: index * 100),
+                                            Duration(milliseconds: index * 10),
                                         child: Padding(
                                           padding: const EdgeInsets.only(
                                               bottom: 8.0),

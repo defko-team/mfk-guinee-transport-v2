@@ -112,7 +112,7 @@ class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
                                       "$firstName ${lastName[0].toUpperCase()}.",
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 27,
+                                        fontSize: 23,
                                         fontWeight: FontWeight.w600,
                                       ),
                                       overflow: TextOverflow.ellipsis,
