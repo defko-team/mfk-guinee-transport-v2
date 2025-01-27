@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+
 import 'package:mfk_guinee_transport/components/customer_home_page.dart';
+
 import 'package:mfk_guinee_transport/components/notification_bell.dart';
+
 import 'package:mfk_guinee_transport/models/station.dart';
+
 import 'package:mfk_guinee_transport/services/notifications_service.dart';
+
 import 'package:mfk_guinee_transport/services/station_service.dart';
+
 import 'package:mfk_guinee_transport/views/available_cars.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -20,17 +28,23 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   static const Color lightGrey = Color(0xFFF2F2F2);
 
   String? _userId;
+
   String? _firstName;
+
   String? _lastName;
+
   String? _phoneNumber;
+
   String? _role;
 
   StationModel? selectedDeparture;
+
   StationModel? selectedArrival;
 
   final int _selectedIndex = 0;
 
   int selectedTransportTypeIndex = 0;
+
   List<StationModel> locations = [];
 
   final StationService _stationService = StationService();
@@ -38,7 +52,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   @override
   void initState() {
     super.initState();
+
     _loadUserInfo();
+
     _loadingStation();
   }
 
@@ -52,6 +68,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   Future<void> _loadUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     String? userId = prefs.getString("userId");
 
     if (userId != null) {
@@ -59,6 +76,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           .collection('Users')
           .doc(userId)
           .get();
+
       DocumentSnapshot roleDoc = await FirebaseFirestore.instance
           .collection('roles')
           .doc(userDoc['id_role'])
@@ -66,9 +84,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
       setState(() {
         _userId = userId;
+
         _firstName = userDoc['prenom'];
+
         _lastName = userDoc['nom'];
+
         _phoneNumber = userDoc['telephone'];
+
         _role = roleDoc['nom'];
       });
     } else {
@@ -83,6 +105,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         selectedArrival != null &&
         selectedTransportTypeIndex != -1) {
       // Here you can handle the search logic
+
       Navigator.push(
           context,
           MaterialPageRoute(
@@ -95,6 +118,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               },
             ),
           ));
+
+      // You might want to navigate to another page or make a request with the gathered data
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez remplir tous les champs')),
@@ -113,39 +138,10 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         backgroundColor: lightGrey,
         appBar: _userId == null
             ? null
-            : PreferredSize(
-                preferredSize:
-                    Size.fromHeight(MediaQuery.of(context).size.height * 0.20),
-                child: StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('Users')
-                      .doc(_userId)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError ||
-                        !snapshot.hasData ||
-                        !snapshot.data!.exists) {
-                      return const Center(
-                          child: Text("Erreur lors du chargement des données"));
-                    }
-
-                    var userData =
-                        snapshot.data!.data() as Map<String, dynamic>;
-                    String userName =
-                        "${userData['prenom']} ${userData['nom'][0].toUpperCase()}.";
-                    String avatarUrl = userData['photo_profil'] ??
-                        'assets/images/default_avatar.png';
-
-                    return CurrentUserAppBar(
-                        actions: NotificationBell(
-                            unReadNotificationCount: NotificationsService.new()
-                                .getUnreadNotificationCountStream(_userId!)));
-                  },
-                ),
-              ),
+            : CurrentUserAppBar(
+                actions: NotificationBell(
+                    unReadNotificationCount: NotificationsService.new()
+                        .getUnreadNotificationCountStream(_userId ?? ''))),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())
             : CustomerHome(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -37,22 +38,38 @@ class _AdminReservationsManagementPageState
     'Annulées': ReservationStatus.canceled
   };
 
-  void _openModifyReservationBottomSheet(
-      {required ReservationModel reservation}) {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        builder: (context) => Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 20,
-                  right: 20,
-                  top: 20),
-              child: ModifyReservationForm(reservation: reservation),
-            ));
+  void onOpenModifyReservationBottonSheet({
+    required ReservationModel reservation,
+  }) async {
+    try {
+      await ReservationService().updateReservation(
+        reservation.copyWith(status: ReservationStatus.confirmed),
+      );
+
+      // await NotificationsService().sendNotification(
+      //   userId: reservation.userId ?? '',
+      //   title: 'Réservation confirmée',
+      //   body: 'Votre réservation a été confirmée.',
+      // );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Réservation confirmée avec succès'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur lors de la confirmation'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Color _getStatusColor(String status) {
@@ -169,7 +186,7 @@ class _AdminReservationsManagementPageState
                 child: CardReservation(
                   reservationModel: reservation,
                   onOpenModifyReservationBottonSheet:
-                      _openModifyReservationBottomSheet,
+                      onOpenModifyReservationBottonSheet,
                   isAdmin: true,
                 ),
               );

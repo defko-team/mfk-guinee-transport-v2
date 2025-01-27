@@ -49,7 +49,7 @@ class ReservationModel {
             ? (map['arrival_time'] as Timestamp?)!.toDate()
             : null,
         remainingSeats: map['remaining_seats'],
-        ticketPrice: map['ticket_price'].toInt(),
+        ticketPrice: map['ticket_price']?.toInt(),
         airConditioned: map['air_conditioned'],
         driverName: map['driver_name'],
         carName: map['car_name'],
