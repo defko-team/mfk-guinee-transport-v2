@@ -145,13 +145,17 @@ class CardReservation extends StatelessWidget {
                           _DetailItem(
                             icon: Icons.my_location,
                             title: 'Départ',
-                            value: reservationModel.departureStation ?? '',
+                            value: reservationModel.departureStation ??
+                                reservationModel.departureLocation ??
+                                '',
                           ),
                           const Divider(height: 24),
                           _DetailItem(
                             icon: Icons.location_on_outlined,
                             title: 'Destination',
-                            value: reservationModel.destinationStation ?? '',
+                            value: reservationModel.destinationStation ??
+                                reservationModel.arrivalLocation ??
+                                '',
                           ),
                           const Divider(height: 24),
                           _DetailItem(
@@ -167,26 +171,30 @@ class CardReservation extends StatelessWidget {
                             value: DateFormat('HH:mm')
                                 .format(reservationModel.startTime),
                           ),
-                          const Divider(height: 24),
-                          _DetailItem(
-                            icon: Icons.calendar_today,
-                            title: 'Date de d' 'arrivée',
-                            value: DateFormat('dd/MM/yyyy')
-                                .format(reservationModel.arrivalTime!),
-                          ),
-                          const Divider(height: 24),
-                          _DetailItem(
-                            icon: Icons.access_time,
-                            title: 'Heure de d' 'arrivée',
-                            value: DateFormat('HH:mm')
-                                .format(reservationModel.arrivalTime!),
-                          ),
-                          const Divider(height: 24),
-                          _DetailItem(
-                            icon: Icons.attach_money,
-                            title: 'Prix',
-                            value: '${reservationModel.ticketPrice} CFA',
-                          ),
+                          if (reservationModel.arrivalTime != null) ...[
+                            const Divider(height: 24),
+                            _DetailItem(
+                              icon: Icons.calendar_today,
+                              title: 'Date de d' 'arrivée',
+                              value: DateFormat('dd/MM/yyyy')
+                                  .format(reservationModel.arrivalTime!),
+                            ),
+                            const Divider(height: 24),
+                            _DetailItem(
+                              icon: Icons.access_time,
+                              title: 'Heure de d' 'arrivée',
+                              value: DateFormat('HH:mm')
+                                  .format(reservationModel.arrivalTime!),
+                            ),
+                          ],
+                          if (reservationModel.ticketPrice != null) ...[
+                            const Divider(height: 24),
+                            _DetailItem(
+                              icon: Icons.attach_money,
+                              title: 'Prix',
+                              value: '${reservationModel.ticketPrice} CFA',
+                            ),
+                          ]
                         ],
                       ),
                     ),
@@ -206,7 +214,9 @@ class CardReservation extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        reservationModel.departureStation ?? '',
+                        reservationModel.departureStation ??
+                            reservationModel.departureLocation ??
+                            '',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -222,7 +232,9 @@ class CardReservation extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        reservationModel.destinationStation ?? '',
+                        reservationModel.destinationStation ??
+                            reservationModel.arrivalLocation ??
+                            '',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
