@@ -49,7 +49,7 @@ class CardReservation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (reservationModel.status == ReservationStatus.pending) {
+    if (reservationModel.status == ReservationStatus.pending || reservationModel.status == ReservationStatus.confirmed) {
       return InkWell(
         onTap: () {
           showModalBottomSheet(
@@ -227,8 +227,8 @@ class CardReservation extends StatelessWidget {
                 userAvatarUrl:
                     'https://ui-avatars.com/api/?background=random&color=fff&name=${Uri.encodeComponent(reservationModel.driverName ?? "Chauffeur")}',
                 rating: 4.5,
-                origin: reservationModel.departureLocation ?? '',
-                destination: reservationModel.arrivalLocation ?? '',
+                origin: reservationModel.departureLocation ?? reservationModel.departureStation ?? '',
+                destination: reservationModel.arrivalLocation ?? reservationModel.destinationStation ?? '',
                 distance: reservationModel.distance,
                 time: DateFormat('dd/MM/yyyy HH:mm')
                     .format(reservationModel.startTime),
