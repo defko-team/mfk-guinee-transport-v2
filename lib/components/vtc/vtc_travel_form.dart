@@ -6,7 +6,6 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/services/location_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
-import 'package:mfk_guinee_transport/views/home_page.dart';
 
 class VTCTravelForm extends StatefulWidget {
   final ReservationModel? reservation;
@@ -55,18 +54,66 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
   }
 
   Future<void> _selectDepartureDate(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final DateTime currentTime = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute,
+    );
+
     final DateTime? pickedDate = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime.now(),
-        lastDate: DateTime(2101));
+      context: context,
+      initialDate: now,
+      firstDate: now,
+      lastDate: DateTime(2101),
+    );
 
     if (pickedDate != null) {
-      setState(() {
-        _pickedDepartureDate = pickedDate;
-        _departureDateController.text =
-            DateFormat('yyyy-MM-dd').format(pickedDate);
-      });
+      // Show time picker after date is selected
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(
+          DateTime.now().add(const Duration(minutes: 1))
+        ),
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              alwaysUse24HourFormat: true,
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedTime != null) {
+        final DateTime combinedDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+
+        // Only update if selected time is in the future
+        if (combinedDateTime.isAfter(currentTime)) {
+          setState(() {
+            _pickedDepartureDate = pickedDate;
+            _pickedDepartureTime = pickedTime;
+            _departureDateController.text = 
+                DateFormat('dd-MM-yyyy').format(combinedDateTime);
+            _departureTimeController.text = 
+                DateFormat('HH:mm').format(combinedDateTime);
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Veuillez sélectionner une heure future'),
+            ),
+          );
+        }
+      }
     }
   }
 
