@@ -360,7 +360,6 @@ class _HistoryPageState extends State<HistoryPage>
                                     itemCount: reservations.length,
                                     itemBuilder: (context, index) {
                                       final reservation = reservations[index];
-                                      print(reservation.toMap());
                                       if (reservation.status !=
                                               ReservationStatus.pending &&
                                           reservation.status !=
