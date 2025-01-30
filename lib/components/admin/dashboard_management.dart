@@ -3,15 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
-import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import '../../services/dashboard_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdminDashboardManagementPage extends StatefulWidget {
   const AdminDashboardManagementPage({super.key});
@@ -49,17 +45,15 @@ class _AdminDashboardManagementPageState
     _statsSubscription?.cancel();
     _weeklyStatsSubscription?.cancel();
 
-    _statsSubscription = _dashboardService
-        .getDashboardStatsStream()
-        .listen((stats) {
+    _statsSubscription =
+        _dashboardService.getDashboardStatsStream().listen((stats) {
       setState(() {
         _dashboardStats = stats;
       });
     });
 
-    _weeklyStatsSubscription = _dashboardService
-        .getWeeklyReservationsStream()
-        .listen((stats) {
+    _weeklyStatsSubscription =
+        _dashboardService.getWeeklyReservationsStream().listen((stats) {
       setState(() {
         _weeklyStats = stats;
       });
@@ -88,8 +82,10 @@ class _AdminDashboardManagementPageState
     final totalAmount = _dashboardStats!['totalAmount'].toStringAsFixed(0);
     final amountDiff = _dashboardStats!['amountDiff'];
 
-    final reservationDiffText = '${reservationsDiff >= 0 ? '+' : ''}$reservationsDiff par rapport à hier';
-    final amountDiffText = '${amountDiff >= 0 ? '+' : ''}${amountDiff.toStringAsFixed(0)}k par rapport à hier';
+    final reservationDiffText =
+        '${reservationsDiff >= 0 ? '+' : ''}$reservationsDiff par rapport à hier';
+    final amountDiffText =
+        '${amountDiff >= 0 ? '+' : ''}${amountDiff.toStringAsFixed(0)}k par rapport à hier';
 
     return Scaffold(
       appBar: CurrentUserAppBar(
@@ -103,21 +99,11 @@ class _AdminDashboardManagementPageState
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildTile(
-              'Total réservations', 
-              totalReservations,
-              reservationDiffText,
-              Iconsax.chart, 
-              Colors.red
-            ),
+            _buildTile('Total réservations', totalReservations,
+                reservationDiffText, Iconsax.chart, Colors.red),
             const SizedBox(height: 16),
-            _buildTile(
-              'Total encaissé', 
-              '$totalAmount XOF',
-              amountDiffText,
-              Iconsax.wallet, 
-              Colors.blue
-            ),
+            _buildTile('Total encaissé', '$totalAmount XOF', amountDiffText,
+                Iconsax.wallet, Colors.blue),
             const SizedBox(height: 16),
             Expanded(child: _buildChartTile()),
           ],
@@ -130,7 +116,7 @@ class _AdminDashboardManagementPageState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       backgroundColor: Colors.white,
@@ -141,10 +127,9 @@ class _AdminDashboardManagementPageState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Sélectionner une période', 
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)
-              ),
-              SizedBox(height: 10),
+              const Text('Sélectionner une période',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 10),
               SfDateRangePicker(
                 selectionMode: DateRangePickerSelectionMode.range,
                 onSelectionChanged: _onDateRangeChanged,
@@ -186,21 +171,20 @@ class _AdminDashboardManagementPageState
                       _subscribeToStats();
                       Navigator.pop(context);
                     },
-                    child: Text('Réinitialiser', 
-                      style: TextStyle(color: Colors.red)
-                    ),
+                    child: Text('Réinitialiser',
+                        style: TextStyle(color: Colors.red)),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       _subscribeToStats();
                       Navigator.pop(context);
                     },
-                    child: Text('Appliquer', 
-                      style: TextStyle(color: Colors.white)
-                    ),
+                    child: Text('Appliquer',
+                        style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -270,7 +254,9 @@ class _AdminDashboardManagementPageState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,14 +286,22 @@ class _AdminDashboardManagementPageState
                       interval: 1,
                       getTitlesWidget: (value, _) {
                         switch (value.toInt()) {
-                          case 0: return const Text('Lun');
-                          case 1: return const Text('Mar');
-                          case 2: return const Text('Mer');
-                          case 3: return const Text('Jeu');
-                          case 4: return const Text('Ven');
-                          case 5: return const Text('Sam');
-                          case 6: return const Text('Dim');
-                          default: return const Text('');
+                          case 0:
+                            return const Text('Lun');
+                          case 1:
+                            return const Text('Mar');
+                          case 2:
+                            return const Text('Mer');
+                          case 3:
+                            return const Text('Jeu');
+                          case 4:
+                            return const Text('Ven');
+                          case 5:
+                            return const Text('Sam');
+                          case 6:
+                            return const Text('Dim');
+                          default:
+                            return const Text('');
                         }
                       },
                     ),
