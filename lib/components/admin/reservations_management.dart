@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:mfk_guinee_transport/components/admin/driver_assignment_dialog.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
@@ -41,33 +42,78 @@ class _AdminReservationsManagementPageState
   void onOpenModifyReservationBottonSheet({
     required ReservationModel reservation,
   }) async {
-    try {
-      await ReservationService().updateReservation(
-        reservation.copyWith(status: ReservationStatus.confirmed),
+    final bool isVtcReservation = reservation.departureLocation != null &&
+        reservation.arrivalLocation != null;
+
+    if (isVtcReservation) {
+      await showDialog(
+        context: context,
+        builder: (context) => CarAssignmentDialog(
+          onCarSelected: (car) async {
+            try {
+              // Get driver info if car has assigned driver
+              String? driverName;
+              String? driverId;
+              if (car.idChauffeur != null) {
+                final driver =
+                    await UserService().getUserById(car.idChauffeur!);
+                if (driver != null) {
+                  driverName = '${driver.prenom} ${driver.nom}';
+                  driverId = driver.idUser;
+                }
+              }
+
+              await ReservationService().updateReservation(
+                reservation.copyWith(
+                  status: ReservationStatus.confirmed,
+                  driverName: driverName,
+                  carName: car.marque,
+                ),
+              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Réservation VTC confirmée'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Erreur de confirmation'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          },
+        ),
       );
-
-      // await NotificationsService().sendNotification(
-      //   userId: reservation.userId ?? '',
-      //   title: 'Réservation confirmée',
-      //   body: 'Votre réservation a été confirmée.',
-      // );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Réservation confirmée avec succès'),
-            backgroundColor: Colors.green,
-          ),
+    } else {
+      // Regular taxi confirmation (unchanged)
+      try {
+        await ReservationService().updateReservation(
+          reservation.copyWith(status: ReservationStatus.confirmed),
         );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erreur lors de la confirmation'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Réservation taxi confirmée'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erreur de confirmation'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
