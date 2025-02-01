@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mfk_guinee_transport/components/custom_elevated_button.dart';
-import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
 class TripDetailCard extends StatelessWidget {
   final String userName;

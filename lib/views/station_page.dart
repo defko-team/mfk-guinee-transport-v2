@@ -184,7 +184,7 @@ class _StationPageState extends State<StationPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
+                          const Text(
                             'Arrivée',
                             style: TextStyle(
                               color: AppColors.green,
@@ -295,7 +295,12 @@ class _StationPageState extends State<StationPage> {
                       Icons.event_seat,
                       'Places',
                       travelGroup.isNotEmpty
-                          ? '${travelGroup.fold<int>(0, (previousValue, element) => previousValue + element.remainingSeats).toString()}'
+                          ? travelGroup
+                              .fold<int>(
+                                  0,
+                                  (previousValue, element) =>
+                                      previousValue + element.remainingSeats)
+                              .toString()
                           : 'N/A',
                       Colors.orange,
                     ),

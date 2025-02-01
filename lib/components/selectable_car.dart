@@ -105,7 +105,7 @@ class SelectableCarWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  travel.ticketPrice.toString() + ' F CFA',
+                  '${travel.ticketPrice} F CFA',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

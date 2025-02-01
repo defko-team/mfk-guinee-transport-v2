@@ -257,7 +257,7 @@ class AuthService {
 
         // Mettre à jour le token FCM s'il n'existe pas ou qu'il est différent
         SharedPreferences preferences = await SharedPreferences.getInstance();
-        String? fcmToken = await preferences.getString('fcmToken');
+        String? fcmToken = preferences.getString('fcmToken');
         if (fcmToken != null && userData['fcm_token'] != fcmToken) {
           await _firestore.collection('Users').doc(firestoreUserId).update({
             'fcm_token': fcmToken,
@@ -338,7 +338,7 @@ class AuthService {
       print('=== Fin _storeUserInPreferences ===');
     } catch (e) {
       print('Erreur dans _storeUserInPreferences: $e');
-      throw e;
+      rethrow;
     }
   }
 

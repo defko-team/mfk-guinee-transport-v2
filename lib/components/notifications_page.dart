@@ -28,7 +28,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Future<void> _loadUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
-    print("user found ${userId}");
+    print("user found $userId");
     setState(() {
       _userId = userId;
     });
@@ -130,7 +130,7 @@ class NotificationTile extends StatelessWidget {
   final bool status;
   final VoidCallback onTap;
 
-  NotificationTile(
+  const NotificationTile(
       {super.key,
       required this.context,
       required this.message,
@@ -143,10 +143,10 @@ class NotificationTile extends StatelessWidget {
   Widget build(BuildContext buildContext) {
     // Format the date and time using intl package
     final formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(dateHeure);
-    final bool isNew = !status!;
+    final bool isNew = !status;
     final Color contextColor = isNew ? Colors.grey[850]! : Colors.grey[300]!;
     final String displayedBody =
-        !status! ? '${message.substring(0, message.length ~/ 3)}...' : message;
+        !status ? '${message.substring(0, message.length ~/ 3)}...' : message;
     return Card(
       color: !isNew ? Colors.grey[400] : Colors.grey[80],
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),

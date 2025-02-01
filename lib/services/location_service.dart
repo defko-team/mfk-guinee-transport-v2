@@ -35,12 +35,12 @@ class LocationService {
 
   /// Method to get the address from coordinates.
   Future<String> getCurrentAddress() async {
-
     var position = await getCurrentLocation();
 
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-        45.19325208729803, 5.712001526367023,
+        45.19325208729803,
+        5.712001526367023,
       );
 
       if (placemarks.isNotEmpty) {
@@ -54,58 +54,57 @@ class LocationService {
     }
   }
 
-Future<List<String>> fetchAddressSuggestions(String query) async {
-  if (query.isEmpty) return [];
+  Future<List<String>> fetchAddressSuggestions(String query) async {
+    if (query.isEmpty) return [];
 
+    var position = await getCurrentLocation();
 
-  var position = await getCurrentLocation();
+    var longitude = 5.712001526367023;
+    var latitude = 45.19325208729803;
 
-  var longitude = 5.712001526367023;
-  var latitude = 45.19325208729803;
+    var zoom = 10;
 
-  var zoom = 10;
+    final dio = Dio();
+    const url = 'https://nominatim.openstreetmap.org/search';
 
-  final dio = Dio();
-  final url = 'https://nominatim.openstreetmap.org/search';
+    // Define the bounding box (viewbox) based on user location
+    const double delta = 0.5;
+    final minLongitude = longitude - delta;
+    final maxLongitude = longitude + delta;
+    final minLatitude = latitude - delta;
+    final maxLatitude = latitude + delta;
 
-  // Define the bounding box (viewbox) based on user location
-  const double delta = 0.5;
-  final minLongitude = longitude - delta;
-  final maxLongitude = longitude + delta;
-  final minLatitude = latitude - delta;
-  final maxLatitude = latitude + delta;
+    try {
+      final response = await dio.get(
+        url,
+        queryParameters: {
+          'q': query,
+          'format': 'json',
+          'addressdetails': '1',
+          'limit': '5',
+          'viewbox': '$minLongitude,$minLatitude,$maxLongitude,$maxLatitude',
+          'bounded': '1',
+          'lat': latitude.toString(),
+          'lon': longitude.toString(),
+          'zoom': zoom.toString(),
+        },
+        options: Options(
+          headers: {'User-Agent': 'YourAppName/1.0 (your.email@example.com)'},
+        ),
+      );
 
-  try {
-    final response = await dio.get(
-      url,
-      queryParameters: {
-        'q': query,
-        'format': 'json',
-        'addressdetails': '1',
-        'limit': '5',
-        'viewbox': '$minLongitude,$minLatitude,$maxLongitude,$maxLatitude',
-        'bounded': '1',
-        'lat': latitude.toString(),
-        'lon': longitude.toString(),
-        'zoom': zoom.toString(),
-      },
-      options: Options(
-        headers: {'User-Agent': 'YourAppName/1.0 (your.email@example.com)'},
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = response.data;
-      return data.map((item) {
-        var value = item["display_name"] as String;
-        return value.replaceRange(75, null, "...");
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((item) {
+          var value = item["display_name"] as String;
+          return value.replaceRange(75, null, "...");
         }).toList();
-    } else {
-      throw Exception('Failed to load suggestions');
+      } else {
+        throw Exception('Failed to load suggestions');
+      }
+    } catch (e) {
+      print('Error fetching suggestions: $e');
+      return [];
     }
-  } catch (e) {
-    print('Error fetching suggestions: $e');
-    return [];
   }
-}
 }

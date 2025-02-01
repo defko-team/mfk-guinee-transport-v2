@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_options.dart';
@@ -79,19 +77,15 @@ Future<void> _initFirebase() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  if (Platform.isAndroid) {
-    // Set the background message handler first
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // Set the background message handler first
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    // Request Notification Permission
-    await _requestNotificationPermission();
-    // Initialize Firebase Messaging Service
-    final messagingService = FirebaseMessagingService();
-    await messagingService.initialize();
+  // Initialize Firebase Messaging Service
+  // final messagingService = FirebaseMessagingService();
+  // await messagingService.initialize();
 
-    // Setup foreground notification listener
-    await _setupForegroundNotificationListener();
-  }
+  // Setup foreground notification listener
+  // await _setupForegroundNotificationListener();
 }
 
 @pragma('vm:entry-point')
@@ -111,22 +105,6 @@ Future<void> _setupForegroundNotificationListener() async {
       _showTopSnackbar(message.notification?.title, message.notification?.body);
     }
   });
-}
-
-Future<void> _requestNotificationPermission() async {
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  SharedPreferences preferences = await SharedPreferences.getInstance();
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-  print('User granted permission: ${settings.authorizationStatus}');
-
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    String? token = await messaging.getToken();
-    preferences.setString('fcmToken', token!);
-  }
 }
 
 void _showTopSnackbar(String? title, String? body) {

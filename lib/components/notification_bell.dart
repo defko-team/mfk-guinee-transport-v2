@@ -5,7 +5,8 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 class NotificationBell extends StatelessWidget {
   final Stream<int> unReadNotificationCount;
   const NotificationBell({
-    super.key, required this.unReadNotificationCount,
+    super.key,
+    required this.unReadNotificationCount,
   });
 
   @override
@@ -27,13 +28,13 @@ class NotificationBell extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => NotificationsPage()),
+                    builder: (context) => const NotificationsPage()),
               );
             },
           ),
           Positioned(
-            top: 4,
-            right: 4,
+              top: 4,
+              right: 4,
               child: StreamBuilder<int>(
                   stream: unReadNotificationCount,
                   builder: (context, snapshot) {
@@ -43,24 +44,20 @@ class NotificationBell extends StatelessWidget {
                         height: 20,
                         width: 20,
                         decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle
-                        ),
+                            color: Colors.red, shape: BoxShape.circle),
                         alignment: Alignment.center,
                         child: Text(
                           snapshot.data!.toString(),
                           style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold
-                          ),
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
                         ),
                       );
                     } else {
                       return const SizedBox();
                     }
-                  })
-            ),
+                  })),
         ],
       ),
     );

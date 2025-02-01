@@ -89,9 +89,9 @@ class _AdminProfilPageState extends State<AdminProfilPage> {
       String firstName, String lastName, String role, String profileImageUrl) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.green,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
@@ -236,7 +236,8 @@ class AdminProfileOptions extends StatelessWidget {
                   Icons.notifications_outlined,
                   () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => NotificationsPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const NotificationsPage()),
                   ),
                 ),
                 _buildDivider(),

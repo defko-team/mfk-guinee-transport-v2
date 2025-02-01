@@ -35,7 +35,7 @@ class ReservationModel {
       required this.userId,
       required this.distance,
       DateTime? createdAt})
-      : this.createdAt = createdAt ?? DateTime.now();
+      : createdAt = createdAt ?? DateTime.now();
 
   factory ReservationModel.fromMap(Map<String, dynamic> map) {
     return ReservationModel(

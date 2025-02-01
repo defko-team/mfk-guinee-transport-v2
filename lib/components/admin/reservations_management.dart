@@ -54,13 +54,10 @@ class _AdminReservationsManagementPageState
               // Get driver info if car has assigned driver
               String? driverName;
               String? driverId;
-              if (car.idChauffeur != null) {
-                final driver =
-                    await UserService().getUserById(car.idChauffeur!);
-                if (driver != null) {
-                  driverName = '${driver.prenom} ${driver.nom}';
-                  driverId = driver.idUser;
-                }
+              final driver = await UserService().getUserById(car.idChauffeur!);
+              if (driver != null) {
+                driverName = '${driver.prenom} ${driver.nom}';
+                driverId = driver.idUser;
               }
 
               await ReservationService().updateReservation(
@@ -240,7 +237,7 @@ class _AdminReservationsManagementPageState
           child: ExpansionTile(
             title: Row(
               children: [
-                Icon(Icons.event, color: AppColors.green),
+                const Icon(Icons.event, color: AppColors.green),
                 const SizedBox(width: 8),
                 Text(
                   dateKey,
