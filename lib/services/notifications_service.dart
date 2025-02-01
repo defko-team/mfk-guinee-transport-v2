@@ -71,7 +71,7 @@ class NotificationsService {
       String idUser) async {
     try {
       QuerySnapshot querySnapshot = await _firestore
-          .collection('Notifications')
+          .collection('Notification')
           .where('idUser', isEqualTo: idUser)
           .orderBy('dateHeure', descending: true)
           .get();
@@ -89,9 +89,11 @@ class NotificationsService {
   }
 
   Stream<int> getUnreadNotificationCountStream(String idUser) {
+    print("id user from stream $idUser");
+    if (idUser.isEmpty) return Stream.value(0);
     return _firestore
         .collection('Notification')
-        .where('idUser', isEqualTo: idUser)
+        .where('id_user', isEqualTo: idUser)
         .where('status', isEqualTo: false)
         .snapshots()
         .map((snapshot) => snapshot.size);
@@ -154,7 +156,7 @@ class NotificationsService {
 
   /* Future<void> deleteNotification(String idNotification) async {
     try {
-      await _firestore.collection('notifications').doc(idNotification).delete();
+      await _firestore.collection('Notification').doc(idNotification).delete();
       if (kDebugMode) {
         print('Notification deleted successfully');
       }
