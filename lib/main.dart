@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_options.dart';
@@ -77,15 +78,17 @@ Future<void> _initFirebase() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Set the background message handler first
-  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    // Set the background message handler first
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // Initialize Firebase Messaging Service
-  // final messagingService = FirebaseMessagingService();
-  // await messagingService.initialize();
+    // Initialize Firebase Messaging Service
+    final messagingService = FirebaseMessagingService();
+    await messagingService.initialize();
 
-  // Setup foreground notification listener
-  // await _setupForegroundNotificationListener();
+    // Setup foreground notification listener
+    await _setupForegroundNotificationListener();
+  }
 }
 
 @pragma('vm:entry-point')
