@@ -85,7 +85,6 @@ class _OtpVerificationState extends State<OtpVerification> {
           _isVerified = true;
         });
       }
-      
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -97,7 +96,7 @@ class _OtpVerificationState extends State<OtpVerification> {
         );
       }
     }
-}
+  }
 
   // void verify() async {
   //   if (_code.length < 6) return;
@@ -333,10 +332,10 @@ class _OtpVerificationState extends State<OtpVerification> {
                   minWidth: MediaQuery.of(context).size.width * 0.8,
                   height: 50,
                   child: _isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: const CircularProgressIndicator(
+                          child: CircularProgressIndicator(
                             backgroundColor: Colors.white,
                             strokeWidth: 3,
                             color: Colors.black,

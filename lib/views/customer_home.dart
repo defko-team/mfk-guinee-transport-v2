@@ -140,7 +140,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             ? null
             : CurrentUserAppBar(
                 actions: NotificationBell(
-                    unReadNotificationCount: NotificationsService.new()
+                    unReadNotificationCount: NotificationsService()
                         .getUnreadNotificationCountStream(_userId ?? ''))),
         body: _userId == null
             ? const Center(child: CircularProgressIndicator())

@@ -39,7 +39,10 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     String? userId = prefs.getString("userId");
 
     if (userId != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('Users').doc(userId).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .get();
 
       setState(() {
         _userId = userId;
@@ -56,34 +59,35 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
     }
   }
 
-void _updateProfile() async {
-  if (_userId != null) {
-    setState(() {
-      _isLoading = true;
-    });
+  void _updateProfile() async {
+    if (_userId != null) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    await FirebaseFirestore.instance.collection('Users').doc(_userId).update({
-      'prenom': _firstNameController.text,
-      'nom': _lastNameController.text,
-      'telephone': _phoneNumberController.text,
-      'photo_profil': _profileImageUrl,
-    });
+      await FirebaseFirestore.instance.collection('Users').doc(_userId).update({
+        'prenom': _firstNameController.text,
+        'nom': _lastNameController.text,
+        'telephone': _phoneNumberController.text,
+        'photo_profil': _profileImageUrl,
+      });
 
-    setState(() {
-      _isLoading = false;
-      _isEditing = false;
-    });
+      setState(() {
+        _isLoading = false;
+        _isEditing = false;
+      });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profil mis à jour avec succès!')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profil mis à jour avec succès!')),
+      );
 
-    Navigator.of(context).pop(true);
+      Navigator.of(context).pop(true);
+    }
   }
-}
 
   Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       File imageFile = File(pickedFile.path);
 
@@ -93,7 +97,9 @@ void _updateProfile() async {
 
       try {
         String fileName = '${_userId}_profile_pic.png';
-        UploadTask uploadTask = FirebaseStorage.instance.ref('profile_pics/$_userId/$fileName').putFile(imageFile);
+        UploadTask uploadTask = FirebaseStorage.instance
+            .ref('profile_pics/$_userId/$fileName')
+            .putFile(imageFile);
         TaskSnapshot snapshot = await uploadTask;
 
         String downloadUrl = await snapshot.ref.getDownloadURL();
@@ -102,7 +108,10 @@ void _updateProfile() async {
           _profileImageUrl = downloadUrl;
         });
 
-        await FirebaseFirestore.instance.collection('Users').doc(_userId).update({
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(_userId)
+            .update({
           'photo_profil': _profileImageUrl,
         });
 
@@ -111,7 +120,8 @@ void _updateProfile() async {
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors du téléchargement de l\'image: $e')),
+          SnackBar(
+              content: Text('Erreur lors du téléchargement de l\'image: $e')),
         );
       } finally {
         setState(() {
@@ -130,7 +140,7 @@ void _updateProfile() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BaseAppBar(title: 'Détails de l\'utilisateur'),
+      appBar: const BaseAppBar(title: 'Détails de l\'utilisateur'),
       body: _isLoading || _isInfoLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -145,7 +155,9 @@ void _updateProfile() async {
                           radius: 60,
                           backgroundImage: _profileImageUrl != null
                               ? NetworkImage(_profileImageUrl!)
-                              : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
+                              : const AssetImage(
+                                      'assets/images/default_avatar.png')
+                                  as ImageProvider,
                         ),
                         if (_isEditing)
                           Positioned(
@@ -184,7 +196,8 @@ void _updateProfile() async {
                         onPressed: _updateProfile,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 24),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -199,7 +212,8 @@ void _updateProfile() async {
                         onPressed: _toggleEditing,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 24),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

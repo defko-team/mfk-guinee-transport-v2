@@ -26,15 +26,15 @@ class FirebaseMessagingService {
       // Save to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcmToken', token);
-      
+
       // Save to user document if userId exists
       String? userId = prefs.getString('userId');
       if (userId != null) {
         await _firestore.collection('Users').doc(userId).update({
-          'fcmToken': token,
+          'fcm_token': token,
         });
       }
-      
+
       print('Device FCM Token saved: $token');
     }
 
@@ -42,21 +42,22 @@ class FirebaseMessagingService {
     _firebaseMessaging.onTokenRefresh.listen((String newToken) async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcmToken', newToken);
-      
+
       // Update token in user document if userId exists
       String? userId = prefs.getString('userId');
       if (userId != null) {
         await _firestore.collection('Users').doc(userId).update({
-          'fcmToken': newToken,
+          'fcm_token': newToken,
         });
       }
-      
+
       print('FCM Token refreshed: $newToken');
     });
 
     // Handle messages while the app is in foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Received a message while in foreground: ${message.notification?.title}');
+      print(
+          'Received a message while in foreground: ${message.notification?.title}');
       if (message.notification != null) {
         // Show local notification
         _showLocalNotification(message);
@@ -72,7 +73,8 @@ class FirebaseMessagingService {
     // You can use flutter_local_notifications package here
   }
 
-  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  static Future<void> _firebaseMessagingBackgroundHandler(
+      RemoteMessage message) async {
     print('Handling background message: ${message.messageId}');
     // TODO: Handle background message
   }

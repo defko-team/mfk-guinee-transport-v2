@@ -5,7 +5,7 @@ import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class ReservationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final UserService userService = new UserService();
+  final UserService userService = UserService();
 
   // Save a ReservationModel to Firestore
   Future<void> saveReservation(ReservationModel reservation) async {

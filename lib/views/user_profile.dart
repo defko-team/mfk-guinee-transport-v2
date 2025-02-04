@@ -221,7 +221,7 @@ class _ProfileOptionTileState extends State<ProfileOptionTile> {
       case 'Notifications':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => NotificationsPage()),
+          MaterialPageRoute(builder: (context) => const NotificationsPage()),
         );
         break;
       // case 'Sécurité':

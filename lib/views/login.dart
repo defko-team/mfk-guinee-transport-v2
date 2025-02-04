@@ -12,6 +12,7 @@ class Login extends StatefulWidget {
   State<Login> createState() => _LoginState();
 }
 
+/// Handles the login page UI and OTP request logic.
 class _LoginState extends State<Login> {
   final TextEditingController controller = TextEditingController();
   bool _isLoading = false;

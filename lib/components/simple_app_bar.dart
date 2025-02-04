@@ -17,7 +17,7 @@ class CustomSimpleAppBar extends StatelessWidget
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => const HomePage()),
           );
           // Implement notification action
         },

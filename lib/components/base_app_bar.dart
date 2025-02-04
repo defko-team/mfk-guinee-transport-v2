@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mfk_guinee_transport/components/notification_bell.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
-
-import '../services/notifications_service.dart';
 
 class BaseAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBackArrow;

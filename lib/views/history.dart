@@ -457,13 +457,13 @@ class FilterBar extends StatefulWidget {
   final bool isUpcomingTab;
 
   const FilterBar({
-    Key? key,
+    super.key,
     required this.onFiltersChanged,
     required this.users,
     required this.cars,
     required this.isAdmin,
     required this.isUpcomingTab,
-  }) : super(key: key);
+  });
 
   @override
   _FilterBarState createState() => _FilterBarState();
@@ -571,7 +571,7 @@ class _FilterBarState extends State<FilterBar> {
         underline: const SizedBox(),
         icon: const Icon(Icons.arrow_drop_down),
         items: [
-          DropdownMenuItem<String>(
+          const DropdownMenuItem<String>(
             value: null,
             child: Text('Tous les statuts'),
           ),
@@ -594,7 +594,7 @@ class _FilterBarState extends State<FilterBar> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
         onChanged: (String? newValue) {
           setState(() {
@@ -621,7 +621,7 @@ class _FilterBarState extends State<FilterBar> {
         underline: const SizedBox(),
         icon: const Icon(Icons.arrow_drop_down),
         items: [
-          DropdownMenuItem<String>(
+          const DropdownMenuItem<String>(
             value: null,
             child: Text('Tous les véhicules'),
           ),
@@ -630,7 +630,7 @@ class _FilterBarState extends State<FilterBar> {
               value: car.marque,
               child: Text(car.marque),
             );
-          }).toList(),
+          }),
         ],
         onChanged: (String? newValue) {
           setState(() {

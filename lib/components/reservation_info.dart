@@ -49,9 +49,11 @@ void showReservationDialog(BuildContext context, ReservationModel reservation,
                           ),
                           Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.yellow, size: 16),
+                              const Icon(Icons.star,
+                                  color: Colors.yellow, size: 16),
                               Text(
-                                '${(3.9 + Random().nextDouble() * 1.1).toStringAsFixed(1)}',
+                                (3.9 + Random().nextDouble() * 1.1)
+                                    .toStringAsFixed(1),
                                 style: const TextStyle(color: AppColors.white),
                               ),
                             ],
@@ -79,7 +81,8 @@ void showReservationDialog(BuildContext context, ReservationModel reservation,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ListTile(
-                          leading: const Icon(Icons.my_location, color: Colors.green),
+                          leading: const Icon(Icons.my_location,
+                              color: Colors.green),
                           title: Text(
                             reservation.departureStation ?? '',
                             overflow: TextOverflow.ellipsis,

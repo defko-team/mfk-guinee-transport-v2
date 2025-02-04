@@ -16,31 +16,92 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 exports.sendNotification = functions.https.onRequest(async (req, res) => {
+    // Validate request method
+    if (req.method !== 'POST') {
+        return res.status(405).send({ error: 'Method not allowed. Use POST.' });
+    }
+
     try {
-        // Valider les paramètres d'entrée
+        // Validate input parameters
         const { fcmToken, title, body } = req.body;
 
         if (!fcmToken || !title || !body) {
-            return res.status(400).send({ error: "fcmToken, title, and body are required" });
+            return res.status(400).send({ 
+                error: "Missing required parameters",
+                details: {
+                    fcmToken: !fcmToken ? "Token is required" : null,
+                    title: !title ? "Title is required" : null,
+                    body: !body ? "Body is required" : null
+                }
+            });
         }
 
-        // Définir le message de notification
+        // Define notification message with improved configuration
         const message = {
             notification: {
                 title: title,
                 body: body,
             },
+            data: {
+                title: title,
+                body: body,
+                timestamp: Date.now().toString(),
+            },
+            android: {
+                notification: {
+                    sound: 'default',
+                    priority: 'high',
+                    defaultSound: true,
+                    channelId: 'high_importance_channel',
+                    visibility: 'public',
+                    vibrateTimingsMillis: [200, 500, 200],
+                },
+                priority: 'high',
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        sound: 'default',
+                        badge: 1,
+                    },
+                },
+            },
             token: fcmToken,
         };
 
-        // Envoyer la notification
-        const response = await admin.messaging().send(message);
-        console.log("Notification sent successfully:", response);
+        // Send notification with retry logic
+        let retries = 3;
+        let lastError = null;
 
-        res.status(200).send({ success: true, response });
+        while (retries > 0) {
+            try {
+                const response = await admin.messaging().send(message);
+                logger.info("Notification sent successfully:", response);
+                return res.status(200).send({ 
+                    success: true, 
+                    messageId: response,
+                    timestamp: Date.now()
+                });
+            } catch (error) {
+                lastError = error;
+                retries--;
+                if (retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+                }
+            }
+        }
+
+        // If all retries failed
+        logger.error("Failed to send notification after retries:", lastError);
+        throw lastError;
+
     } catch (error) {
-        console.error("Error sending notification:", error);
-        res.status(500).send({ error: error.message });
+        logger.error("Error in sendNotification:", error);
+        return res.status(500).send({
+            error: "Failed to send notification",
+            details: error.message,
+            code: error.code
+        });
     }
 });
 

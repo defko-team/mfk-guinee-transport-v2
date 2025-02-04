@@ -7,7 +7,7 @@ class HistoriqueService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference reservationCollection =
       FirebaseFirestore.instance.collection('Reservation');
-  final UserService userService = new UserService();
+  final UserService userService = UserService();
 
   // Method to get all reservations for a specific user with optional filters
   Future<List<ReservationModel>> fetchReservation(

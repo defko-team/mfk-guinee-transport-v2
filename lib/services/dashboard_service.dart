@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/reservation.dart';
 import 'dart:async';
 
 class DashboardService {
@@ -12,16 +11,18 @@ class DashboardService {
         .snapshots();
   }
 
-  Future<Map<String, dynamic>> getDashboardStats({DateTime? startDate, DateTime? endDate}) async {
+  Future<Map<String, dynamic>> getDashboardStats(
+      {DateTime? startDate, DateTime? endDate}) async {
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
 
-    final effectiveStartDate = startDate ?? DateTime(now.year, now.month, now.day);
+    final effectiveStartDate =
+        startDate ?? DateTime(now.year, now.month, now.day);
     final effectiveEndDate = endDate ?? now;
-    
+
     // Calculer la période précédente avec la même durée
-    final duration = endDate != null && startDate != null 
-        ? endDate.difference(startDate) 
+    final duration = endDate != null && startDate != null
+        ? endDate.difference(startDate)
         : const Duration(days: 1);
     final previousPeriodStart = effectiveStartDate.subtract(duration);
 
@@ -50,17 +51,15 @@ class DashboardService {
 
     return {
       'totalReservations': currentPeriodReservations.size,
-      'reservationsDiff': currentPeriodReservations.size - previousPeriodReservations.size,
+      'reservationsDiff':
+          currentPeriodReservations.size - previousPeriodReservations.size,
       'totalRevenue': currentTotal,
       'revenueDiff': currentTotal - previousTotal,
     };
   }
 
   Stream<Map<String, dynamic>> getDashboardStatsStream() {
-    return _firestore
-        .collection('Reservations')
-        .snapshots()
-        .map((snapshot) {
+    return _firestore.collection('Reservations').snapshots().map((snapshot) {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final yesterday = today.subtract(const Duration(days: 1));
@@ -74,13 +73,15 @@ class DashboardService {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        final DateTime reservationDate = (data['start_time'] as Timestamp).toDate();
+        final DateTime reservationDate =
+            (data['start_time'] as Timestamp).toDate();
         final amount = (data['amount'] as num).toDouble();
 
         if (reservationDate.isAfter(today)) {
           todayReservations++;
           todayAmount += amount;
-        } else if (reservationDate.isAfter(yesterday) && reservationDate.isBefore(today)) {
+        } else if (reservationDate.isAfter(yesterday) &&
+            reservationDate.isBefore(today)) {
           yesterdayReservations++;
           yesterdayAmount += amount;
         }
@@ -96,11 +97,13 @@ class DashboardService {
     });
   }
 
-  Future<Map<int, int>> getWeeklyReservationsCount({DateTime? startDate, DateTime? endDate}) async {
+  Future<Map<int, int>> getWeeklyReservationsCount(
+      {DateTime? startDate, DateTime? endDate}) async {
     final now = DateTime.now();
-    final weekStart = startDate ?? now.subtract(Duration(days: now.weekday - 1));
+    final weekStart =
+        startDate ?? now.subtract(Duration(days: now.weekday - 1));
     final weekEnd = endDate ?? now;
-    
+
     final weeklyReservations = await _firestore
         .collection('Reservations')
         .where('start_time', isGreaterThanOrEqualTo: weekStart)
@@ -119,10 +122,7 @@ class DashboardService {
   }
 
   Stream<Map<int, int>> getWeeklyReservationsStream() {
-    return _firestore
-        .collection('Reservations')
-        .snapshots()
-        .map((snapshot) {
+    return _firestore.collection('Reservations').snapshots().map((snapshot) {
       final Map<int, int> weeklyStats = {};
       final now = DateTime.now();
       final weekStart = now.subtract(Duration(days: now.weekday - 1));
@@ -134,8 +134,9 @@ class DashboardService {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        final DateTime reservationDate = (data['start_time'] as Timestamp).toDate();
-        
+        final DateTime reservationDate =
+            (data['start_time'] as Timestamp).toDate();
+
         if (reservationDate.isAfter(weekStart)) {
           final int weekday = reservationDate.weekday;
           weeklyStats[weekday] = (weeklyStats[weekday] ?? 0) + 1;

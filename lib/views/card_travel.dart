@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dash/flutter_dash.dart';
-import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
-import 'package:flutter/cupertino.dart'; // Make sure to import this
+// Make sure to import this
 
 class CardTravel extends StatelessWidget {
   final TravelModel travelModel;
@@ -41,7 +39,8 @@ class CardTravel extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    travelModel.departureStation?.name ?? travelModel.departureLocation!,
+                    travelModel.departureStation?.name ??
+                        travelModel.departureLocation!,
                     style: const TextStyle(fontSize: 13),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -69,7 +68,8 @@ class CardTravel extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    travelModel.destinationStation?.name ?? travelModel.arrivalLocation!,
+                    travelModel.destinationStation?.name ??
+                        travelModel.arrivalLocation!,
                     style: const TextStyle(fontSize: 13),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -89,7 +89,8 @@ class CardTravel extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => onOpenAddTravelBottomSheet(travel: travelModel),
+                    onPressed: () =>
+                        onOpenAddTravelBottomSheet(travel: travelModel),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
@@ -107,7 +108,8 @@ class CardTravel extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => onShowDeleteDialog(travelModel.travelReference!.id),
+                    onPressed: () =>
+                        onShowDeleteDialog(travelModel.travelReference!.id),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.red,

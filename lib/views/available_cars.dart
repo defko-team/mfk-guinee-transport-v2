@@ -102,7 +102,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
     if (selectedCarIndex != -1) {
       selectedTravel = travels[selectedCarIndex];
 
-      this.reservationModel = ReservationModel(
+      reservationModel = ReservationModel(
           departureStation: selectedTravel!.departureStation?.address,
           destinationStation: selectedTravel!.destinationStation?.address,
           departureLocation: selectedTravel!.departureLocation,
@@ -116,6 +116,7 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
           carName: selectedTravel!.carName,
           status: ReservationStatus.pending,
           userId: widget.travelSearchInfo['userId'],
+          travelId: selectedTravel!.id,
           distance: '2');
 
       showReservationDialog(context, reservationModel!, onBooking);

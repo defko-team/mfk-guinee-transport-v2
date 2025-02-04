@@ -8,9 +8,9 @@ class CarAssignmentDialog extends StatefulWidget {
   final Function(VoitureModel car) onCarSelected;
 
   const CarAssignmentDialog({
-    Key? key,
+    super.key,
     required this.onCarSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<CarAssignmentDialog> createState() => _CarAssignmentDialogState();
@@ -152,25 +152,24 @@ class _CarAssignmentDialogState extends State<CarAssignmentDialog> {
                         children: [
                           Text('Marque: ${car.marque}'),
                           Text('Places: ${car.nombreDePlace}'),
-                          if (car.idChauffeur != null)
-                            Builder(
-                              builder: (context) {
-                                return FutureBuilder(
-                                  future: UserService()
-                                      .getUserById(car.idChauffeur!),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData &&
-                                        snapshot.data != null) {
-                                      final driver = snapshot.data!;
-                                      return Text(
-                                        'Chauffeur: ${driver.prenom} ${driver.nom}',
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  },
-                                );
-                              },
-                            ),
+                          Builder(
+                            builder: (context) {
+                              return FutureBuilder(
+                                future:
+                                    UserService().getUserById(car.idChauffeur!),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData &&
+                                      snapshot.data != null) {
+                                    final driver = snapshot.data!;
+                                    return Text(
+                                      'Chauffeur: ${driver.prenom} ${driver.nom}',
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              );
+                            },
+                          ),
                         ],
                       ),
                       selected: isSelected,
