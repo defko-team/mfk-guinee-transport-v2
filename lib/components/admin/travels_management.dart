@@ -398,8 +398,12 @@ class _AddTravelFormState extends State<AddTravelForm> {
       TravelService().updateTravel(travel);
       Navigator.of(context).pop();
     } else {
-      TravelService().createTravel(travel);
-
+      final String? response = await TravelService().createTravel(travel);
+      if (response != null) {
+        print('creation du trajet : $response');
+      } else {
+        print('erreur lors de la creation du trajet');
+      }
       Navigator.of(context).pop();
     }
   }
