@@ -81,13 +81,6 @@ Future<void> _initFirebase() async {
   if (defaultTargetPlatform == TargetPlatform.android) {
     // Set the background message handler first
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // Initialize Firebase Messaging Service
-    final messagingService = FirebaseMessagingService();
-    await messagingService.initialize();
-
-    // Setup foreground notification listener
-    await _setupForegroundNotificationListener();
   }
 }
 
@@ -98,79 +91,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling background message: ${message.messageId}');
 }
 
-Future<void> _setupForegroundNotificationListener() async {
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
-
-    if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
-      _showTopSnackbar(message.notification?.title, message.notification?.body);
-    }
-  });
-}
-
-void _showTopSnackbar(String? title, String? body) {
-  if (title != null && body != null) {
-    OverlayState? overlayState = navigatorKey.currentState!.overlay;
-    OverlayEntry? overlayEntry;
-
-    overlayEntry = OverlayEntry(
-      builder: (BuildContext context) => Positioned(
-        top: 50.0,
-        left: 50.0,
-        right: 50.0,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        body,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () {
-                    overlayEntry?.remove();
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    overlayState?.insert(overlayEntry);
-
-    // Remove the Snackbar after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
-      overlayEntry?.remove();
-    });
-  }
-}
-
 Future<bool> isConnectedToInternet() async {
   // Implémentez la logique pour vérifier la connexion Internet
   // Par exemple, vous pouvez utiliser le package 'connectivity_plus'
@@ -178,14 +98,93 @@ Future<bool> isConnectedToInternet() async {
   return true; // Remplacez par la logique réelle
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final Widget homePage;
 
   const MyApp({super.key, required this.homePage});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    _setupNotifications();
+  }
+
+  Future<void> _setupNotifications() async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      // Initialize Firebase Messaging Service
+      final messagingService = FirebaseMessagingService();
+      await messagingService.initialize();
+
+      // Setup foreground notification listener
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        print('Got a message whilst in the foreground!');
+        print('Message data: ${message.data}');
+        print('Message notification: ${message.notification}');
+        if (message.notification != null) {
+          print('Message also contained a notification: ${message.notification}');
+          _showTopSnackbar(message.notification?.title, message.notification?.body);
+        }
+      });
+    }
+  }
+
+  void _showTopSnackbar(String? title, String? body) {
+    if (title != null && body != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final context = navigatorKey.currentContext;
+        if (context != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              duration: const Duration(seconds: 3),
+              backgroundColor: Colors.black.withOpacity(0.8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    body,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              action: SnackBarAction(
+                label: 'Dismiss',
+                textColor: Colors.white,
+                onPressed: () {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  }
+                },
+              ),
+            ),
+          );
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Guinea Transport',
       theme: ThemeData(
@@ -199,7 +198,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: homePage,
+      home: widget.homePage,
       routes: getAppRoutes(),
     );
   }
