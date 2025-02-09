@@ -390,7 +390,6 @@ class _AddTravelFormState extends State<AddTravelForm> {
         nombreDePlace: _selectedVoiture!.nombreDePlace,
         carName: _selectedVoiture!.marque);
 
-      print(travel.toString());
     if (isUpdate!) {
       print(travel.toString());
       TravelService().updateTravel(travel);
