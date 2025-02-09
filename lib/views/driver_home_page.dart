@@ -24,7 +24,6 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
   late TabController _tabController;
   List<TravelModel> travels = [];
   DateTime? selectedDate;
-  String? selectedStatus;
   bool isLoading = false;
 
   @override
@@ -68,41 +67,87 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
   void fetchTravels() async {
     if (_userId == null) return;
     
+    print('🔍 Début fetchTravels avec userId: $_userId');
     setState(() => isLoading = true);
     try {
+      var userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(_userId)
+          .get();
+      
+      print('👤 Document utilisateur existe: ${userDoc.exists}');
+      print('👤 Données utilisateur complètes: ${userDoc.data()}');
+
+      String prenom = userDoc.data()?['prenom'] ?? '';
+      String nom = userDoc.data()?['nom'] ?? '';
+      String driverName = '$prenom $nom'.trim();
+      
+      print('👤 Nom du conducteur construit: $driverName');
+      
       var query = FirebaseFirestore.instance
-          .collection('Travels')
-          .where('driver_id', isEqualTo: _userId);
+          .collection('Travel')
+          .where('driver_name', isEqualTo: driverName);
 
-      if (_tabController.index == 0) {
-        query = query.where('status', whereIn: ['pending', 'confirmed']);
-      } else {
-        query = query.where('status', whereIn: ['completed', 'canceled']);
+      print('📅 Tab actif: ${_tabController.index}');
+      DateTime now = DateTime.now();
+      print('⏰ Date actuelle: $now');
+
+      var snapshot = await query.get();
+      print('📊 Nombre de documents trouvés: ${snapshot.docs.length}');
+      
+      if (snapshot.docs.isNotEmpty) {
+        print('📄 Premier document trouvé: ${snapshot.docs.first.data()}');
       }
-
-      if (selectedDate != null) {
-        DateTime endOfDay = DateTime(selectedDate!.year, selectedDate!.month, selectedDate!.day, 23, 59, 59);
-        query = query.where('departure_date', isLessThanOrEqualTo: endOfDay);
-      }
-
-      if (selectedStatus != null) {
-        query = query.where('status', isEqualTo: selectedStatus);
-      }
-
-      var snapshot = await query.orderBy('departure_date', descending: true).get();
       
       if (mounted) {
         setState(() {
           travels = snapshot.docs.map((doc) {
             Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            data['id'] = doc.id; // Ajouter l'ID du document
+            data['id'] = doc.id;
+            print('🎯 Document trouvé - ID: ${doc.id}');
+            print('📄 Données du document: ${doc.data()}');
             return TravelModel.fromMap(data);
+          }).where((travel) {
+            // Filtrer par date selon l'onglet actif
+            if (_tabController.index == 0) {
+              // Trajets à venir (aujourd'hui et futur)
+              return travel.startTime.isAfter(DateTime(now.year, now.month, now.day)) || 
+                     travel.startTime.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
+            } else {
+              // Trajets passés
+              return travel.startTime.isBefore(DateTime(now.year, now.month, now.day));
+            }
           }).toList();
+
+          // Appliquer le filtre de date sélectionnée si présent
+          if (selectedDate != null) {
+            print('📆 Filtrage par date sélectionnée: $selectedDate');
+            travels = travels.where((travel) {
+              bool matchesDate = travel.startTime.year == selectedDate!.year &&
+                     travel.startTime.month == selectedDate!.month &&
+                     travel.startTime.day == selectedDate!.day;
+              print('📅 Trajet ${travel.id} correspond à la date: $matchesDate');
+              return matchesDate;
+            }).toList();
+          }
+
+          // Trier par date
+          travels.sort((a, b) => _tabController.index == 0 
+              ? a.startTime.compareTo(b.startTime)  // Croissant pour les trajets à venir
+              : b.startTime.compareTo(a.startTime)); // Décroissant pour l'historique
+
+          print('✅ Nombre final de trajets: ${travels.length}');
           isLoading = false;
         });
       }
-    } catch (e) {
-      print('Error fetching travels: $e');
+    } catch (e, stackTrace) {
+      print('❌ Erreur dans fetchTravels: $e');
+      print('📜 Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors du chargement des trajets: $e')),
+        );
+      }
       setState(() => isLoading = false);
     }
   }
@@ -118,11 +163,9 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
       builder: (BuildContext context) {
         return FilterBar(
           selectedDate: selectedDate,
-          selectedStatus: selectedStatus,
-          onFiltersChanged: (date, status) {
+          onFiltersChanged: (date) {
             setState(() {
               selectedDate = date;
-              selectedStatus = status;
             });
             fetchTravels();
             Navigator.pop(context);
@@ -159,150 +202,75 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
     );
   }
 
+  Widget _buildTravelsList(bool isUpcoming) {
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : travels.isEmpty
+            ? _buildEmptyState()
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: travels.length,
+                itemBuilder: (context, index) {
+                  return TravelCard(
+                    travel: travels[index],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TravelCustomersList(
+                            travelId: travels[index].id!,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: lightGrey,
-      appBar: _userId == null
-          ? null
-          : AppBar(
-              backgroundColor: AppColors.green,
-              elevation: 0,
-              flexibleSpace: SafeArea(
-                child: Column(
-                  children: [
-                    StreamBuilder<DocumentSnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('Users')
-                          .doc(_userId)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const SizedBox(
-                            height: 80,
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-                          return const SizedBox(
-                            height: 80,
-                            child: Center(child: Text("Erreur lors du chargement des données")),
-                          );
-                        }
-
-                        var userData = snapshot.data!.data() as Map<String, dynamic>;
-                        String userName = "${userData['prenom']} ${userData['nom'][0].toUpperCase()}.";
-                        String avatarUrl = userData['photo_profil'] ?? 'assets/images/default_avatar.png';
-
-                        return SizedBox(
-                          height: 80,
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 16),
-                              CircleAvatar(
-                                radius: 25,
-                                backgroundImage: userData['photo_profil'] != null
-                                    ? NetworkImage(userData['photo_profil'])
-                                    : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Bonjour 👋',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  Text(
-                                    userName,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
-                              IconButton(
-                                icon: const Icon(Icons.filter_list, color: Colors.white),
-                                onPressed: _showFilterModal,
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              bottom: TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.white,
-                indicatorSize: TabBarIndicatorSize.tab,
-                tabs: const [
-                  Tab(child: Text('À venir', style: TextStyle(color: Colors.white))),
-                  Tab(child: Text('Historique', style: TextStyle(color: Colors.white))),
-                ],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(125),
+        child: Container(
+          color: AppColors.green,
+          child: SafeArea(
+            bottom: false,
+            child: CurrentUserAppBar(
+              actions: IconButton(
+                icon: const Icon(Icons.filter_list, color: Colors.white),
+                onPressed: _showFilterModal,
               ),
             ),
-      body: TabBarView(
-        controller: _tabController,
+          ),
+        ),
+      ),
+      body: Column(
         children: [
-          // À venir tab
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : travels.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: travels.length,
-                      itemBuilder: (context, index) {
-                        return TravelCard(
-                          travel: travels[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TravelCustomersList(
-                                  travelId: travels[index].id!,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-          
-          // Historique tab
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : travels.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: travels.length,
-                      itemBuilder: (context, index) {
-                        return TravelCard(
-                          travel: travels[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TravelCustomersList(
-                                  travelId: travels[index].id!,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
+          Container(
+            color: AppColors.green,
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorWeight: 3,
+              tabs: const [
+                Tab(child: Text('À venir', style: TextStyle(color: Colors.white))),
+                Tab(child: Text('Historique', style: TextStyle(color: Colors.white))),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildTravelsList(true),
+                _buildTravelsList(false),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -311,13 +279,11 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
 
 class FilterBar extends StatefulWidget {
   final DateTime? selectedDate;
-  final String? selectedStatus;
-  final Function(DateTime? date, String? status) onFiltersChanged;
+  final Function(DateTime? date) onFiltersChanged;
 
   const FilterBar({
     super.key,
     this.selectedDate,
-    this.selectedStatus,
     required this.onFiltersChanged,
   });
 
@@ -327,58 +293,11 @@ class FilterBar extends StatefulWidget {
 
 class _FilterBarState extends State<FilterBar> {
   DateTime? _selectedDate;
-  String? _selectedStatus;
 
   @override
   void initState() {
     super.initState();
     _selectedDate = widget.selectedDate;
-    _selectedStatus = widget.selectedStatus;
-  }
-
-  String getStatusFrenchLabel(String status) {
-    switch (status) {
-      case 'pending':
-        return 'En attente';
-      case 'confirmed':
-        return 'Confirmé';
-      case 'completed':
-        return 'Terminé';
-      case 'canceled':
-        return 'Annulé';
-      default:
-        return status;
-    }
-  }
-
-  String? getStatusValueFromLabel(String label) {
-    switch (label) {
-      case 'En attente':
-        return 'pending';
-      case 'Confirmé':
-        return 'confirmed';
-      case 'Terminé':
-        return 'completed';
-      case 'Annulé':
-        return 'canceled';
-      default:
-        return null;
-    }
-  }
-
-  Color getStatusColor(String status) {
-    switch (status) {
-      case 'pending':
-        return Colors.orange;
-      case 'confirmed':
-        return Colors.green;
-      case 'completed':
-        return Colors.blue;
-      case 'canceled':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -395,54 +314,12 @@ class _FilterBarState extends State<FilterBar> {
       setState(() {
         _selectedDate = picked;
       });
-      widget.onFiltersChanged(_selectedDate, _selectedStatus);
+      widget.onFiltersChanged(_selectedDate);
     }
   }
 
-  Widget _buildStatusDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButton<String>(
-        value: _selectedStatus,
-        hint: const Text('Statut'),
-        isExpanded: true,
-        underline: Container(),
-        items: ['pending', 'confirmed', 'completed', 'canceled']
-            .map((String status) {
-          return DropdownMenuItem<String>(
-            value: status,
-            child: Row(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: getStatusColor(status),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(getStatusFrenchLabel(status)),
-              ],
-            ),
-          );
-        }).toList(),
-        onChanged: (String? newValue) {
-          setState(() {
-            _selectedStatus = newValue;
-          });
-          widget.onFiltersChanged(_selectedDate, _selectedStatus);
-        },
-      ),
-    );
-  }
-
   Widget _buildClearButton() {
-    bool isAnyFilterSet = _selectedDate != null || _selectedStatus != null;
+    bool isAnyFilterSet = _selectedDate != null;
     
     if (!isAnyFilterSet) return const SizedBox.shrink();
 
@@ -452,9 +329,8 @@ class _FilterBarState extends State<FilterBar> {
       onPressed: () {
         setState(() {
           _selectedDate = null;
-          _selectedStatus = null;
         });
-        widget.onFiltersChanged(null, null);
+        widget.onFiltersChanged(null);
       },
     );
   }
@@ -510,8 +386,6 @@ class _FilterBarState extends State<FilterBar> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          _buildStatusDropdown(),
           const SizedBox(height: 20),
         ],
       ),
@@ -704,18 +578,36 @@ class TravelCustomersList extends StatelessWidget {
                       userSnapshot.data!.data() as Map<String, dynamic>;
                   final userName = "${userData['prenom']} ${userData['nom']}";
 
-                  return Card(
+                  return Container(
                     margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
                     child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       leading: CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Colors.grey[200],
                         backgroundImage: userData['photo_profil'] != null
                             ? NetworkImage(userData['photo_profil'])
-                            : const AssetImage(
-                                    'assets/images/default_avatar.png')
-                                as ImageProvider,
+                            : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
                       ),
-                      title: Text(userName),
-                      subtitle: Text('Distance: ${reservation.distance}'),
+                      title: Text(
+                        userName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   );
                 },
