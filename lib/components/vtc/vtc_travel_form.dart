@@ -47,7 +47,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
         currentLocation = loc;
         _departureLocation = loc;
       });
-      print("Current location: " + currentLocation!);
+      print("Current location: ${currentLocation!}");
     } catch (e) {
       // Handle errors (e.g., show an error message)
       print('Error getting current location: $e');

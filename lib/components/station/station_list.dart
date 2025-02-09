@@ -5,7 +5,7 @@ import 'package:mfk_guinee_transport/models/station.dart';
 class StationListWidget extends StatelessWidget {
   final List<StationModel> stations;
 
-  StationListWidget({required this.stations});
+  const StationListWidget({super.key, required this.stations});
 
   @override
   Widget build(BuildContext context) {

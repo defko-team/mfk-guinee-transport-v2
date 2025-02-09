@@ -4,7 +4,11 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 class BookingConfirmationDialog extends StatelessWidget {
   final Future<void> Function()? book;
   final String displayText;
-  const BookingConfirmationDialog({super.key, required this.book, this.displayText = 'Votre réservation a été confirmée. Le chauffeur viendra vous chercher dans 2 minutes.'});
+  const BookingConfirmationDialog(
+      {super.key,
+      required this.book,
+      this.displayText =
+          'Votre réservation a été confirmée. Le chauffeur viendra vous chercher dans 2 minutes.'});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +18,7 @@ class BookingConfirmationDialog extends StatelessWidget {
       ),
       backgroundColor: AppColors.white,
       child: Container(
-        padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+        padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -23,7 +27,7 @@ class BookingConfirmationDialog extends StatelessWidget {
               color: AppColors.green,
               size: 50,
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             const Text(
               'Réservé avec succes',
               style: TextStyle(
@@ -31,20 +35,24 @@ class BookingConfirmationDialog extends StatelessWidget {
                 fontSize: 20.0,
               ),
             ),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             Container(
-              padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+              padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
               child: Text(
                 displayText,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 15.0,
                   color: AppColors.grey,
                 ),
               ),
             ),
-            SizedBox(height: 16.0),
-            Divider(thickness: 0.4, color: AppColors.grey, height: 1.0,),
+            const SizedBox(height: 16.0),
+            const Divider(
+              thickness: 0.4,
+              color: AppColors.grey,
+              height: 1.0,
+            ),
             IntrinsicHeight(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -54,16 +62,16 @@ class BookingConfirmationDialog extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: Text(
+                      child: const Text(
                         'Annuler',
                         style: TextStyle(color: Colors.grey),
                       ),
                     ),
                   ),
-                  VerticalDivider(
-                      thickness: 0.4,
-                      color: AppColors.grey,
-                    ),
+                  const VerticalDivider(
+                    thickness: 0.4,
+                    color: AppColors.grey,
+                  ),
                   Expanded(
                     child: TextButton(
                       onPressed: () async {
@@ -72,7 +80,7 @@ class BookingConfirmationDialog extends StatelessWidget {
                         }
                         Navigator.of(context).pop();
                       },
-                      child: Text(
+                      child: const Text(
                         'Fait',
                         style: TextStyle(color: Colors.green),
                       ),

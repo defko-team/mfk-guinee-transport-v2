@@ -6,6 +6,7 @@ class ReservationModel {
   final String? destinationStation;
   final String? departureLocation;
   final String? arrivalLocation;
+  final String? travelId;
   final DateTime startTime;
   DateTime? arrivalTime;
   final int remainingSeats;
@@ -31,11 +32,12 @@ class ReservationModel {
       this.airConditioned,
       this.driverName,
       this.carName,
+      this.travelId,
       required this.status,
       required this.userId,
       required this.distance,
       DateTime? createdAt})
-      : this.createdAt = createdAt ?? DateTime.now();
+      : createdAt = createdAt ?? DateTime.now();
 
   factory ReservationModel.fromMap(Map<String, dynamic> map) {
     return ReservationModel(
@@ -56,6 +58,7 @@ class ReservationModel {
         status: _getStatusFromString(map['status'] as String),
         userId: map['user_id'],
         distance: map['distance'],
+        travelId: map['travel_id'] ?? '',
         createdAt: map['created_at'] != null
             ? (map['created_at'] as Timestamp).toDate()
             : DateTime.now());
@@ -78,6 +81,7 @@ class ReservationModel {
       'status': status.name,
       'user_id': userId,
       'distance': distance,
+      'travel_id': travelId,
       'created_at': createdAt
     };
   }
@@ -98,6 +102,7 @@ class ReservationModel {
       ReservationStatus? status,
       String? userId,
       String? distance,
+      String? travelId,
       DateTime? createdAt}) {
     return ReservationModel(
         id: id ?? this.id,
@@ -115,6 +120,7 @@ class ReservationModel {
         status: status ?? this.status,
         userId: userId ?? this.userId,
         distance: distance ?? this.distance,
+        travelId: travelId ?? this.travelId,
         createdAt: createdAt ?? this.createdAt);
   }
 

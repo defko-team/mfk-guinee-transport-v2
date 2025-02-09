@@ -8,7 +8,6 @@ import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
-import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
 import 'package:mfk_guinee_transport/views/card_travel.dart';
@@ -125,7 +124,8 @@ class _AdminTravelManagementPageState
                 // Group travels by itinerary
                 Map<String, List<TravelModel>> groupedTravels = {};
                 for (var travel in snapshot.data!) {
-                  String key = '${travel.departureStation?.id}-${travel.destinationStation?.id}';
+                  String key =
+                      '${travel.departureStation?.id}-${travel.destinationStation?.id}';
                   if (!groupedTravels.containsKey(key)) {
                     groupedTravels[key] = [];
                   }
@@ -173,7 +173,8 @@ class _AdminTravelManagementPageState
                             onShowDeleteDialog: _showDeleteConfirmationDialog,
                             onDuration: duration,
                             onDistance: distance,
-                            onOpenAddTravelBottomSheet: _openAddTravelBottomSheet,
+                            onOpenAddTravelBottomSheet:
+                                _openAddTravelBottomSheet,
                           ),
                         );
                       }).toList(),
@@ -385,18 +386,27 @@ class _AddTravelFormState extends State<AddTravelForm> {
         arrivalTime: _pickedArrivalDate!,
         ticketPrice: int.parse(_tecketPriceController.text),
         airConditioned: aircondtioned!,
-        driverName: await CarService().getDriverNameById(_selectedVoiture!.idChauffeur),
+        driverName:
+            await CarService().getDriverNameById(_selectedVoiture!.idChauffeur),
         remainingSeats: _selectedVoiture!.nombreDePlace,
         nombreDePlace: _selectedVoiture!.nombreDePlace,
         carName: _selectedVoiture!.marque);
 
+<<<<<<< HEAD
+=======
+    print(travel.toString());
+>>>>>>> dev
     if (isUpdate!) {
       print(travel.toString());
       TravelService().updateTravel(travel);
       Navigator.of(context).pop();
     } else {
-      TravelService().createTravel(travel);
-
+      final String? response = await TravelService().createTravel(travel);
+      if (response != null) {
+        print('creation du trajet : $response');
+      } else {
+        print('erreur lors de la creation du trajet');
+      }
       Navigator.of(context).pop();
     }
   }

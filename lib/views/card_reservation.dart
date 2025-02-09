@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
-import 'package:flutter/cupertino.dart';
 
 class CardReservation extends StatelessWidget {
   final ReservationModel reservationModel;

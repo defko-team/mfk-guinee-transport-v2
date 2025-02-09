@@ -625,8 +625,8 @@ class TravelCard extends StatelessWidget {
               ),
               if (travel.airConditioned == true) ...[
                 const SizedBox(height: 8),
-                Row(
-                  children: const [
+                const Row(
+                  children: [
                     Icon(Icons.ac_unit, color: Colors.blue, size: 20),
                     SizedBox(width: 8),
                     Text('Climatisé'),

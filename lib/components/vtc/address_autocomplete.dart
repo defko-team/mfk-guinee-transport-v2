@@ -15,8 +15,7 @@ class AddressAutocomplete extends StatefulWidget {
       required this.hintText,
       this.currentLocation,
       required this.labelText,
-      this.isDeparture = true 
-      });
+      this.isDeparture = true});
 
   @override
   State<AddressAutocomplete> createState() => _AddressAutocompleteState();
@@ -30,7 +29,6 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
     super.initState();
   }
 
-
   Future<List<String>> _fetchAddressSuggestions(String query) async {
     var suggestions = await locationService.fetchAddressSuggestions(query);
 
@@ -38,9 +36,9 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
       suggestions.insert(0, widget.currentLocation!);
     }
 
-    suggestions.forEach((add) {
-      print("Address: " + add + "\n");
-    });
+    for (var add in suggestions) {
+      print("Address: $add\n");
+    }
 
     return suggestions;
   }
@@ -61,13 +59,11 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
           TextEditingController textEditingController,
           FocusNode focusNode,
           VoidCallback onFieldSubmitted) {
-
-        if(widget.currentLocation != null) {
+        if (widget.currentLocation != null) {
           textEditingController.text = widget.currentLocation!;
         }
         return TextField(
-          controller:
-              textEditingController,
+          controller: textEditingController,
           focusNode: focusNode,
           decoration: InputDecoration(
               contentPadding: const EdgeInsets.all(0.0),
@@ -77,9 +73,10 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
                   color: Colors.black,
                   fontSize: 14.0,
                   fontWeight: FontWeight.w400),
-              prefixIcon: widget.isDeparture ?
-                  const Icon(Icons.my_location_rounded, color: AppColors.green, size: 18):
-                  const Icon(Icons.place, color: Colors.black, size: 18),
+              prefixIcon: widget.isDeparture
+                  ? const Icon(Icons.my_location_rounded,
+                      color: AppColors.green, size: 18)
+                  : const Icon(Icons.place, color: Colors.black, size: 18),
               enabledBorder: OutlineInputBorder(
                   borderSide: const BorderSide(color: Colors.grey, width: 2),
                   borderRadius: BorderRadius.circular(10.0)),
@@ -101,8 +98,7 @@ class _AddressAutocompleteState extends State<AddressAutocomplete> {
             child: Container(
               width: MediaQuery.of(context).size.width - 80,
               constraints: const BoxConstraints(
-                maxHeight:
-                    200.0,
+                maxHeight: 200.0,
               ),
               child: ListView.builder(
                 padding: EdgeInsets.zero,
