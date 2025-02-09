@@ -54,13 +54,10 @@ class _AdminReservationsManagementPageState
               // Get driver info if car has assigned driver
               String? driverName;
               String? driverId;
-              if (car.idChauffeur != null) {
-                final driver =
-                    await UserService().getUserById(car.idChauffeur!);
-                if (driver != null) {
-                  driverName = '${driver.prenom} ${driver.nom}';
-                  driverId = driver.idUser;
-                }
+              final driver = await UserService().getUserById(car.idChauffeur!);
+              if (driver != null) {
+                driverName = '${driver.prenom} ${driver.nom}';
+                driverId = driver.idUser;
               }
 
               await ReservationService().updateReservation(
@@ -70,6 +67,25 @@ class _AdminReservationsManagementPageState
                   carName: car.marque,
                 ),
               );
+              final user = await UserService().getUserById(reservation.userId);
+              if (user.fcmToken != null) {
+                print('Test notification ${user.fcmToken}');
+                final notificationStatus = await NotificationsService()
+                    .sendNotification(
+                        user.fcmToken!,
+                        "Confirmation reservation",
+                        "Votre reservation a ete mise a jour");
+
+                if (notificationStatus) {
+                  await NotificationsService().createNotification(
+                      idUser: reservation.userId,
+                      context: "Confirmation de reservation",
+                      message:
+                          "Votre reservation a ete mise a jour avec succes",
+                      status: false,
+                      dateHeure: DateTime.now());
+                }
+              }
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -97,6 +113,22 @@ class _AdminReservationsManagementPageState
         await ReservationService().updateReservation(
           reservation.copyWith(status: ReservationStatus.confirmed),
         );
+        final user = await UserService().getUserById(reservation.userId);
+        if (user.fcmToken != null) {
+          print('Test notification');
+          final notificationStatus = await NotificationsService()
+              .sendNotification(user.fcmToken!, "Confirmation reservation",
+                  "Votre reservation a ete mise a jour");
+
+          if (notificationStatus) {
+            await NotificationsService().createNotification(
+                idUser: reservation.userId,
+                context: "Confirmation de reservation",
+                message: "Votre reservation a ete mise a jour avec succes",
+                status: true,
+                dateHeure: DateTime.now());
+          }
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -205,7 +237,7 @@ class _AdminReservationsManagementPageState
           child: ExpansionTile(
             title: Row(
               children: [
-                Icon(Icons.event, color: AppColors.green),
+                const Icon(Icons.event, color: AppColors.green),
                 const SizedBox(width: 8),
                 Text(
                   dateKey,
@@ -307,6 +339,8 @@ class _AdminReservationsManagementPageState
     );
   }
 }
+
+/*
 
 class ModifyReservationForm extends StatefulWidget {
   final ReservationModel reservation;
@@ -469,8 +503,8 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
       await ReservationService().updateReservation(widget.reservation);
 
       final user = await UserService().getUserById(widget.reservation.userId);
-
       if (user.fcmToken != null) {
+        print('Test notification');
         final notificationStatus = await NotificationsService()
             .sendNotification(user.fcmToken!, "Confirmation reservation",
                 "Votre reservation a ete mise a jour");
@@ -827,3 +861,4 @@ class _ModifyReservationFormState extends State<ModifyReservationForm> {
     );
   }
 }
+*/

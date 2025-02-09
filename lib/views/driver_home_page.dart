@@ -47,7 +47,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       backgroundColor: Colors.white,
@@ -277,8 +277,8 @@ class TravelCard extends StatelessWidget {
               ),
               if (travel.airConditioned == true) ...[
                 const SizedBox(height: 8),
-                Row(
-                  children: const [
+                const Row(
+                  children: [
                     Icon(Icons.ac_unit, color: Colors.blue, size: 20),
                     SizedBox(width: 8),
                     Text('Climatisé'),

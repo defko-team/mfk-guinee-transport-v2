@@ -4,8 +4,10 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 
 class NotificationBell extends StatelessWidget {
   final Stream<int> unReadNotificationCount;
+
   const NotificationBell({
-    super.key, required this.unReadNotificationCount,
+    super.key,
+    required this.unReadNotificationCount,
   });
 
   @override
@@ -16,6 +18,7 @@ class NotificationBell extends StatelessWidget {
         color: AppColors.white,
       ),
       child: Stack(
+        alignment: Alignment.center,
         children: [
           IconButton(
             icon: const Icon(
@@ -23,45 +26,62 @@ class NotificationBell extends StatelessWidget {
               color: AppColors.black,
               size: 30,
             ),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => NotificationsPage()),
+                  builder: (context) => const NotificationsPage(),
+                ),
               );
+              if (result == true) {
+                // Handle mark-as-read logic here
+              }
             },
           ),
           Positioned(
-            top: 4,
-            right: 4,
-              child: StreamBuilder<int>(
-                  stream: unReadNotificationCount,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data! > 0) {
-                      print("test ${snapshot.data!}");
-                      return Container(
-                        height: 20,
-                        width: 20,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          snapshot.data!.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold
-                          ),
-                        ),
-                      );
-                    } else {
-                      return const SizedBox();
-                    }
-                  })
+            top: 8,
+            right: 8,
+            child: StreamBuilder<int>(
+              stream: unReadNotificationCount,
+              initialData: 0,
+              builder: (context, snapshot) {
+                final count = snapshot.data ?? 0;
+                print("Notification count: $count");
+                return count > 0
+                    ? Badge(count: count)
+                    : const SizedBox.shrink();
+              },
             ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class Badge extends StatelessWidget {
+  final int count;
+
+  const Badge({super.key, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      height: 20,
+      decoration: const BoxDecoration(
+        color: Colors.red,
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        count.toString(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

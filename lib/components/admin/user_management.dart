@@ -36,8 +36,7 @@ class _AdminChauffeurManagementPageState
           .listen((snapshot) {
         setState(() {
           chauffeurs = snapshot.docs
-              .map((doc) =>
-                  UserModel.fromMap(doc.data() as Map<String, dynamic>))
+              .map((doc) => UserModel.fromMap(doc.data()))
               .toList();
           _isExpanded = List<bool>.filled(chauffeurs.length, false);
         });
@@ -255,8 +254,7 @@ class AddChauffeurForm extends StatefulWidget {
   final VoidCallback onSubmit;
   final UserModel? chauffeur;
 
-  const AddChauffeurForm({required this.onSubmit, this.chauffeur, Key? key})
-      : super(key: key);
+  const AddChauffeurForm({required this.onSubmit, this.chauffeur, super.key});
 
   @override
   State<AddChauffeurForm> createState() => _AddChauffeurFormState();

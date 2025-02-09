@@ -3,12 +3,44 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mfk_guinee_transport/models/notification.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 
 class NotificationsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<bool> sendNotification(
+      String fcmToken, String title, String body) async {
+    const url =
+        'https://us-central1-defko-mfk-guinee-transport.cloudfunctions.net/sendNotification';
+    final headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    final bodyData = jsonEncode({
+      'fcmToken': fcmToken,
+      'title': title,
+      'body': body,
+    });
+
+    try {
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: bodyData);
+      if (response.statusCode == 200) {
+        print('Notification sent successfully: ${response.body}');
+        return true;
+      } else {
+        print('Failed to send notification: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error sending notification: $e');
+      return false;
+    }
+  }
+
+  Future<bool> _sendNotificationViaHttp(
       String fcmToken, String title, String body) async {
     const url =
         'https://us-central1-defko-mfk-guinee-transport.cloudfunctions.net/sendNotification';
@@ -19,13 +51,18 @@ class NotificationsService {
       'body': body,
     });
 
-    final response =
-        await http.post(Uri.parse(url), headers: headers, body: bodyData);
-    if (response.statusCode == 200) {
-      print('Notification sent successfully: ${response.body}');
-      return true;
-    } else {
-      print('Failed to send notification: ${response.body}');
+    try {
+      final response =
+          await http.post(Uri.parse(url), headers: headers, body: bodyData);
+      if (response.statusCode == 200) {
+        print('Notification sent successfully via HTTP: ${response.body}');
+        return true;
+      } else {
+        print('Failed to send notification via HTTP: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error sending notification via HTTP: $e');
       return false;
     }
   }
@@ -34,7 +71,7 @@ class NotificationsService {
       String idUser) async {
     try {
       QuerySnapshot querySnapshot = await _firestore
-          .collection('Notifications')
+          .collection('Notification')
           .where('idUser', isEqualTo: idUser)
           .orderBy('dateHeure', descending: true)
           .get();
@@ -51,34 +88,38 @@ class NotificationsService {
     }
   }
 
-  Stream<int> getUnreadNotificationCountStream(String   idUser) {
+  Stream<int> getUnreadNotificationCountStream(String idUser) {
+    print("id user from stream $idUser");
+    if (idUser.isEmpty) return Stream.value(0);
     return _firestore
         .collection('Notification')
-        .where('idUser', isEqualTo: idUser)
+        .where('id_user', isEqualTo: idUser)
         .where('status', isEqualTo: false)
         .snapshots()
         .map((snapshot) => snapshot.size);
   }
 
   Stream<List<NotificationModel>> notificationStreamByUserId(String idUser) {
-    print("id user from servervice ${idUser}");
+    print("id user from servervice $idUser");
     return _firestore
         .collection('Notification')
         .where('id_user', isEqualTo: idUser)
         .orderBy('dateHeure', descending: true)
         .snapshots()
         .asyncMap((QuerySnapshot notificationQuerySnapshot) async {
-        List<NotificationModel> notifications = [];
+      List<NotificationModel> notifications = [];
 
-        for (QueryDocumentSnapshot notificationDoc in notificationQuerySnapshot.docs) {
-          NotificationModel notification = NotificationModel.fromMap(
+      for (QueryDocumentSnapshot notificationDoc
+          in notificationQuerySnapshot.docs) {
+        NotificationModel notification = NotificationModel.fromMap(
             notificationDoc.data() as Map<String, dynamic>);
-          notification.idNotification = notificationDoc.reference.id;
-          notifications.add(notification);
-        }
-        return notifications;
+        notification.idNotification = notificationDoc.reference.id;
+        notifications.add(notification);
+      }
+      return notifications;
     });
   }
+
   // Function to create a new notification
   Future<void> createNotification({
     required String idUser,
@@ -115,7 +156,7 @@ class NotificationsService {
 
   /* Future<void> deleteNotification(String idNotification) async {
     try {
-      await _firestore.collection('notifications').doc(idNotification).delete();
+      await _firestore.collection('Notification').doc(idNotification).delete();
       if (kDebugMode) {
         print('Notification deleted successfully');
       }

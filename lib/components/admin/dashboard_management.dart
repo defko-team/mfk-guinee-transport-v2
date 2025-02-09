@@ -140,13 +140,13 @@ class _AdminDashboardManagementPageState
                 endRangeSelectionColor: Colors.blue,
                 rangeSelectionColor: Colors.blue.withOpacity(0.15),
                 todayHighlightColor: Colors.blue,
-                selectionTextStyle: TextStyle(color: Colors.white),
-                monthCellStyle: DateRangePickerMonthCellStyle(
+                selectionTextStyle: const TextStyle(color: Colors.white),
+                monthCellStyle: const DateRangePickerMonthCellStyle(
                   todayTextStyle: TextStyle(
                       color: Colors.blue, fontWeight: FontWeight.bold),
                   textStyle: TextStyle(color: Colors.black),
                 ),
-                headerStyle: DateRangePickerHeaderStyle(
+                headerStyle: const DateRangePickerHeaderStyle(
                   backgroundColor: Colors.white,
                   textAlign: TextAlign.center,
                   textStyle: TextStyle(
@@ -154,11 +154,11 @@ class _AdminDashboardManagementPageState
                       fontSize: 20,
                       fontWeight: FontWeight.bold),
                 ),
-                monthViewSettings: DateRangePickerMonthViewSettings(
+                monthViewSettings: const DateRangePickerMonthViewSettings(
                   firstDayOfWeek: 1,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -171,7 +171,7 @@ class _AdminDashboardManagementPageState
                       _subscribeToStats();
                       Navigator.pop(context);
                     },
-                    child: Text('Réinitialiser',
+                    child: const Text('Réinitialiser',
                         style: TextStyle(color: Colors.red)),
                   ),
                   ElevatedButton(
@@ -179,16 +179,16 @@ class _AdminDashboardManagementPageState
                       _subscribeToStats();
                       Navigator.pop(context);
                     },
-                    child: Text('Appliquer',
-                        style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
-                      padding:
-                          EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
+                    child: Text('Appliquer',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
@@ -211,11 +211,11 @@ class _AdminDashboardManagementPageState
   Widget _buildTile(String title, String value, String subtitle, IconData icon,
       Color iconColor) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 1)
         ],
       ),
@@ -226,12 +226,12 @@ class _AdminDashboardManagementPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: GoogleFonts.sora(fontSize: 16)),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(value,
                   style: GoogleFonts.sora(
                       fontSize: 24, fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text(subtitle, style: TextStyle(color: Colors.green)),
+              const SizedBox(height: 4),
+              Text(subtitle, style: const TextStyle(color: Colors.green)),
             ],
           ),
           Icon(icon, color: iconColor, size: 40),
@@ -267,7 +267,7 @@ class _AdminDashboardManagementPageState
             child: LineChart(
               LineChartData(
                 borderData: FlBorderData(show: false),
-                gridData: FlGridData(show: false),
+                gridData: const FlGridData(show: false),
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
@@ -319,7 +319,7 @@ class _AdminDashboardManagementPageState
                     isCurved: true,
                     color: Colors.blue,
                     barWidth: 3,
-                    dotData: FlDotData(show: true),
+                    dotData: const FlDotData(show: true),
                     belowBarData: BarAreaData(
                       show: true,
                       color: Colors.blue.withOpacity(0.2),

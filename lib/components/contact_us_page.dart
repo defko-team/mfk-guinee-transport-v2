@@ -96,7 +96,7 @@ ${_messageController.text}
 ''';
 
       await Clipboard.setData(ClipboardData(text: emailContent));
-      
+
       // Clear only the message after copying
       _messageController.clear();
       setState(() {
@@ -105,11 +105,11 @@ ${_messageController.text}
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text('Message copié dans le presse-papiers!'),
                 SizedBox(height: 4),
                 Text(
@@ -119,7 +119,7 @@ ${_messageController.text}
               ],
             ),
             backgroundColor: Colors.green,
-            duration: const Duration(seconds: 4),
+            duration: Duration(seconds: 4),
           ),
         );
       }
