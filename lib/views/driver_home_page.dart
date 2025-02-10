@@ -110,6 +110,8 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
           }).where((travel) {
             // Filtrer par date selon l'onglet actif
             if (_tabController.index == 0) {
+              // afficher travel start time
+              print('📅 Date de departure: ${travel.startTime}');
               // Trajets à venir (aujourd'hui et futur)
               return travel.startTime.isAfter(DateTime(now.year, now.month, now.day)) || 
                      travel.startTime.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
@@ -225,7 +227,7 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
                     },
                   );
                 },
-              );
+          );
   }
 
   @override
@@ -522,6 +524,7 @@ class TravelCustomersList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('🚀 travelId: $travelId');
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

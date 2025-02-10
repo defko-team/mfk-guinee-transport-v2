@@ -46,6 +46,8 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
 
     setState(() {
       travels = travelData;
+      // print travels
+      print('🚀 travels: $travels');
     });
   }
 
@@ -118,6 +120,8 @@ class _AvailableCarsPageState extends State<AvailableCarsPage> {
           userId: widget.travelSearchInfo['userId'],
           travelId: selectedTravel!.id,
           distance: '2');
+
+        print('🚀 travelId: ${selectedTravel!.id}');
 
       showReservationDialog(context, reservationModel!, onBooking);
     }

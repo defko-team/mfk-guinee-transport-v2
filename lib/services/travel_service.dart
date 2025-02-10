@@ -103,9 +103,9 @@ class TravelService {
 
   Future<String?> createTravel(TravelModel travel) async {
     try {
-      DocumentReference docRef =
-          await _firestore.collection('Travel').add(travel.toMap());
-      return docRef.id;
+      String travelId = _firestore.collection('Travel').doc().id;
+      await _firestore.collection('Travel').doc(travelId).set(travel.toMap());
+      return travelId;
     } catch (e) {
       return null;
     }
