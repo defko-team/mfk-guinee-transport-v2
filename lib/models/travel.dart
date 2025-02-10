@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 
 class TravelModel {
-  final String? id;
+  late String? id;
   late DocumentReference? travelReference;
   late final String? departureStationId;
   late final String? destinationStationId;
