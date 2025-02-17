@@ -6,6 +6,8 @@ import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
+import 'package:mfk_guinee_transport/helper/constants/colors.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:intl/intl.dart';
 
 class DriverHomePage extends StatefulWidget {
@@ -15,18 +17,35 @@ class DriverHomePage extends StatefulWidget {
   State<DriverHomePage> createState() => _DriverHomePageState();
 }
 
-class _DriverHomePageState extends State<DriverHomePage> {
+class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProviderStateMixin {
   static const Color lightGrey = Color(0xFFF2F2F2);
   String? _userId;
   final AuthService _authService = AuthService();
+  late TabController _tabController;
+  List<TravelModel> travels = [];
+  DateTime? selectedDate;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
     _loadUserInfo();
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadUserInfo() async {
+    setState(() => isLoading = true);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
 
@@ -34,12 +53,104 @@ class _DriverHomePageState extends State<DriverHomePage> {
       setState(() {
         _userId = userId;
       });
+      fetchTravels();
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Utilisateur non trouvé')),
         );
       }
+    }
+    setState(() => isLoading = false);
+  }
+
+  void fetchTravels() async {
+    if (_userId == null) return;
+    
+    print('🔍 Début fetchTravels avec userId: $_userId');
+    setState(() => isLoading = true);
+    try {
+      var userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(_userId)
+          .get();
+      
+      print('👤 Document utilisateur existe: ${userDoc.exists}');
+      print('👤 Données utilisateur complètes: ${userDoc.data()}');
+
+      String prenom = userDoc.data()?['prenom'] ?? '';
+      String nom = userDoc.data()?['nom'] ?? '';
+      String driverName = '$prenom $nom'.trim();
+      
+      print('👤 Nom du conducteur construit: $driverName');
+      
+      var query = FirebaseFirestore.instance
+          .collection('Travel')
+          .where('driver_name', isEqualTo: driverName);
+
+      print('📅 Tab actif: ${_tabController.index}');
+      DateTime now = DateTime.now();
+      print('⏰ Date actuelle: $now');
+
+      var snapshot = await query.get();
+      print('📊 Nombre de documents trouvés: ${snapshot.docs.length}');
+      
+      if (snapshot.docs.isNotEmpty) {
+        print('📄 Premier document trouvé: ${snapshot.docs.first.data()}');
+      }
+      
+      if (mounted) {
+        setState(() {
+          travels = snapshot.docs.map((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            data['id'] = doc.id;
+            print('🎯 Document trouvé - ID: ${doc.id}');
+            print('📄 Données du document: ${doc.data()}');
+            return TravelModel.fromMap(data);
+          }).where((travel) {
+            // Filtrer par date selon l'onglet actif
+            if (_tabController.index == 0) {
+              // afficher travel start time
+              print('📅 Date de departure: ${travel.startTime}');
+              // Trajets à venir (aujourd'hui et futur)
+              return travel.startTime.isAfter(DateTime(now.year, now.month, now.day)) || 
+                     travel.startTime.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
+            } else {
+              // Trajets passés
+              return travel.startTime.isBefore(DateTime(now.year, now.month, now.day));
+            }
+          }).toList();
+
+          // Appliquer le filtre de date sélectionnée si présent
+          if (selectedDate != null) {
+            print('📆 Filtrage par date sélectionnée: $selectedDate');
+            travels = travels.where((travel) {
+              bool matchesDate = travel.startTime.year == selectedDate!.year &&
+                     travel.startTime.month == selectedDate!.month &&
+                     travel.startTime.day == selectedDate!.day;
+              print('📅 Trajet ${travel.id} correspond à la date: $matchesDate');
+              return matchesDate;
+            }).toList();
+          }
+
+          // Trier par date
+          travels.sort((a, b) => _tabController.index == 0 
+              ? a.startTime.compareTo(b.startTime)  // Croissant pour les trajets à venir
+              : b.startTime.compareTo(a.startTime)); // Décroissant pour l'historique
+
+          print('✅ Nombre final de trajets: ${travels.length}');
+          isLoading = false;
+        });
+      }
+    } catch (e, stackTrace) {
+      print('❌ Erreur dans fetchTravels: $e');
+      print('📜 Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors du chargement des trajets: $e')),
+        );
+      }
+      setState(() => isLoading = false);
     }
   }
 
@@ -52,121 +163,234 @@ class _DriverHomePageState extends State<DriverHomePage> {
       ),
       backgroundColor: Colors.white,
       builder: (BuildContext context) {
-        return const Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text('Sélectionner une période')]),
+        return FilterBar(
+          selectedDate: selectedDate,
+          onFiltersChanged: (date) {
+            setState(() {
+              selectedDate = date;
+            });
+            fetchTravels();
+            Navigator.pop(context);
+          },
         );
       },
     );
+  }
+
+  Widget _buildEmptyState() {
+    return FadeInUp(
+      duration: const Duration(milliseconds: 100),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.directions_car_outlined,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Aucun trajet trouvé',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTravelsList(bool isUpcoming) {
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : travels.isEmpty
+            ? _buildEmptyState()
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: travels.length,
+                itemBuilder: (context, index) {
+                  return TravelCard(
+                    travel: travels[index],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TravelCustomersList(
+                            travelId: travels[index].id!,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+          );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: lightGrey,
-      appBar: _userId == null
-          ? null
-          : PreferredSize(
-              preferredSize: const Size.fromHeight(135),
-              child: StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('Users')
-                    .doc(_userId)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError ||
-                      !snapshot.hasData ||
-                      !snapshot.data!.exists) {
-                    return const Center(
-                        child: Text("Erreur lors du chargement des données"));
-                  }
-
-                  var userData = snapshot.data!.data() as Map<String, dynamic>;
-                  String userName =
-                      "${userData['prenom']} ${userData['nom'][0].toUpperCase()}.";
-                  String avatarUrl = userData['photo_profil'] ??
-                      'assets/images/default_avatar.png';
-
-                  return CurrentUserAppBar(
-                    actions: IconButton(
-                      icon: const Icon(Icons.filter_list, color: Colors.white),
-                      onPressed: _showFilterModal,
-                    ),
-                  );
-                },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(125),
+        child: Container(
+          color: AppColors.green,
+          child: SafeArea(
+            bottom: false,
+            child: CurrentUserAppBar(
+              actions: IconButton(
+                icon: const Icon(Icons.filter_list, color: Colors.white),
+                onPressed: _showFilterModal,
               ),
             ),
-      body: _userId == null
-          ? const Center(child: CircularProgressIndicator())
-          : TravelsList(driverId: _userId!),
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            color: AppColors.green,
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorWeight: 3,
+              tabs: const [
+                Tab(child: Text('À venir', style: TextStyle(color: Colors.white))),
+                Tab(child: Text('Historique', style: TextStyle(color: Colors.white))),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildTravelsList(true),
+                _buildTravelsList(false),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class TravelsList extends StatelessWidget {
-  final String driverId;
+class FilterBar extends StatefulWidget {
+  final DateTime? selectedDate;
+  final Function(DateTime? date) onFiltersChanged;
 
-  const TravelsList({super.key, required this.driverId});
+  const FilterBar({
+    super.key,
+    this.selectedDate,
+    required this.onFiltersChanged,
+  });
+
+  @override
+  _FilterBarState createState() => _FilterBarState();
+}
+
+class _FilterBarState extends State<FilterBar> {
+  DateTime? _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.selectedDate;
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final DateTime lastDate = DateTime(now.year + 1, 12, 31);
+    
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? now,
+      firstDate: DateTime(2020),
+      lastDate: lastDate,
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+      widget.onFiltersChanged(_selectedDate);
+    }
+  }
+
+  Widget _buildClearButton() {
+    bool isAnyFilterSet = _selectedDate != null;
+    
+    if (!isAnyFilterSet) return const SizedBox.shrink();
+
+    return TextButton.icon(
+      icon: const Icon(Icons.clear, size: 20),
+      label: const Text('Effacer'),
+      onPressed: () {
+        setState(() {
+          _selectedDate = null;
+        });
+        widget.onFiltersChanged(null);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Get today's date range
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('Travel')
-          // TODO: Adapter la requête en fonction de comment vous stockez l'identifiant du chauffeur
-          // Pour le moment, on récupère tous les trajets du jour
-          //.where('driver_name', isEqualTo: driverId)
-          .where('start_time', isGreaterThanOrEqualTo: startOfDay)
-          .where('start_time', isLessThanOrEqualTo: endOfDay)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          print('Erreur Firestore: ${snapshot.error}');
-          return Center(child: Text('Erreur: ${snapshot.error}'));
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('Aucun trajet prévu aujourd\'hui'));
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: snapshot.data!.docs.length,
-          itemBuilder: (context, index) {
-            final travelData =
-                snapshot.data!.docs[index].data() as Map<String, dynamic>;
-            final travel = TravelModel.fromMap(travelData);
-
-            return TravelCard(
-              travel: travel,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        TravelCustomersList(travelId: travel.id!),
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        top: 20,
+        left: 20,
+        right: 20,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Filtres',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              _buildClearButton(),
+            ],
+          ),
+          const SizedBox(height: 20),
+          InkWell(
+            onTap: () => _selectDate(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today, color: Colors.grey[600]),
+                  const SizedBox(width: 8),
+                  Text(
+                    _selectedDate == null
+                        ? 'Sélectionner une date'
+                        : DateFormat('dd/MM/yyyy').format(_selectedDate!),
+                    style: TextStyle(
+                      color: _selectedDate == null ? Colors.grey[600] : Colors.black,
+                    ),
                   ),
-                );
-              },
-            );
-          },
-        );
-      },
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 }
@@ -300,6 +524,7 @@ class TravelCustomersList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('🚀 travelId: $travelId');
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -356,18 +581,36 @@ class TravelCustomersList extends StatelessWidget {
                       userSnapshot.data!.data() as Map<String, dynamic>;
                   final userName = "${userData['prenom']} ${userData['nom']}";
 
-                  return Card(
+                  return Container(
                     margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
                     child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       leading: CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Colors.grey[200],
                         backgroundImage: userData['photo_profil'] != null
                             ? NetworkImage(userData['photo_profil'])
-                            : const AssetImage(
-                                    'assets/images/default_avatar.png')
-                                as ImageProvider,
+                            : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
                       ),
-                      title: Text(userName),
-                      subtitle: Text('Distance: ${reservation.distance}'),
+                      title: Text(
+                        userName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   );
                 },
