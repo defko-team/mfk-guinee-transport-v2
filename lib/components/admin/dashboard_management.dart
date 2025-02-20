@@ -4,7 +4,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+import 'package:mfk_guinee_transport/components/notification_bell.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import '../../services/dashboard_service.dart';
@@ -89,10 +91,15 @@ class _AdminDashboardManagementPageState
 
     return Scaffold(
       appBar: CurrentUserAppBar(
-        actions: IconButton(
-          icon: const Icon(Icons.filter_list, color: Colors.white),
-          onPressed: _showFilterModal,
-        ),
+        actions: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.filter_list, color: Colors.white),
+              onPressed: _showFilterModal,
+            ),
+            NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream('admin')),
+          ],
+        )
       ),
       backgroundColor: Colors.grey[200],
       body: Padding(

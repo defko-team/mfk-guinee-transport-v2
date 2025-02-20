@@ -69,13 +69,11 @@ class _AdminReservationsManagementPageState
               );
               final user = await UserService().getUserById(reservation.userId);
               if (user.fcmToken != null) {
-                print('Test notification ${user.fcmToken}');
                 final notificationStatus = await NotificationsService()
                     .sendNotification(
                         user.fcmToken!,
                         "Confirmation reservation",
                         "Votre reservation a ete mise a jour");
-
                 if (notificationStatus) {
                   await NotificationsService().createNotification(
                       idUser: reservation.userId,

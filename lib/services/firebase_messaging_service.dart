@@ -38,6 +38,8 @@ class FirebaseMessagingService {
       print('Device FCM Token saved: $token');
     }
 
+
+
     // Handle token refresh
     _firebaseMessaging.onTokenRefresh.listen((String newToken) async {
       final prefs = await SharedPreferences.getInstance();

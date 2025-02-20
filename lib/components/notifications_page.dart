@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/models/notification.dart';
+import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,7 +19,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   final FirebaseMessagingService _firebaseMessagingService =
       FirebaseMessagingService();
   String? _userId;
-
   @override
   void initState() {
     super.initState();
@@ -27,9 +27,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Future<void> _loadUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString("userId");
+    String userId = prefs.getString("userId")!;
+    bool isAdmin = prefs.getBool("isProviderAuthenticated")!;
     setState(() {
-      _userId = userId;
+      _userId = isAdmin ? 'admin' : userId;
     });
   }
 
@@ -159,7 +160,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ),
       body: StreamBuilder<List<NotificationModel>>(
         stream:
-            NotificationsService().notificationStreamByUserId(_userId ?? ''),
+            NotificationsService().notificationStreamByUserId(_userId!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(

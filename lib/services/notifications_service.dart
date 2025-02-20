@@ -72,7 +72,7 @@ class NotificationsService {
     try {
       QuerySnapshot querySnapshot = await _firestore
           .collection('Notification')
-          .where('idUser', isEqualTo: idUser)
+          .where('id_user', isEqualTo: idUser)
           .orderBy('dateHeure', descending: true)
           .get();
       List<NotificationModel> notifications = querySnapshot.docs
