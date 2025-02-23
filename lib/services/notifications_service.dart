@@ -100,7 +100,7 @@ class NotificationsService {
   }
 
   Stream<List<NotificationModel>> notificationStreamByUserId(String idUser) {
-    print("id user from servervice $idUser");
+    print("id user from service $idUser");
     return _firestore
         .collection('Notification')
         .where('id_user', isEqualTo: idUser)

@@ -54,11 +54,9 @@ class _AdminReservationsManagementPageState
               // Get driver info if car has assigned driver
               String? driverName;
               String? driverId;
-              final driver = await UserService().getUserById(car.idChauffeur!);
-              if (driver != null) {
-                driverName = '${driver.prenom} ${driver.nom}';
-                driverId = driver.idUser;
-              }
+              final driver = await UserService().getUserById(car.idChauffeur);
+              driverName = '${driver.prenom} ${driver.nom}';
+              driverId = driver.idUser;
 
               await ReservationService().updateReservation(
                 reservation.copyWith(
@@ -80,6 +78,21 @@ class _AdminReservationsManagementPageState
                       context: "Confirmation de reservation",
                       message:
                           "Votre reservation a ete mise a jour avec succes",
+                      status: false,
+                      dateHeure: DateTime.now());
+                }
+
+                final driverNotificationStatus = await NotificationsService()
+                  .sendNotification(
+                    driver.fcmToken!,
+                    'Nouvelle reservation client',
+                    'Un client vient de faire une reservation pour vous'
+                );
+                if (driverNotificationStatus) {
+                  await NotificationsService().createNotification(
+                      idUser: driver.idUser,
+                      context: 'confirmation Reservation',
+                      message: 'Nouvelle reservation confirmee pour vous',
                       status: false,
                       dateHeure: DateTime.now());
                 }

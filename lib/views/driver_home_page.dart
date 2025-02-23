@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/components/notification_bell.dart';
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
@@ -241,10 +243,15 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
           child: SafeArea(
             bottom: false,
             child: CurrentUserAppBar(
-              actions: IconButton(
-                icon: const Icon(Icons.filter_list, color: Colors.white),
-                onPressed: _showFilterModal,
-              ),
+              actions: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.filter_list, color: Colors.white),
+                    onPressed: _showFilterModal,
+                  ),
+                  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId!))
+                ],
+              )
             ),
           ),
         ),

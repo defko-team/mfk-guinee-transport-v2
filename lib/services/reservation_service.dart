@@ -42,6 +42,7 @@ class ReservationService {
               dateHeure: DateTime.now());
         }
       }
+
     } catch (e) {
       print('Failed to save reservation: $e');
       throw Exception('Error saving reservation');
