@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/components/booking_confirmation.dart';
-import 'package:mfk_guinee_transport/components/vtc/address_autocomplete.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/services/location_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
+import 'package:google_places_flutter/google_places_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class VTCTravelForm extends StatefulWidget {
   final ReservationModel? reservation;
@@ -20,12 +21,15 @@ class VTCTravelForm extends StatefulWidget {
 }
 
 class _VTCTravelFormState extends State<VTCTravelForm> {
+  static const String _geoCodeApiKey = 'put-your-google-maps-keys';
   LocationService locationService = LocationService();
   ReservationService reservationService = ReservationService();
   String currentLocation = '';
   final _formKey = GlobalKey<FormState>();
   late String _departureLocation = '';
   late String _destinationLocation = '';
+  final TextEditingController _departureController = TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
   final TextEditingController _departureDateController =
       TextEditingController();
   final TextEditingController _departureTimeController =
@@ -33,6 +37,11 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
   bool _isLoading = false;
   DateTime? _pickedDepartureDate;
   TimeOfDay? _pickedDepartureTime;
+  LatLng? _departureCoords;
+  LatLng? _destinationCoords;
+  String _distance = '';
+  DateTime? _arrivalTime;
+  int _durationSeconds = 0;
 
   @override
   void initState() {
@@ -42,14 +51,13 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
 
   Future<void> _initializeCurrentLocation() async {
     try {
-      String loc = await locationService.getCurrentAddress();
+      String loc = await locationService.getCurrentAddressV2();
       setState(() {
         currentLocation = loc;
         _departureLocation = loc;
+        _departureController.text = loc;
       });
-      print("Current location: ${currentLocation!}");
     } catch (e) {
-      // Handle errors (e.g., show an error message)
       print('Error getting current location: $e');
     }
   }
@@ -106,6 +114,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
             _departureTimeController.text =
                 DateFormat('HH:mm').format(combinedDateTime);
           });
+          _updateArrivalTime(); // Calculate arrival time when duration changes
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -127,7 +136,47 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
         _departureTimeController.text =
             "${pickedTime.hour}:${pickedTime.minute}";
       });
+      _updateArrivalTime(); // Calculate arrival time when duration changes
     }
+  }
+
+  Future<void> _calculateDistanceAndTime() async {
+    if (_departureCoords == null || _destinationCoords == null) return;
+
+    try {
+      final routeDetails = await locationService.getRouteDetails(
+        origin: _departureCoords!,
+        destination: _destinationCoords!,
+      );
+
+      setState(() {
+        _distance = routeDetails['distance'];
+        _durationSeconds = routeDetails['durationSeconds'];
+        _updateArrivalTime(); // Calculate arrival time when duration changes
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error calculating route: ${e.toString()}')),
+      );
+    }
+  }
+
+  void _updateArrivalTime() {
+    if (_pickedDepartureDate == null || _pickedDepartureTime == null) return;
+
+    final departureDateTime = DateTime(
+      _pickedDepartureDate!.year,
+      _pickedDepartureDate!.month,
+      _pickedDepartureDate!.day,
+      _pickedDepartureTime!.hour,
+      _pickedDepartureTime!.minute,
+    );
+
+    setState(() {
+      _arrivalTime = departureDateTime.add(
+        Duration(seconds: _durationSeconds),
+      );
+    });
   }
 
   void _submitVTCTraject() async {
@@ -137,19 +186,19 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
 
     if (_formKey.currentState!.validate()) {
       final ReservationModel reservation = ReservationModel(
-        status: ReservationStatus.pending,
-        userId: widget.userId!,
-        distance: '',
-        departureLocation: _departureLocation,
-        arrivalLocation: _destinationLocation,
-        startTime: DateTime(
-            _pickedDepartureDate!.year,
-            _pickedDepartureDate!.month,
-            _pickedDepartureDate!.day,
-            _pickedDepartureTime!.hour,
-            _pickedDepartureTime!.minute),
-        remainingSeats: 0,
-      );
+          status: ReservationStatus.pending,
+          userId: widget.userId!,
+          distance: _distance,
+          departureLocation: _departureLocation,
+          arrivalLocation: _destinationLocation,
+          startTime: DateTime(
+              _pickedDepartureDate!.year,
+              _pickedDepartureDate!.month,
+              _pickedDepartureDate!.day,
+              _pickedDepartureTime!.hour,
+              _pickedDepartureTime!.minute),
+          remainingSeats: 0,
+          arrivalTime: _arrivalTime);
 
       showDialog(
         context: context,
@@ -213,21 +262,97 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                AddressAutocomplete(
-                    onLocationChanged: (val) {
-                      _departureLocation = val;
-                    },
+
+                GooglePlaceAutoCompleteTextField(
+                  textEditingController: _departureController,
+                  googleAPIKey: _geoCodeApiKey,
+                  inputDecoration: InputDecoration(
                     hintText: 'Adresse de depart',
-                    currentLocation: currentLocation,
-                    labelText: 'Lieu de Depart'),
-                const SizedBox(height: 24),
-                AddressAutocomplete(
-                  onLocationChanged: (val) {
-                    _destinationLocation = val;
+                    labelText: 'Lieu de Depart',
+                    contentPadding: const EdgeInsets.all(0.0),
+                    labelStyle: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    prefixIcon: const Icon(Icons.location_on,
+                        color: Colors.black, size: 18),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  debounceTime: 800,
+                  countries: ['gn'],
+                  isLatLngRequired: true,
+                  getPlaceDetailWithLatLng: (prediction) {
+                    setState(() {
+                      _departureCoords = LatLng(
+                          double.parse(prediction.lat ?? '0.0'),
+                          double.parse(prediction.lng ?? '0.0'));
+                    });
+                    _calculateDistanceAndTime();
                   },
-                  hintText: "Adresse d'arrivée",
-                  labelText: 'Destination',
-                  isDeparture: false,
+                  itemClick: (prediction) {
+                    setState(() {
+                      _departureLocation = prediction.description ?? '';
+                      _departureController.text = prediction.description ?? '';
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 24),
+
+                // Destination Location Autocomplete
+                GooglePlaceAutoCompleteTextField(
+                  textEditingController: _destinationController,
+                  googleAPIKey: _geoCodeApiKey,
+                  inputDecoration: InputDecoration(
+                    hintText: "Adresse d'arrivée",
+                    labelText: 'Destination',
+                    contentPadding: const EdgeInsets.all(0.0),
+                    labelStyle: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    prefixIcon: const Icon(Icons.location_on,
+                        color: Colors.black, size: 18),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  debounceTime: 800,
+                  countries: ['gn'],
+                  isLatLngRequired: true,
+                  getPlaceDetailWithLatLng: (prediction) {
+                    setState(() {
+                      _destinationCoords = LatLng(
+                          double.parse(prediction.lat ?? '0.0'),
+                          double.parse(prediction.lng ?? '0.0'));
+                    });
+                    _calculateDistanceAndTime();
+                  },
+                  itemClick: (prediction) {
+                    setState(() {
+                      _destinationLocation = prediction.description ?? '';
+                      _destinationController.text =
+                          prediction.description ?? '';
+                    });
+                  },
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -289,6 +414,34 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                             _selectDepartureTime(context);
                           }),
                     )
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_departureDateController.text.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        'Départ prévu: ${_departureDateController.text} ${_departureTimeController.text}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Arrivée estimée: ${_arrivalTime != null ? DateFormat('dd-MM-yyyy HH:mm').format(_arrivalTime!) : 'N/A'}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.green,
+                        ),
+                      ),
+                    ],
+                    if (_distance.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Distance: $_distance',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 24),
