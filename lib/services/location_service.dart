@@ -1,8 +1,65 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class LocationService {
+  static const String _geoCodeApiKey = 'put-your-google-maps-keys';
+  static const String _geoCodeUrl =
+      'https://maps.googleapis.com/maps/api/geocode/json';
+
+  Future<String> getCurrentAddressV2() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      final response = await http.get(Uri.parse(
+          '$_geoCodeUrl?latlng=${position.latitude},${position.longitude}&key=$_geoCodeApiKey'));
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          return data['results'][0]['formatted_address'];
+        } else {
+          throw Exception('Geocoding failed: ${data['status']}');
+        }
+      } else {
+        throw Exception('Failed to fetch address');
+      }
+    } catch (e) {
+      throw Exception("Failed to get address: $e");
+    }
+  }
+
+  // Add to LocationService class
+  Future<Map<String, dynamic>> getRouteDetails({
+    required LatLng origin,
+    required LatLng destination,
+  }) async {
+    const String directionsUrl =
+        'https://maps.googleapis.com/maps/api/directions/json';
+    final response = await http.get(
+      Uri.parse('$directionsUrl?'
+          'origin=${origin.latitude},${origin.longitude}&'
+          'destination=${destination.latitude},${destination.longitude}&'
+          'key=$_geoCodeApiKey&'
+          'mode=driving'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'OK') {
+        return {
+          'distance': data['routes'][0]['legs'][0]['distance']['text'],
+          'duration': data['routes'][0]['legs'][0]['duration']['text'],
+          'durationSeconds': data['routes'][0]['legs'][0]['duration']['value'],
+        };
+      }
+    }
+    throw Exception('Failed to get route details');
+  }
+
   /// Method to get the user's current position.
   Future<Position> getCurrentLocation() async {
     bool serviceEnabled;
