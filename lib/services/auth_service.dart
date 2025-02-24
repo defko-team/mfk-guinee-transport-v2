@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/models/account_model.dart';
@@ -247,7 +246,6 @@ class AuthService {
         if (userData == null) {
           throw Exception('Données utilisateur invalides.');
         }
-
         // Mettre à jour l'idUser Firebase si nécessaire
         if (userData['idUser'] != firebaseUserId) {
           await _firestore.collection('Users').doc(firestoreUserId).update({
@@ -255,15 +253,7 @@ class AuthService {
           });
         }
 
-        // Mettre à jour le token FCM s'il n'existe pas ou qu'il est différent
-        SharedPreferences preferences = await SharedPreferences.getInstance();
-        String? fcmToken = preferences.getString('fcmToken');
-        if (fcmToken != null && userData['fcm_token'] != fcmToken) {
-          await _firestore.collection('Users').doc(firestoreUserId).update({
-            'fcm_token': fcmToken,
-          });
-        }
-
+        await setupFcmToken(userData, firestoreUserId);
         print('Stockage final des préférences...');
         await _storeUserInPreferences(firestoreUserId);
         print('Redirection finale...');
@@ -311,7 +301,7 @@ class AuthService {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString("userId", userId);
-
+      print("userRoleId from userData ${userData['id_role']}");
       String roleName = (roleDoc.data() as Map<String, dynamic>)['nom'];
       print('Nom du rôle: $roleName');
 
@@ -412,6 +402,36 @@ class AuthService {
     }
   }
 
+  Future<void> saveAdminFcmToken(String? fcmToken) async {
+      await FirebaseFirestore.instance
+          .collection('app_config')
+          .doc('admin')
+          .set({'fcm_token': fcmToken}, SetOptions(merge: true));
+  }
+
+  Future<String?> getAdminFcmToken() async {
+    DocumentSnapshot adminDoc = await FirebaseFirestore.instance
+        .collection('app_config')
+        .doc('admin')
+        .get();
+    return adminDoc.exists ? adminDoc['fcm_token'] as String? : null;
+  }
+
+  Future<void> setupFcmToken(userData, firestoreUserId) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? userId = preferences.getString('userId');
+    String? fcmToken = preferences.getString('fcmToken');
+    bool? isAdmin = preferences.getBool("isProviderAuthenticated");
+    if (fcmToken != null && userData['fcm_token'] != fcmToken) {
+      await _firestore.collection('Users').doc(firestoreUserId).update({
+        'fcm_token': fcmToken,
+      });
+      if (isAdmin!) {
+          await saveAdminFcmToken(fcmToken);
+      }
+    }
+  }
+
   Future<String> _getRoleId(String roleName) async {
     QuerySnapshot roleSnapshot = await _firestore
         .collection('roles')
@@ -442,6 +462,8 @@ class AuthService {
     }
   }
 }
+
+
 
 class OtpVerificationException implements Exception {
   final String message;
