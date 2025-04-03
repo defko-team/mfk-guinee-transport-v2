@@ -172,6 +172,7 @@ class _StationsPageState extends State<StationsPage> {
             onPressed: _showAddStationDialog,
           ),
         ],
+        showBackArrow: false,
       ),
       body: StreamBuilder<List<StationModel>>(
         stream: _stationService.getStations(),

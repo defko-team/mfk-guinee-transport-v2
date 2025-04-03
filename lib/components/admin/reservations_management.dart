@@ -42,6 +42,54 @@ class _AdminReservationsManagementPageState
   void onOpenModifyReservationBottonSheet({
     required ReservationModel reservation,
   }) async {
+    // Add specific handling for cancellations
+    if (reservation.status == ReservationStatus.canceled) {
+      try {
+        await ReservationService().updateReservation(reservation);
+        
+        // Send notification to user about cancellation
+        final user = await UserService().getUserById(reservation.userId);
+        if (user.fcmToken != null) {
+          final notificationStatus = await NotificationsService().sendNotification(
+            user.fcmToken!,
+            "Annulation de réservation",
+            "Votre réservation a été annulée"
+          );
+
+          if (notificationStatus) {
+            await NotificationsService().createNotification(
+              idUser: reservation.userId,
+              context: "Annulation de réservation",
+              message: "Votre réservation a été annulée",
+              status: false,
+              dateHeure: DateTime.now()
+            );
+          }
+        }
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Réservation annulée avec succès'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return; // Exit early for cancellations
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erreur lors de l\'annulation'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    // Existing code for handling confirmations...
     final bool isVtcReservation = reservation.departureLocation != null &&
         reservation.arrivalLocation != null;
 
