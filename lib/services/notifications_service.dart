@@ -5,10 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:mfk_guinee_transport/models/notification.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
+import 'package:mfk_guinee_transport/models/reservation.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
+import 'package:mfk_guinee_transport/services/auth_service.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class NotificationsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final UserService userService = UserService();
 
   Future<bool> sendNotification(
       String fcmToken, String title, String body) async {
@@ -99,7 +104,8 @@ class NotificationsService {
         .map((snapshot) => snapshot.size);
   }
 
-  Stream<List<NotificationModel>> notificationStreamByUserId(String idUser) {
+  Stream<List<NotificationModel>> notificationStreamByUserId(String? idUser) {
+    if (idUser == null) return Stream.value([]);
     print("id user from service $idUser");
     return _firestore
         .collection('Notification')
@@ -166,4 +172,34 @@ class NotificationsService {
       }
     }
   }*/
+
+  void sendAndCreateNotificationForReservation(ReservationModel res) async {
+    // Send Notification to Admin
+    String? adminFcmToken = await AuthService().getAdminFcmToken();
+    if (adminFcmToken != null) {
+      // Récupérer les informations du client
+      UserModel client = await userService.getUserById(res.userId);
+      String clientFullName = "${client.prenom} ${client.nom}";
+
+      String notificationTitle = "Nouvelle Réservation";
+      String notificationMessage = "Numéro: ${res.id}\n"
+          "Client: $clientFullName\n"
+          "Départ: ${res.departureLocation}\n"
+          "Arrivée: ${res.arrivalLocation}\n"
+          "Statut: ${ReservationModel.getLabelFromStatus(res.status)}\n";
+
+      final notificationStatus = await NotificationsService().sendNotification(
+          adminFcmToken, notificationTitle, notificationMessage);
+
+      print("Notification to admin ${notificationStatus}");
+      if (notificationStatus) {
+        await NotificationsService().createNotification(
+            idUser: 'admin',
+            context: notificationTitle,
+            message: notificationMessage,
+            status: false,
+            dateHeure: DateTime.now());
+      }
+    }
+  }
 }

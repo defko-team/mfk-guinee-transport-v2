@@ -23,6 +23,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   void initState() {
     super.initState();
     _loadUserInfo();
+    print(_userId);
   }
 
   Future<void> _loadUserInfo() async {
@@ -118,30 +119,36 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () {
-                    markAsRead(notification);
-                    Navigator.of(context).pop();
-                  },
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Mark as Read',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
+                notification.status != true
+                    ? Column(children: [
+                        const SizedBox(height: 20),
+                        TextButton(
+                          onPressed: () {
+                            markAsRead(notification);
+                            Navigator.of(context).pop();
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            notification.status != true
+                                ? 'Marquer comme lu'
+                                : 'Marquer comme non lu',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        )
+                      ])
+                    : const Text(''),
               ],
             ),
           ),
@@ -159,8 +166,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         showBackArrow: true,
       ),
       body: StreamBuilder<List<NotificationModel>>(
-        stream:
-            NotificationsService().notificationStreamByUserId(_userId!),
+        stream: NotificationsService().notificationStreamByUserId(_userId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(

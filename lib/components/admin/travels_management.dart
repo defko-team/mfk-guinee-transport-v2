@@ -1,15 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mfk_guinee_transport/components/admin/driver_assignment_dialog.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/helper/utils/utils.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
+import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:mfk_guinee_transport/views/card_travel.dart';
 
 class AdminTravelsManagementPage extends StatefulWidget {
@@ -219,6 +222,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
   StationModel? _selectedDepartureStation;
   StationModel? _selectedDestinationStation;
   VoitureModel? _selectedVoiture;
+  UserModel? _selectedDriver;
   bool? aircondtioned = false;
   bool _isLoading = false;
   DateTime? _pickedDepartureDate;
@@ -349,6 +353,11 @@ class _AddTravelFormState extends State<AddTravelForm> {
           (car) => car.marque.toLowerCase() == travel.carName!.toLowerCase(),
         );
       }
+      _selectedDriver = UserModel.fromMap({
+        "prenom": travel.driverName!.split(" ")[0],
+        "nom": travel.driverName!.split(" ")[1],
+      });
+
       _departureDateController.text =
           DateFormat('yyyy-MM-dd').format(travel.startTime);
       _departureTimeController.text =
@@ -564,71 +573,55 @@ class _AddTravelFormState extends State<AddTravelForm> {
           },
         ),
         const SizedBox(height: 20),
-        Autocomplete<VoitureModel>(
-          optionsBuilder: (TextEditingValue textEditingValue) {
-            if (textEditingValue.text.isEmpty) {
-              return const Iterable<VoitureModel>.empty();
-            }
-            return cars.where((VoitureModel option) {
-              return option.marque
-                  .toLowerCase()
-                  .contains(textEditingValue.text.toLowerCase());
-            });
-          },
-          displayStringForOption: (VoitureModel option) => option.marque,
-          onSelected: (VoitureModel selection) {
-            setState(() {
-              _selectedVoiture = selection;
-            });
-          },
-          fieldViewBuilder: (BuildContext context,
-              TextEditingController textEditingController,
-              FocusNode focusNode,
-              VoidCallback onFieldSubmitted) {
-            if (_selectedVoiture != null &&
-                textEditingController.text.isEmpty) {
-              textEditingController.text = _selectedVoiture!.marque;
-            }
-            return TextField(
-              controller: textEditingController,
-              focusNode: focusNode,
-              decoration: InputDecoration(
-                  labelText: 'Voiture',
-                  prefixIcon: const Icon(Icons.directions_car_outlined,
-                      color: Colors.black, size: 18),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.black)),
-                  hintText: 'Tapez pour rechercher....'),
-            );
-          },
-          optionsViewBuilder: (BuildContext context,
-              AutocompleteOnSelected<VoitureModel> onSelected,
-              Iterable<VoitureModel> options) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                elevation: 4.0,
-                child: Container(
-                  width: MediaQuery.of(context).size.width - 80,
-                  constraints: const BoxConstraints(maxHeight: 200.0),
-                  child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: options.length,
-                      shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        final VoitureModel option = options.elementAt(index);
-                        return ListTile(
-                          title: Text(option.marque),
-                          onTap: () {
-                            onSelected(option);
-                          },
-                        );
-                      }),
+        Row(
+          children: [
+            TextButton.icon(
+              label: const Text('Choisir une voiture'),
+              icon: const Icon(Icons.directions_car_outlined),
+              onPressed: () => showDialog(
+                context: context,
+                builder: (context) => CarAssignmentDialog(
+                  onCarSelected: (car) async {
+                    final driver =
+                        await UserService().getUserById(car.idChauffeur);
+                    setState(() {
+                      _selectedVoiture = car;
+                      _selectedDriver = driver;
+                    });
+                  },
+                  onDecline: () => Navigator.of(context).pop(),
                 ),
               ),
-            );
-          },
+              style: TextButton.styleFrom(
+                  backgroundColor: AppColors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  )),
+            ),
+            // Display the selected Car and the driver name
+            if (_selectedVoiture != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Voiture: ${_selectedVoiture!.marque}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Chauffeur: ${_selectedDriver?.prenom} ${_selectedDriver?.nom}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 20),
         TextField(

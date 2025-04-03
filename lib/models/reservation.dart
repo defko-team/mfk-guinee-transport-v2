@@ -55,7 +55,7 @@ class ReservationModel {
         airConditioned: map['air_conditioned'],
         driverName: map['driver_name'],
         carName: map['car_name'],
-        status: _getStatusFromString(map['status'] as String),
+        status: getStatusFromString(map['status'] as String),
         userId: map['user_id'],
         distance: map['distance'],
         travelId: map['travel_id'] ?? '',
@@ -124,7 +124,22 @@ class ReservationModel {
         createdAt: createdAt ?? this.createdAt);
   }
 
-  static ReservationStatus _getStatusFromString(String status) {
+  static String getLabelFromStatus(ReservationStatus status) {
+    switch (status) {
+      case ReservationStatus.completed:
+        return "Terminée";
+      case ReservationStatus.canceled:
+        return "Annulée";
+      case ReservationStatus.pending:
+        return "En attente";
+      case ReservationStatus.confirmed:
+        return "Confirme";
+      default:
+        return "Inconnue";
+    }
+  }
+
+  static ReservationStatus getStatusFromString(String status) {
     switch (status) {
       case 'completed':
         return ReservationStatus.completed;

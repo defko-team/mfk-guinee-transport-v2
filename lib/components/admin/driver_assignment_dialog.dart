@@ -6,10 +6,12 @@ import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class CarAssignmentDialog extends StatefulWidget {
   final Function(VoitureModel car) onCarSelected;
+  final Function() onDecline; // Ajoutez cette ligne
 
   const CarAssignmentDialog({
     super.key,
     required this.onCarSelected,
+    required this.onDecline,
   });
 
   @override
@@ -191,6 +193,16 @@ class _CarAssignmentDialogState extends State<CarAssignmentDialog> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text('Annuler'),
                 ),
+                TextButton(
+                  onPressed: () {
+                    widget.onDecline();
+                    Navigator.of(context).pop();
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red,
+                  ),
+                  child: const Text('Décliner'),
+                ),
                 const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: selectedCar == null
@@ -202,10 +214,6 @@ class _CarAssignmentDialogState extends State<CarAssignmentDialog> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.green,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
                   ),
                   child: const Text('Confirmer'),
                 ),

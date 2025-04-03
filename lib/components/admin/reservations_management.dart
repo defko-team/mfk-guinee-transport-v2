@@ -83,11 +83,10 @@ class _AdminReservationsManagementPageState
                 }
 
                 final driverNotificationStatus = await NotificationsService()
-                  .sendNotification(
-                    driver.fcmToken!,
-                    'Nouvelle reservation client',
-                    'Un client vient de faire une reservation pour vous'
-                );
+                    .sendNotification(
+                        driver.fcmToken!,
+                        'Nouvelle reservation client',
+                        'Un client vient de faire une reservation pour vous');
                 if (driverNotificationStatus) {
                   await NotificationsService().createNotification(
                       idUser: driver.idUser,
@@ -116,6 +115,7 @@ class _AdminReservationsManagementPageState
               }
             }
           },
+          onDecline: () => Navigator.pop(context),
         ),
       );
     } else {

@@ -1,9 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/station.dart';
 
 class StationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  final CollectionReference _stationsCollection =
+      FirebaseFirestore.instance.collection('Station');
+
+  // Get all stations
+  Stream<List<StationModel>> getStations() {
+    return _stationsCollection.snapshots().map((snapshot) {
+      print('snapshot: ${snapshot.docs}');
+      return snapshot.docs
+          .map((doc) => StationModel.fromDocument(doc))
+          .toList();
+    });
+  }
 
   Future<List<StationModel>> getAllStations() async {
     List<StationModel> stations = [];
@@ -26,20 +40,22 @@ class StationService {
   }
 
   Future<void> createStation(StationModel station) async {
-    await _firestore
-        .collection('stations')
-        .doc(station.id)
-        .set(station.toMap());
+    await _firestore.collection('Station').doc(station.id).set(station.toMap());
+  }
+
+  // Add new station
+  Future<void> addStation(StationModel station) async {
+    await _stationsCollection.add(station.toMap());
   }
 
   Future<void> updateStation(StationModel station) async {
     await _firestore
-        .collection('stations')
+        .collection('Station')
         .doc(station.id)
         .update(station.toMap());
   }
 
   Future<void> deleteStation(String stationId) async {
-    await _firestore.collection('stations').doc(stationId).delete();
+    await _firestore.collection('Station').doc(stationId).delete();
   }
 }

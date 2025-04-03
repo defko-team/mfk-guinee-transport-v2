@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_options.dart';
 import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/views/splash_screen.dart';
@@ -12,12 +13,11 @@ import 'package:mfk_guinee_transport/views/admin_home_page.dart';
 import 'package:mfk_guinee_transport/views/driver_home_page.dart';
 import 'package:mfk_guinee_transport/views/home_page.dart';
 import 'package:mfk_guinee_transport/views/no_network.dart';
-import 'package:mfk_guinee_transport/views/login.dart';
 import 'package:mfk_guinee_transport/helper/router/router.dart';
-import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Global navigator key for showing overlays and navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -30,20 +30,39 @@ const String _kFcmTokenKey = "fcmToken";
 const String _kUserIdKey = "userId";
 
 Future<void> main() async {
+  await dotenv.load(fileName: ".env");
+
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    // Initialize Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-  // Configure system UI
-  await _configureSystemUI();
+    // Configure system UI
+    await _configureSystemUI();
 
-  // Determine home page based on auth state
-  final homePage = await _determineHomePage();
+    // Determine home page based on auth state
+    final homePage = await _determineHomePage();
 
-  runApp(MyApp(homePage: homePage));
+    runApp(MyApp(homePage: homePage));
+  } catch (e) {
+    print('Error initializing app: $e');
+    // If there's a network error, show the NoNetwork page
+    if (e.toString().contains('Unable to resolve host')) {
+      runApp(MaterialApp(home: NoNetwork(pageToGo: '/login')));
+    } else {
+      // For other errors, you might want to show a general error page
+      runApp(MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text('An error occurred: $e'),
+          ),
+        ),
+      ));
+    }
+  }
 }
 
 Future<void> _configureSystemUI() async {
@@ -217,6 +236,7 @@ class _MyAppState extends State<MyApp> {
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
