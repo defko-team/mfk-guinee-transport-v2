@@ -26,6 +26,9 @@ class _StationsPageState extends State<StationsPage> {
   LatLng _stationCoords = LatLng(0.0, 0.0);
   String _stationLocation = '';
 
+  FocusNode _nameFocusNode = FocusNode();
+  FocusNode _addressFocusNode = FocusNode();
+
   void _showAddStationDialog() {
     showDialog(
       context: context,
@@ -43,6 +46,7 @@ class _StationsPageState extends State<StationsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
+                  focusNode: _nameFocusNode,
                   controller: _nameController,
                   decoration: InputDecoration(
                     labelText: 'Nom de la gare',
@@ -55,6 +59,7 @@ class _StationsPageState extends State<StationsPage> {
                 ),
                 const SizedBox(height: 16),
                 GooglePlaceAutoCompleteTextField(
+                  focusNode: _addressFocusNode,
                   textEditingController: _addressController,
                   googleAPIKey: _geoCodeApiKey,
                   inputDecoration: InputDecoration(
@@ -151,6 +156,8 @@ class _StationsPageState extends State<StationsPage> {
   void dispose() {
     _nameController.dispose();
     _addressController.dispose();
+    _nameFocusNode.dispose();
+    _addressFocusNode.dispose();
     super.dispose();
   }
 
