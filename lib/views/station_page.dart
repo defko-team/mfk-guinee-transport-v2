@@ -445,6 +445,12 @@ class _StationPageState extends State<StationPage> {
   }
 
   @override
+  void dispose() {
+    // Add cleanup code here if needed
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const BaseAppBar(

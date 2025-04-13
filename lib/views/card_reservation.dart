@@ -280,8 +280,7 @@ class CardReservation extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(reservationModel.status)
-                            .withOpacity(0.1),
+                        color: _getStatusColor(reservationModel.status).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -292,21 +291,86 @@ class CardReservation extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (isAdmin &&
-                        reservationModel.status == ReservationStatus.pending)
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          onOpenModifyReservationBottonSheet(
-                              reservation: reservationModel);
-                        },
-                        icon: const Icon(Icons.check),
-                        label: const Text('Confirmer'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.green,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
+                    if (isAdmin && reservationModel.status == ReservationStatus.pending)
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: SizedBox(
+                                height: 36,
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    final shouldCancel = await showDialog<bool>(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: const Text('Confirmer l\'annulation'),
+                                          content: const Text(
+                                            'Êtes-vous sûr de vouloir annuler cette réservation ?'
+                                          ),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () => Navigator.of(context).pop(false),
+                                              child: const Text('Non'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => Navigator.of(context).pop(true),
+                                              child: const Text(
+                                                'Oui, annuler',
+                                                style: TextStyle(color: AppColors.red),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+
+                                    if (shouldCancel == true) {
+                                      onOpenModifyReservationBottonSheet(
+                                        reservation: reservationModel.copyWith(
+                                          status: ReservationStatus.canceled,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(Icons.cancel, size: 16),
+                                  label: const Text('Annuler', style: TextStyle(fontSize: 13)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.red,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: SizedBox(
+                                height: 36,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    onOpenModifyReservationBottonSheet(
+                                      reservation: reservationModel,
+                                    );
+                                  },
+                                  icon: const Icon(Icons.check, size: 16),
+                                  label: const Text('Confirmer', style: TextStyle(fontSize: 13)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.green,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                   ],

@@ -7,7 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
 class LocationService {
-  static const String _geoCodeApiKey = 'put-your-google-maps-keys';
+  static const String _geoCodeApiKey =
+      'AIzaSyAFACNW8PHDdX4utyZvC0bbobFdfPuTbUQ';
   static const String _geoCodeUrl =
       'https://maps.googleapis.com/maps/api/geocode/json';
 

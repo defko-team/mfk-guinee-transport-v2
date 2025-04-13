@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/components/admin/dashboard_management.dart';
+import 'package:mfk_guinee_transport/components/admin/stations_management.dart';
 import 'package:mfk_guinee_transport/components/admin/travels_management.dart';
 import 'package:mfk_guinee_transport/components/admin/reservations_management.dart';
 import 'package:mfk_guinee_transport/components/admin/settings.dart';
@@ -17,6 +18,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   final List<Widget> _adminPages = [
     const AdminDashboardManagementPage(),
     const AdminTravelsManagementPage(),
+    const AdminStationsManagementPage(),
     const AdminReservationsManagementPage(),
     const AdminSettingsPage(),
   ];
@@ -47,6 +49,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.directions),
             label: 'Trajets',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.train),
+            label: 'Gares',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.book),

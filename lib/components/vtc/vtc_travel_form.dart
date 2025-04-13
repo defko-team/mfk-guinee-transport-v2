@@ -24,7 +24,8 @@ class VTCTravelForm extends StatefulWidget {
 }
 
 class _VTCTravelFormState extends State<VTCTravelForm> {
-  static const String _geoCodeApiKey = 'put-your-google-maps-keys';
+  final String _geoCodeApiKey = "AIzaSyAFACNW8PHDdX4utyZvC0bbobFdfPuTbUQ";
+  final List<String> COUNTRIES = ['gn', 'sn', 'fr'];
   LocationService locationService = LocationService();
   ReservationService reservationService = ReservationService();
   String currentLocation = '';
@@ -208,8 +209,11 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
         builder: (BuildContext context) {
           return BookingConfirmationDialog(
               book: () async {
-                reservationService.createUserReservation(reservation);
+                ReservationModel res =
+                    await reservationService.saveReservation(reservation);
                 widget.refreshData();
+                NotificationsService()
+                    .sendAndCreateNotificationForReservation(res);
               },
               displayText: "Votre réservation a été créée avec succès.");
         },
@@ -292,7 +296,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                     ),
                   ),
                   debounceTime: 800,
-                  countries: ['gn'],
+                  countries: COUNTRIES,
                   isLatLngRequired: true,
                   getPlaceDetailWithLatLng: (prediction) {
                     setState(() {
@@ -339,7 +343,7 @@ class _VTCTravelFormState extends State<VTCTravelForm> {
                     ),
                   ),
                   debounceTime: 800,
-                  countries: ['gn'],
+                  countries: COUNTRIES,
                   isLatLngRequired: true,
                   getPlaceDetailWithLatLng: (prediction) {
                     setState(() {
