@@ -23,6 +23,25 @@ class ReservationService {
       // Saving the reservation to Firestore
       await docRef.set(reservationWithId.toMap());
 
+      print('Reservation saved successfully!');
+      String? adminFcmToken = await AuthService().getAdminFcmToken();
+      if (adminFcmToken != null) {
+        final notificationStatus = await NotificationsService()
+            .sendNotification(
+            adminFcmToken,
+            "Nouvelle Reservation",
+            "Un client vient de faire une reservation");
+
+        print("Notification to admin ${notificationStatus}");
+        if (notificationStatus) {
+          await NotificationsService().createNotification(
+              idUser: 'admin',
+              context: 'Nouvelle reservation 👋',
+              message: "Un client vient de faire une nouvelle reservation",
+              status: false,
+              dateHeure: DateTime.now());
+        }
+      }
       return reservationWithId;
     } catch (e) {
       print('Failed to save reservation: $e');
