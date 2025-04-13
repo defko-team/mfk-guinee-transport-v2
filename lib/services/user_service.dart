@@ -43,4 +43,21 @@ class UserService {
   Future<void> deleteUser(String userId) async {
     await _firestore.collection('Users').doc(userId).delete();
   }
+
+  Future<String> getDefaultClientRoleId() async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('roles')
+          .where('nom', isEqualTo: 'Client')
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        throw Exception('Client role not found in database');
+      }
+
+      return querySnapshot.docs.first.id;
+    } catch (e) {
+      throw Exception('Failed to get default role: $e');
+    }
+  }
 }

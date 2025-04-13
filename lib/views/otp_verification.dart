@@ -5,6 +5,7 @@ import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class OtpVerification extends StatefulWidget {
   final String firstName;
@@ -113,7 +114,17 @@ class _OtpVerificationState extends State<OtpVerification> {
           .doc(user.uid)
           .get();
 
-      final roleId = userDoc['id_role'];
+      // Get role ID or set default to Client role
+      final roleId = userDoc['id_role'] ?? await UserService().getDefaultClientRoleId();
+      
+      // If this is a new user, update their role
+      if (userDoc['id_role'] == null) {
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(user.uid)
+            .update({'id_role': roleId});
+      }
+
       final roleDoc = await FirebaseFirestore.instance
           .collection('roles')
           .doc(roleId)
