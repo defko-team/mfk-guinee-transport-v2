@@ -64,9 +64,7 @@ class _OtpVerificationState extends State<OtpVerification> {
   void verify() async {
     if (_code.length < 6) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       await _authService.verifyOtpAndRegisterUser(
@@ -84,91 +82,81 @@ class _OtpVerificationState extends State<OtpVerification> {
           _isLoading = false;
           _isVerified = true;
         });
+        
+        _handlePostVerificationNavigation();
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Verification failed: $e')),
-        );
+        setState(() => _isLoading = false);
+        _showErrorSnackBar(e.toString());
       }
     }
   }
 
-  // void verify() async {
-  //   if (_code.length < 6) return;
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Verification failed: $message'),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
+  Future<void> _handlePostVerificationNavigation() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-  //   try {
-  //     await _authService.verifyOtpAndRegisterUser(
-  //       otp: _code,
-  //       verificationId: widget.verificationId,
-  //       prenom: widget.firstName,
-  //       nom: widget.lastName,
-  //       telephone: widget.phoneNumber,
-  //       isRegistration: widget.isRegistration,
-  //       context: context,
-  //     );
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .get();
 
-  //     String userId = FirebaseAuth.instance.currentUser!.uid;
-  //     DocumentSnapshot userDoc = await FirebaseFirestore.instance
-  //         .collection('Users')
-  //         .doc(userId)
-  //         .get();
+      final roleId = userDoc['id_role'];
+      final roleDoc = await FirebaseFirestore.instance
+          .collection('roles')
+          .doc(roleId)
+          .get();
+      final role = roleDoc['nom'];
 
-  //     String roleId = userDoc['id_role'];
-  //     DocumentSnapshot roleDoc = await FirebaseFirestore.instance
-  //         .collection('roles')
-  //         .doc(roleId)
-  //         .get();
-  //     String role = roleDoc['nom'];
+      if (!mounted) return;
 
-  //     if (mounted) {
-  //       setState(() {
-  //         _isLoading = false;
-  //         _isVerified = true;
-  //       });
-
-  //     if (role == 'Client') {
-  //       Navigator.pushNamedAndRemoveUntil(
-  //         context,
-  //         '/customerHome',
-  //         (Route<dynamic> route) => false,
-  //       );
-  //     } else if (role == 'Admin') {
-  //       Navigator.pushNamedAndRemoveUntil(
-  //         context,
-  //         '/providerHome',
-  //         (Route<dynamic> route) => false,
-  //       );
-  //     } else {
-  //       Navigator.pushNamedAndRemoveUntil(
-  //         context,
-  //         '/login',
-  //         (Route<dynamic> route) => false,
-  //       );
-  //     }
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-  //     }
-
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Verification failed: $e')),
-  //       );
-  //     }
-  //   }
-  // }
+      switch (role) {
+        case 'Client':
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/customerHome',
+            (route) => false,
+          );
+          break;
+        case 'Admin':
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/providerHome',
+            (route) => false,
+          );
+          break;
+        case 'Chauffeur':
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/driverHome',
+            (route) => false,
+          );
+          break;
+        default:
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (route) => false,
+          );
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorSnackBar('Failed to determine user role: $e');
+      }
+    }
+  }
 
   @override
   void initState() {
