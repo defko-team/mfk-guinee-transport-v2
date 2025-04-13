@@ -7,6 +7,7 @@ import 'package:mfk_guinee_transport/services/location_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../services/auth_service.dart';
 import '../../services/notifications_service.dart';
@@ -24,7 +25,8 @@ class VTCTravelForm extends StatefulWidget {
 }
 
 class _VTCTravelFormState extends State<VTCTravelForm> {
-  final String _geoCodeApiKey = "AIzaSyAFACNW8PHDdX4utyZvC0bbobFdfPuTbUQ";
+  final String _geoCodeApiKey = dotenv.env['GOOGLE_MAPS_API_KEY']
+
   final List<String> COUNTRIES = ['gn', 'sn', 'fr'];
   LocationService locationService = LocationService();
   ReservationService reservationService = ReservationService();
