@@ -146,6 +146,145 @@ class _StationsPageState extends State<StationsPage> {
     );
   }
 
+  void _showEditStationDialog(StationModel station) {
+    _nameController.text = station.name;
+    _addressController.text = station.address;
+    _stationCoords = LatLng(station.latitude ?? 0.0, station.longitude ?? 0.0);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Modifier la gare',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  focusNode: _nameFocusNode,
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nom de la gare',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  validator: (value) =>
+                      value?.isEmpty ?? true ? 'Ce champ est requis' : null,
+                ),
+                const SizedBox(height: 16),
+                GooglePlaceAutoCompleteTextField(
+                  focusNode: _addressFocusNode,
+                  textEditingController: _addressController,
+                  googleAPIKey: _geoCodeApiKey,
+                  inputDecoration: InputDecoration(
+                    hintText: 'Adresse de la gare',
+                    labelText: 'Lieu de la gare',
+                    contentPadding: const EdgeInsets.all(0.0),
+                    labelStyle: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    prefixIcon: const Icon(Icons.location_on,
+                        color: Colors.black, size: 18),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.black, width: 1.5),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  debounceTime: 800,
+                  countries: COUNTRIES,
+                  isLatLngRequired: true,
+                  getPlaceDetailWithLatLng: (prediction) {
+                    setState(() {
+                      _stationCoords = LatLng(
+                          double.parse(prediction.lat ?? '0.0'),
+                          double.parse(prediction.lng ?? '0.0'));
+                    });
+                  },
+                  itemClick: (prediction) {
+                    setState(() {
+                      _stationLocation = prediction.description ?? '';
+                      _addressController.text = prediction.description ?? '';
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _clearControllers();
+            },
+            child: Text(
+              'Annuler',
+              style: GoogleFonts.poppins(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (_formKey.currentState?.validate() ?? false) {
+                try {
+                  await _stationService.updateStation(
+                    StationModel(
+                      id: station.id,
+                      name: _nameController.text,
+                      address: _addressController.text,
+                      latitude: _stationCoords.latitude,
+                      longitude: _stationCoords.longitude,
+                      docId: station.docId,
+                    ),
+                  );
+                  Navigator.pop(context);
+                  _clearControllers();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Gare modifiée avec succès'),
+                      backgroundColor: AppColors.green,
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erreur lors de la modification: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.green,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Modifier',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _clearControllers() {
     _nameController.clear();
     _addressController.clear();
@@ -257,7 +396,10 @@ class _StationsPageState extends State<StationsPage> {
                                 contentPadding: EdgeInsets.zero,
                               ),
                               onTap: () {
-                                // TODO: Implement edit functionality
+                                Future.delayed(
+                                  const Duration(seconds: 0),
+                                  () => _showEditStationDialog(station),
+                                );
                               },
                             ),
                             PopupMenuItem(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/models/account_model.dart';
 import 'package:mfk_guinee_transport/models/role_model.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,8 +19,10 @@ class UserService {
   Future<UserModel> getCurrentUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
-    DocumentSnapshot userDoc = await _firestore.collection('Users').doc(userId).get();
-    DocumentSnapshot roleDoc = await _firestore.collection('roles').doc(userDoc['id_role']).get();
+    DocumentSnapshot userDoc =
+        await _firestore.collection('Users').doc(userId).get();
+    DocumentSnapshot roleDoc =
+        await _firestore.collection('roles').doc(userDoc['id_role']).get();
     UserModel user = UserModel.fromMap(userDoc.data() as Map<String, dynamic>);
     RoleModel role = RoleModel.fromMap(roleDoc.data() as Map<String, dynamic>);
     user.role = role.nom;
@@ -59,5 +62,12 @@ class UserService {
     } catch (e) {
       throw Exception('Failed to get default role: $e');
     }
+  }
+
+  Future<void> createAccount(AccountModel account) async {
+    await _firestore
+        .collection('Accounts')
+        .doc(account.idAccount)
+        .set(account.toMap());
   }
 }
