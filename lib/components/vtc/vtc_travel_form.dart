@@ -25,7 +25,7 @@ class VTCTravelForm extends StatefulWidget {
 }
 
 class _VTCTravelFormState extends State<VTCTravelForm> {
-  final String _geoCodeApiKey = dotenv.env['GOOGLE_MAPS_API_KEY']
+  final String _geoCodeApiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
 
   final List<String> COUNTRIES = ['gn', 'sn', 'fr'];
   LocationService locationService = LocationService();

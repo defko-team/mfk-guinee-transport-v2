@@ -20,7 +20,7 @@ class _StationsPageState extends State<StationsPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
-  final String _geoCodeApiKey = dotenv.env['GOOGLE_MAPS_API_KEY']
+  final String _geoCodeApiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
   final List<String> COUNTRIES = ['gn', 'sn', 'fr'];
   LatLng _stationCoords = LatLng(0.0, 0.0);
   String _stationLocation = '';
