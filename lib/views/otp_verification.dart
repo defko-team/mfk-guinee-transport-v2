@@ -5,6 +5,7 @@ import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class OtpVerification extends StatefulWidget {
   final String firstName;
@@ -64,9 +65,7 @@ class _OtpVerificationState extends State<OtpVerification> {
   void verify() async {
     if (_code.length < 6) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       await _authService.verifyOtpAndRegisterUser(
@@ -84,91 +83,91 @@ class _OtpVerificationState extends State<OtpVerification> {
           _isLoading = false;
           _isVerified = true;
         });
+        
+        _handlePostVerificationNavigation();
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Verification failed: $e')),
-        );
+        setState(() => _isLoading = false);
+        _showErrorSnackBar(e.toString());
       }
     }
   }
 
-  // void verify() async {
-  //   if (_code.length < 6) return;
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Verification failed: $message'),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
+  Future<void> _handlePostVerificationNavigation() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-  //   try {
-  //     await _authService.verifyOtpAndRegisterUser(
-  //       otp: _code,
-  //       verificationId: widget.verificationId,
-  //       prenom: widget.firstName,
-  //       nom: widget.lastName,
-  //       telephone: widget.phoneNumber,
-  //       isRegistration: widget.isRegistration,
-  //       context: context,
-  //     );
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .get();
 
-  //     String userId = FirebaseAuth.instance.currentUser!.uid;
-  //     DocumentSnapshot userDoc = await FirebaseFirestore.instance
-  //         .collection('Users')
-  //         .doc(userId)
-  //         .get();
+      // Get role ID or set default to Client role
+      final roleId = userDoc['id_role'] ?? await UserService().getDefaultClientRoleId();
+      
+      // If this is a new user, update their role
+      if (userDoc['id_role'] == null) {
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(user.uid)
+            .update({'id_role': roleId});
+      }
 
-  //     String roleId = userDoc['id_role'];
-  //     DocumentSnapshot roleDoc = await FirebaseFirestore.instance
-  //         .collection('roles')
-  //         .doc(roleId)
-  //         .get();
-  //     String role = roleDoc['nom'];
+      final roleDoc = await FirebaseFirestore.instance
+          .collection('roles')
+          .doc(roleId)
+          .get();
+      final role = roleDoc['nom'];
 
-  //     if (mounted) {
-  //       setState(() {
-  //         _isLoading = false;
-  //         _isVerified = true;
-  //       });
+      if (!mounted) return;
 
-  //     if (role == 'Client') {
-  //       Navigator.pushNamedAndRemoveUntil(
-  //         context,
-  //         '/customerHome',
-  //         (Route<dynamic> route) => false,
-  //       );
-  //     } else if (role == 'Admin') {
-  //       Navigator.pushNamedAndRemoveUntil(
-  //         context,
-  //         '/providerHome',
-  //         (Route<dynamic> route) => false,
-  //       );
-  //     } else {
-  //       Navigator.pushNamedAndRemoveUntil(
-  //         context,
-  //         '/login',
-  //         (Route<dynamic> route) => false,
-  //       );
-  //     }
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       setState(() {
-  //         _isLoading = false;
-  //       });
-  //     }
-
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Verification failed: $e')),
-  //       );
-  //     }
-  //   }
-  // }
+      switch (role) {
+        case 'Client':
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/customerHome',
+            (route) => false,
+          );
+          break;
+        case 'Admin':
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/providerHome',
+            (route) => false,
+          );
+          break;
+        case 'Chauffeur':
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/driverHome',
+            (route) => false,
+          );
+          break;
+        default:
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (route) => false,
+          );
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorSnackBar('Failed to determine user role: $e');
+      }
+    }
+  }
 
   @override
   void initState() {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/models/account_model.dart';
@@ -187,8 +188,6 @@ class AuthService {
           print('Création d\'un nouveau compte client');
           String roleId = await _getRoleId('Client');
           print('RoleId obtenu: $roleId');
-          String newUserId = _firestore.collection('Users').doc().id;
-          String accountId = _firestore.collection('Accounts').doc().id;
 
           UserModel userModel = UserModel(
             idUser: firebaseUserId,
@@ -200,27 +199,23 @@ class AuthService {
           );
 
           AccountModel accountModel = AccountModel(
-            idAccount: accountId,
+            idAccount: firebaseUserId,
             idUser: firebaseUserId,
             statut: 'Active',
             dateCreation: DateTime.now(),
           );
 
-          await _firestore
-              .collection('Users')
-              .doc(newUserId)
-              .set(userModel.toMap());
+          await UserService().createUser(userModel);
           print('Utilisateur client créé');
-          await _firestore
-              .collection('Accounts')
-              .doc(accountId)
-              .set(accountModel.toMap());
+
+          await UserService().createAccount(accountModel);
           print('Compte client créé');
 
           print('Stockage des préférences...');
-          await _storeUserInPreferences(newUserId);
+          await _storeUserInPreferences(firebaseUserId);
+
           print('Redirection...');
-          await _redirectUserBasedOnRole(newUserId, context);
+          await _redirectUserBasedOnRole(firebaseUserId, context);
           return;
         }
       } else {
@@ -403,10 +398,10 @@ class AuthService {
   }
 
   Future<void> saveAdminFcmToken(String? fcmToken) async {
-      await FirebaseFirestore.instance
-          .collection('app_config')
-          .doc('admin')
-          .set({'fcm_token': fcmToken}, SetOptions(merge: true));
+    await FirebaseFirestore.instance
+        .collection('app_config')
+        .doc('admin')
+        .set({'fcm_token': fcmToken}, SetOptions(merge: true));
   }
 
   Future<String?> getAdminFcmToken() async {
@@ -427,7 +422,7 @@ class AuthService {
         'fcm_token': fcmToken,
       });
       if (isAdmin!) {
-          await saveAdminFcmToken(fcmToken);
+        await saveAdminFcmToken(fcmToken);
       }
     }
   }
@@ -462,8 +457,6 @@ class AuthService {
     }
   }
 }
-
-
 
 class OtpVerificationException implements Exception {
   final String message;
