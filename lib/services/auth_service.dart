@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/models/account_model.dart';
 import 'package:flutter/material.dart';
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -394,11 +395,22 @@ class AuthService {
   }
 
   Future<String?> getAdminFcmToken() async {
-    DocumentSnapshot adminDoc = await FirebaseFirestore.instance
-        .collection('app_config')
-        .doc('admin')
-        .get();
-    return adminDoc.exists ? adminDoc['fcm_token'] as String? : null;
+    try {
+      QuerySnapshot adminUsers = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('role', isEqualTo: UserRole.Admin.name)
+          .limit(1)
+          .get();
+
+      if (adminUsers.docs.isNotEmpty) {
+        final adminData = adminUsers.docs.first.data() as Map<String, dynamic>;
+        return adminData['fcm_token'] as String?;
+      }
+      return null;
+    } catch (e) {
+      print('Error getting admin FCM token: $e');
+      return null;
+    }
   }
 
   Future<void> setupFcmToken(userData, firestoreUserId) async {
@@ -422,6 +434,28 @@ class AuthService {
       await prefs.clear();
     } catch (e) {
       throw Exception('Sign out failed: ${e.toString()}');
+    }
+  }
+
+  Future<bool> signInWithOtp(String verificationId, String smsCode) async {
+    try {
+      // Create credentials
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+      
+      // Sign in and get user
+      UserCredential userCredential = await _auth.signInWithCredential(credential);
+      
+      if (userCredential.user != null) {
+        await NotificationsService().updateUserFcmToken(userCredential.user!.uid);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print("Error signing in with OTP: $e");
+      return false;
     }
   }
 }
