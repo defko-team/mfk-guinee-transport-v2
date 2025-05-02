@@ -58,8 +58,8 @@ class CarService {
 
   // Get DriverName by voitureId
   Future<String> getDriverNameById(String driverId) async {
-    UserModel driver = await UserService().getUserById(driverId);
-    return '${driver.prenom} ${driver.nom}';
+    UserModel? driver = await UserService().getUserById(driverId);
+    return '${driver?.prenom} ${driver?.nom}';
   }
 
   // Create a new voiture

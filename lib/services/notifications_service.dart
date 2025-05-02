@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mfk_guinee_transport/models/notification.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
@@ -12,7 +11,6 @@ import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class NotificationsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final UserService userService = UserService();
 
   Future<bool> sendNotification(
@@ -160,45 +158,34 @@ class NotificationsService {
         .update(notification.toMap());
   }
 
-  /* Future<void> deleteNotification(String idNotification) async {
-    try {
-      await _firestore.collection('Notification').doc(idNotification).delete();
-      if (kDebugMode) {
-        print('Notification deleted successfully');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error deleting notification: $e');
-      }
-    }
-  }*/
-
   void sendAndCreateNotificationForReservation(ReservationModel res) async {
     // Send Notification to Admin
     String? adminFcmToken = await AuthService().getAdminFcmToken();
     if (adminFcmToken != null) {
       // Récupérer les informations du client
-      UserModel client = await userService.getUserById(res.userId);
-      String clientFullName = "${client.prenom} ${client.nom}";
+      UserModel? client = await userService.getUserById(res.userId);
+      if (client != null) {
+        String clientFullName = "${client.prenom} ${client.nom}";
 
-      String notificationTitle = "Nouvelle Réservation";
-      String notificationMessage = "Numéro: ${res.id}\n"
-          "Client: $clientFullName\n"
-          "Départ: ${res.departureLocation}\n"
-          "Arrivée: ${res.arrivalLocation}\n"
-          "Statut: ${ReservationModel.getLabelFromStatus(res.status)}\n";
+        String notificationTitle = "Nouvelle Réservation";
+        String notificationMessage = "Numéro: ${res.id}\n"
+            "Client: $clientFullName\n"
+            "Départ: ${res.departureLocation}\n"
+            "Arrivée: ${res.arrivalLocation}\n"
+            "Statut: ${ReservationModel.getLabelFromStatus(res.status)}\n";
 
-      final notificationStatus = await NotificationsService().sendNotification(
-          adminFcmToken, notificationTitle, notificationMessage);
+        final notificationStatus = await NotificationsService().sendNotification(
+            adminFcmToken, notificationTitle, notificationMessage);
 
-      print("Notification to admin ${notificationStatus}");
-      if (notificationStatus) {
-        await NotificationsService().createNotification(
-            idUser: 'admin',
-            context: notificationTitle,
-            message: notificationMessage,
-            status: false,
-            dateHeure: DateTime.now());
+        print("Notification to admin ${notificationStatus}");
+        if (notificationStatus) {
+          await NotificationsService().createNotification(
+              idUser: 'admin',
+              context: notificationTitle,
+              message: notificationMessage,
+              status: false,
+              dateHeure: DateTime.now());
+        }
       }
     }
   }

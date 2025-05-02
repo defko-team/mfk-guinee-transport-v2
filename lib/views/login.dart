@@ -38,6 +38,8 @@ class _LoginState extends State<Login> {
     try {
       String? verificationId = await _authService.sendOtp(_fullPhoneNumber!);
 
+      print("verificationId: $verificationId");
+
       if (verificationId != null) {
         Navigator.push(
           context,

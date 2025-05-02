@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
 
@@ -29,19 +28,9 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   String? _userId;
 
-  String? _firstName;
-
-  String? _lastName;
-
-  String? _phoneNumber;
-
-  String? _role;
-
   StationModel? selectedDeparture;
 
   StationModel? selectedArrival;
-
-  final int _selectedIndex = 0;
 
   int selectedTransportTypeIndex = 0;
 
@@ -72,26 +61,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     String? userId = prefs.getString("userId");
 
     if (userId != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(userId)
-          .get();
-
-      DocumentSnapshot roleDoc = await FirebaseFirestore.instance
-          .collection('roles')
-          .doc(userDoc['id_role'])
-          .get();
-
       setState(() {
         _userId = userId;
-
-        _firstName = userDoc['prenom'];
-
-        _lastName = userDoc['nom'];
-
-        _phoneNumber = userDoc['telephone'];
-
-        _role = roleDoc['nom'];
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

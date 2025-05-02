@@ -5,7 +5,6 @@ import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/models/account_model.dart';
-import 'package:mfk_guinee_transport/models/role_model.dart';
 import 'package:flutter/material.dart';
 
 class AuthService {
@@ -22,13 +21,12 @@ class AuthService {
           .get();
 
       if (roleSnapshot.docs.isEmpty) return false;
-      String chauffeurRoleId = roleSnapshot.docs.first.id;
 
       // Vérifier si un utilisateur avec ce numéro et ce rôle existe
       QuerySnapshot userSnapshot = await _firestore
           .collection('Users')
           .where('telephone', isEqualTo: phoneNumber.replaceAll(' ', ''))
-          .where('id_role', isEqualTo: chauffeurRoleId)
+          .where('role', isEqualTo: 'Chauffeur')
           .limit(1)
           .get();
 
@@ -40,32 +38,75 @@ class AuthService {
   }
 
   Future<String?> sendOtp(String phoneNumber) async {
+    print('phoneNumber dans sendOtp: $phoneNumber');
     try {
-      final Completer<String> completer = Completer<String>();
+      Completer<String?> completer = Completer<String?>();
 
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-          completer.complete(null);
+          // Auto-verification completed (usually on Android)
+          try {
+            await _auth.signInWithCredential(credential);
+            if (!completer.isCompleted) {
+              completer.complete(null); // No verification ID needed
+            }
+          } catch (e) {
+            print('Erreur lors de la connexion automatique: $e');
+            if (!completer.isCompleted) {
+              completer.completeError(e);
+            }
+          }
         },
         verificationFailed: (FirebaseAuthException e) {
-          completer.completeError(OtpVerificationException(
-              'Échec de la vérification OTP: ${e.message}'));
+          print('Échec de la vérification: ${e.code} - ${e.message}');
+          
+          String errorMessage = 'Échec de la vérification';
+          
+          // Personnaliser les messages d'erreur
+          switch (e.code) {
+            case 'invalid-phone-number':
+              errorMessage = 'Le numéro de téléphone est invalide. Veuillez vérifier le format.';
+              break;
+            case 'too-many-requests':
+              errorMessage = 'Trop de tentatives. Veuillez réessayer plus tard.';
+              break;
+            case 'quota-exceeded':
+              errorMessage = 'Quota dépassé. Veuillez contacter le support.';
+              break;
+            default:
+              errorMessage = 'Erreur de vérification: ${e.message}';
+          }
+          
+          if (!completer.isCompleted) {
+            completer.completeError(Exception(errorMessage));
+          }
         },
         codeSent: (String verificationId, int? resendToken) {
-          completer.complete(verificationId);
+          print('Code envoyé, verificationId: $verificationId');
+          if (!completer.isCompleted) {
+            completer.complete(verificationId);
+          }
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          // Ne rien faire ici pour éviter les problèmes de completion multiple
+          print('Délai d\'attente expiré pour la récupération automatique du code');
+          if (!completer.isCompleted) {
+            completer.complete(verificationId);
+          }
         },
-        timeout: const Duration(seconds: 60),
+        timeout: const Duration(seconds: 120),
       );
 
-      return completer.future;
+      return await completer.future;
     } catch (e) {
-      throw OtpVerificationException(
-          'Impossible d\'obtenir l\'ID de vérification');
+      print('Erreur dans sendOtp: $e');
+      
+      // Vérifier si le numéro de téléphone est au bon format
+      if (!phoneNumber.startsWith('+')) {
+        throw Exception('Le numéro de téléphone doit commencer par le code pays (+xxx)');
+      }
+      
+      rethrow;
     }
   }
 
@@ -186,8 +227,6 @@ class AuthService {
           }
         } else {
           print('Création d\'un nouveau compte client');
-          String roleId = await _getRoleId('Client');
-          print('RoleId obtenu: $roleId');
 
           UserModel userModel = UserModel(
             idUser: firebaseUserId,
@@ -195,7 +234,7 @@ class AuthService {
             nom: nom,
             telephone: cleanPhoneNumber,
             photoProfil: null,
-            idRole: roleId,
+            role: UserRole.Client,
           );
 
           AccountModel accountModel = AccountModel(
@@ -274,46 +313,30 @@ class AuthService {
     print('UserId reçu: $userId');
 
     try {
-      DocumentSnapshot userDoc =
-          await _firestore.collection('Users').doc(userId).get();
-      print('Document utilisateur existe? ${userDoc.exists}');
-      print('Données utilisateur: ${userDoc.data()}');
-
-      if (!userDoc.exists) {
+      UserModel? user = await UserService().getUserById(userId);
+      print('Document utilisateur existe? ${user != null}');
+      
+      if (user == null) {
         throw Exception('Document utilisateur non trouvé');
       }
 
-      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-      if (!userData.containsKey('id_role')) {
-        throw Exception('Champ id_role manquant dans le document utilisateur');
-      }
-
-      print('ID du rôle trouvé: ${userData['id_role']}');
-      DocumentSnapshot roleDoc =
-          await _firestore.collection('roles').doc(userData['id_role']).get();
-      print('Document rôle existe? ${roleDoc.exists}');
-      print('Données rôle: ${roleDoc.data()}');
-
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString("userId", userId);
-      print("userRoleId from userData ${userData['id_role']}");
-      String roleName = (roleDoc.data() as Map<String, dynamic>)['nom'];
-      print('Nom du rôle: $roleName');
 
-      switch (roleName) {
-        case 'Client':
+      switch (user.role) {
+        case UserRole.Client:
           print('Configuration des préférences pour Client');
           prefs.setBool("isCustomerAuthenticated", true);
           prefs.setBool("isProviderAuthenticated", false);
           prefs.setBool("isDriverAuthenticated", false);
           break;
-        case 'Admin':
+        case UserRole.Admin:
           print('Configuration des préférences pour Admin');
           prefs.setBool("isCustomerAuthenticated", false);
           prefs.setBool("isProviderAuthenticated", true);
           prefs.setBool("isDriverAuthenticated", false);
           break;
-        case 'Chauffeur':
+        case UserRole.Chauffeur:
           print('Configuration des préférences pour Chauffeur');
           prefs.setBool("isCustomerAuthenticated", false);
           prefs.setBool("isProviderAuthenticated", false);
@@ -333,59 +356,33 @@ class AuthService {
     print('UserId reçu: $userId');
 
     try {
-      DocumentSnapshot userDoc =
-          await _firestore.collection('Users').doc(userId).get();
-      print('Document utilisateur existe? ${userDoc.exists}');
-      print('Données utilisateur: ${userDoc.data()}');
-
-      if (!userDoc.exists) {
+      UserModel? user = await UserService().getUserById(userId);
+      print('Document utilisateur existe? ${user != null}');
+      
+      if (user == null) {
         print('Document utilisateur non trouvé!');
         throw Exception('Utilisateur non trouvé');
       }
 
-      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-      print('Données utilisateur parsées: $userData');
-
-      if (!userData.containsKey('id_role')) {
-        print('Champ id_role manquant!');
-        throw Exception('Rôle non défini pour l\'utilisateur');
-      }
-
-      String roleId = userData['id_role'];
-      print('ID du rôle trouvé: $roleId');
-
-      DocumentSnapshot roleDoc =
-          await _firestore.collection('roles').doc(roleId).get();
-      print('Document rôle existe? ${roleDoc.exists}');
-      print('Données rôle: ${roleDoc.data()}');
-
-      if (!roleDoc.exists) {
-        print('Document rôle non trouvé!');
-        throw Exception('Rôle non trouvé');
-      }
-
-      String roleName = (roleDoc.data() as Map<String, dynamic>)['nom'];
-      print('Nom du rôle: $roleName');
-
-      switch (roleName) {
-        case 'Client':
+      switch (user.role) {
+        case UserRole.Client:
           print('Redirection vers customerHome');
           Navigator.pushNamedAndRemoveUntil(
               context, '/customerHome', (Route<dynamic> route) => false);
           break;
-        case 'Admin':
+        case UserRole.Admin:
           print('Redirection vers providerHome');
           Navigator.pushNamedAndRemoveUntil(
               context, '/providerHome', (Route<dynamic> route) => false);
           break;
-        case 'Chauffeur':
+        case UserRole.Chauffeur:
           print('Redirection vers driverHome');
           Navigator.pushNamedAndRemoveUntil(
               context, '/driverHome', (Route<dynamic> route) => false);
           break;
         default:
           print('Rôle inconnu!');
-          throw Exception('Rôle inconnu : $roleName');
+          throw Exception('Rôle inconnu : ${user.role}');
       }
 
       print('=== Fin _redirectUserBasedOnRole ===');
@@ -414,7 +411,6 @@ class AuthService {
 
   Future<void> setupFcmToken(userData, firestoreUserId) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? userId = preferences.getString('userId');
     String? fcmToken = preferences.getString('fcmToken');
     bool? isAdmin = preferences.getBool("isProviderAuthenticated");
     if (fcmToken != null && userData['fcm_token'] != fcmToken) {
@@ -425,26 +421,6 @@ class AuthService {
         await saveAdminFcmToken(fcmToken);
       }
     }
-  }
-
-  Future<String> _getRoleId(String roleName) async {
-    QuerySnapshot roleSnapshot = await _firestore
-        .collection('roles')
-        .where('nom', isEqualTo: roleName)
-        .limit(1)
-        .get();
-
-    if (roleSnapshot.docs.isEmpty) {
-      String roleId = _firestore.collection('roles').doc().id;
-      RoleModel roleModel = RoleModel(
-        idRole: roleId,
-        nom: roleName,
-      );
-      await _firestore.collection('roles').doc(roleId).set(roleModel.toMap());
-      return roleId;
-    }
-
-    return roleSnapshot.docs.first.id;
   }
 
   Future<void> signOut() async {

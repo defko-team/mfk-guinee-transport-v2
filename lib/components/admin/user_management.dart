@@ -5,7 +5,7 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class AdminChauffeurManagementPage extends StatefulWidget {
   const AdminChauffeurManagementPage({super.key});
@@ -17,6 +17,7 @@ class AdminChauffeurManagementPage extends StatefulWidget {
 
 class _AdminChauffeurManagementPageState
     extends State<AdminChauffeurManagementPage> {
+  final UserService _userService = UserService();
   List<UserModel> chauffeurs = [];
   List<bool> _isExpanded = [];
 
@@ -27,37 +28,13 @@ class _AdminChauffeurManagementPageState
   }
 
   Future<void> _loadChauffeurs() async {
-    final chauffeurRoleId = await _getChauffeurRoleId();
-    if (chauffeurRoleId != null) {
-      FirebaseFirestore.instance
-          .collection('Users')
-          .where('id_role', isEqualTo: chauffeurRoleId)
-          .snapshots()
-          .listen((snapshot) {
-        setState(() {
-          chauffeurs = snapshot.docs
-              .map((doc) => UserModel.fromMap(doc.data()))
-              .toList();
-          _isExpanded = List<bool>.filled(chauffeurs.length, false);
-        });
+    // Use stream to listen for real-time updates
+    _userService.getUsersByRoleStream('Chauffeur').listen((updatedChauffeurs) {
+      setState(() {
+        chauffeurs = updatedChauffeurs;
+        _isExpanded = List<bool>.filled(chauffeurs.length, false);
       });
-    }
-  }
-
-  Future<String?> _getChauffeurRoleId() async {
-    try {
-      QuerySnapshot roleSnapshot = await FirebaseFirestore.instance
-          .collection('roles')
-          .where('nom', isEqualTo: 'Chauffeur')
-          .limit(1)
-          .get();
-      if (roleSnapshot.docs.isNotEmpty) {
-        return roleSnapshot.docs.first.id;
-      }
-    } catch (e) {
-      print('Erreur lors de la récupération du rôle Chauffeur: $e');
-    }
-    return null;
+    });
   }
 
   void _openAddChauffeurBottomSheet({UserModel? chauffeur}) {
@@ -84,7 +61,7 @@ class _AdminChauffeurManagementPageState
   }
 
   void _deleteChauffeur(String idUser) async {
-    await FirebaseFirestore.instance.collection('Users').doc(idUser).delete();
+    await _userService.deleteUser(idUser);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Chauffeur supprimé avec succès')),
     );
@@ -261,6 +238,7 @@ class AddChauffeurForm extends StatefulWidget {
 }
 
 class _AddChauffeurFormState extends State<AddChauffeurForm> {
+  final UserService _userService = UserService();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -300,55 +278,39 @@ class _AddChauffeurFormState extends State<AddChauffeurForm> {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
 
-      final chauffeurRoleId = await _getChauffeurRoleId();
-      if (chauffeurRoleId != null && _fullPhoneNumber != null) {
-        final isEditMode = widget.chauffeur != null;
-        final idUser = isEditMode
-            ? widget.chauffeur!.idUser
-            : FirebaseFirestore.instance.collection('Users').doc().id;
+    if (_fullPhoneNumber != null) {
+      final isEditMode = widget.chauffeur != null;
+      final idUser = isEditMode
+          ? widget.chauffeur!.idUser
+          : FirebaseFirestore.instance.collection('Users').doc().id;
 
-        final newChauffeur = UserModel(
-          idUser: idUser,
-          prenom: _firstNameController.text,
-          nom: _lastNameController.text,
-          telephone: _fullPhoneNumber!.replaceAll(' ', ''),
-          idRole: chauffeurRoleId,
-        );
+      final newChauffeur = UserModel(
+        idUser: idUser,
+        prenom: _firstNameController.text,
+        nom: _lastNameController.text,
+        telephone: _fullPhoneNumber!.replaceAll(' ', ''),
+        role: UserRole.Chauffeur,
+      );
 
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(idUser)
-            .set(newChauffeur.toMap());
+      if (isEditMode) {
+        await _userService.updateUser(newChauffeur);
+      } else {
+        await _userService.createUser(newChauffeur);
+      }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(isEditMode
-                  ? 'Chauffeur modifié avec succès'
-                  : 'Chauffeur ajouté avec succès')),
-        );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(isEditMode
+                ? 'Chauffeur modifié avec succès'
+                : 'Chauffeur ajouté avec succès')),
+      );
 
         widget.onSubmit();
         Navigator.of(context).pop();
-      }
+    }
 
       setState(() => _isLoading = false);
     }
-  }
-
-  Future<String?> _getChauffeurRoleId() async {
-    try {
-      QuerySnapshot roleSnapshot = await FirebaseFirestore.instance
-          .collection('roles')
-          .where('nom', isEqualTo: 'Chauffeur')
-          .limit(1)
-          .get();
-      if (roleSnapshot.docs.isNotEmpty) {
-        return roleSnapshot.docs.first.id;
-      }
-    } catch (e) {
-      print('Erreur lors de la récupération du rôle Chauffeur: $e');
-    }
-    return null;
   }
 
   @override

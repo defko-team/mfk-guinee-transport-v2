@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/components/user_details.dart';
 import 'package:mfk_guinee_transport/components/notifications_page.dart';
-import 'package:mfk_guinee_transport/components/security_page.dart';
 import 'package:mfk_guinee_transport/components/clear_cache_page.dart';
 import 'package:mfk_guinee_transport/components/privacy_policy_page.dart';
 import 'package:mfk_guinee_transport/components/contact_us_page.dart';

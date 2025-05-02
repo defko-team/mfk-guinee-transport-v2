@@ -43,8 +43,12 @@ class _RegisterPageState extends State<RegisterPage> {
           return;
         }
 
+        print("fullPhoneNumber: $_fullPhoneNumber");
+
         // Step 1: Send OTP and get the verification ID
         String? verificationId = await _authService.sendOtp(_fullPhoneNumber!);
+
+        print("verificationId: $verificationId");
 
         if (verificationId != null) {
           // Step 2: Navigate to OTP Verification Page with isRegistration flag set to true

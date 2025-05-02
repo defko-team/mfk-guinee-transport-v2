@@ -14,7 +14,6 @@ class DashboardService {
   Future<Map<String, dynamic>> getDashboardStats(
       {DateTime? startDate, DateTime? endDate}) async {
     final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
 
     final effectiveStartDate =
         startDate ?? DateTime(now.year, now.month, now.day);
