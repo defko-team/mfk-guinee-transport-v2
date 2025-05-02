@@ -196,6 +196,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       showFlags: true,
                     ),
                     ignoreBlank: false,
+                    countries: const ['GN', 'SN', 'FR'],
                     autoValidateMode: AutovalidateMode.disabled,
                     selectorTextStyle: const TextStyle(color: AppColors.black),
                     textFieldController: _phoneNumberController,

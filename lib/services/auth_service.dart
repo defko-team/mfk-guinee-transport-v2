@@ -432,6 +432,25 @@ class AuthService {
       throw Exception('Sign out failed: ${e.toString()}');
     }
   }
+
+  /// Checks if a user with the given phone number exists in the database
+  Future<bool> checkUserExists(String phoneNumber) async {
+    try {
+      // Query your database to check if the user exists
+      // This implementation will depend on your database structure
+      // Example for Firestore:
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .where('phoneNumber', isEqualTo: phoneNumber)
+          .get();
+      
+      return userDoc.docs.isNotEmpty;
+    } catch (e) {
+      print('Error checking if user exists: $e');
+      // In case of error, return false to be safe
+      return false;
+    }
+  }
 }
 
 class OtpVerificationException implements Exception {

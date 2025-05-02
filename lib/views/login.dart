@@ -36,6 +36,20 @@ class _LoginState extends State<Login> {
     });
 
     try {
+      // Check if user exists in database
+      bool userExists = await _authService.checkUserExists(_fullPhoneNumber!);
+      
+      if (!userExists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ce numéro n\'est pas enregistré. Veuillez créer un compte.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
+      // Proceed with OTP if user exists
       String? verificationId = await _authService.sendOtp(_fullPhoneNumber!);
 
       print("verificationId: $verificationId");
@@ -144,6 +158,7 @@ class _LoginState extends State<Login> {
                             selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
                             showFlags: true,
                           ),
+                          countries: const ['GN', 'SN', 'FR'],
                           locale: 'fr',
                           hintText: '',
                           ignoreBlank: false,
