@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/components/admin/driver_assignment_dialog.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
@@ -14,6 +15,87 @@ import 'package:mfk_guinee_transport/services/station_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:mfk_guinee_transport/views/card_travel.dart';
+
+// Widget personnalisé pour la sélection des stations
+class StationSelectionField extends StatelessWidget {
+  final List<StationModel> stations;
+  final StationModel? selectedStation;
+  final StationModel? excludeStation;
+  final String label;
+  final Function(StationModel) onSelected;
+
+  const StationSelectionField({
+    Key? key,
+    required this.stations,
+    required this.selectedStation,
+    this.excludeStation,
+    required this.label,
+    required this.onSelected,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Autocomplete<StationModel>(
+      initialValue: selectedStation != null
+          ? TextEditingValue(text: selectedStation!.name)
+          : TextEditingValue.empty,
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) {
+          return stations.where((station) => station != excludeStation);
+        }
+        return stations.where((station) {
+          return station.name
+                  .toLowerCase()
+                  .contains(textEditingValue.text.toLowerCase()) &&
+              station != excludeStation;
+        });
+      },
+      displayStringForOption: (StationModel station) => station.name,
+      onSelected: onSelected,
+      fieldViewBuilder:
+          (context, textEditingController, focusNode, onFieldSubmitted) {
+        return TextField(
+          controller: textEditingController,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: label,
+            prefixIcon:
+                const Icon(Icons.location_on, color: Colors.black, size: 18),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            hintText: 'Sélectionnez une station',
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4.0,
+            child: Container(
+              width: MediaQuery.of(context).size.width - 80,
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options.elementAt(index);
+                  return ListTile(
+                    title: Text(option.name),
+                    subtitle: Text('${option.name}, ${option.address}'),
+                    onTap: () => onSelected(option),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 
 class AdminTravelsManagementPage extends StatefulWidget {
   const AdminTravelsManagementPage({super.key});
@@ -111,16 +193,30 @@ class _AdminTravelManagementPageState
                     child: CircularProgressIndicator(),
                   );
                 }
-
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text('Error: ${snapshot.error}'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Error loading travels'),
+                        const SizedBox(height: 8),
+                        Text(snapshot.error.toString()),
+                      ],
+                    ),
                   );
                 }
 
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text('No travels found'),
+                  return Center(
+                    child: Text(
+                      "Aucun trajet pour le moment.\nAppuyez sur (+) pour ajouter votre premier trajet :)",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                      ),
+                    ),
                   );
                 }
 
@@ -229,34 +325,65 @@ class _AddTravelFormState extends State<AddTravelForm> {
   DateTime? _pickedArrivalDate;
   DocumentReference? currentTravelReference;
   bool? isUpdate = false;
+  bool _mounted = true;
+
   @override
   void initState() {
     super.initState();
+    _mounted = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeData();
+      if (_mounted) {
+        _initializeData();
+      }
     });
   }
 
+  @override
+  void dispose() {
+    _mounted = false;
+    _departureDateController.dispose();
+    _departureTimeController.dispose();
+    _arrivalDateController.dispose();
+    _arrivalTimeController.dispose();
+    _tecketPriceController.dispose();
+    super.dispose();
+  }
+
   Future<void> _initializeData() async {
+    if (!_mounted) return;
     await _loadCars();
     await _loadStation();
-    if (widget.travel != null) {
+    if (_mounted && widget.travel != null) {
       _initializeForEdit(widget.travel!);
     }
   }
 
   Future<void> _loadStation() async {
-    final allStations = await StationService().getAllStations();
-    setState(() {
-      stations = allStations;
-    });
+    if (!_mounted) return;
+    try {
+      final allStations = await StationService().getAllStations();
+      if (_mounted) {
+        setState(() {
+          stations = allStations;
+        });
+      }
+    } catch (e) {
+      print('Error loading stations: $e');
+    }
   }
 
   Future<void> _loadCars() async {
-    final allCars = await CarService().getAllVoitures();
-    setState(() {
-      cars = allCars;
-    });
+    if (!_mounted) return;
+    try {
+      final allCars = await CarService().getAllVoitures();
+      if (_mounted) {
+        setState(() {
+          cars = allCars;
+        });
+      }
+    } catch (e) {
+      print('Error loading cars: $e');
+    }
   }
 
   Future<void> _selectDepartureDate(BuildContext context) async {
@@ -435,141 +562,30 @@ class _AddTravelFormState extends State<AddTravelForm> {
         const Text("Ajouter ou Modifier un trajet",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 20),
-        Autocomplete<StationModel>(
-          optionsBuilder: (TextEditingValue textEditingValue) {
-            if (textEditingValue.text.isEmpty) {
-              return const Iterable<StationModel>.empty();
-            }
-            return stations.where((StationModel station) {
-              return station.name
-                  .toLowerCase()
-                  .contains(textEditingValue.text.toLowerCase());
-            });
-          },
-          displayStringForOption: (StationModel station) => station.name,
-          onSelected: (StationModel selection) {
+        StationSelectionField(
+          stations: stations,
+          selectedStation: _selectedDepartureStation,
+          label: 'Station de départ',
+          onSelected: (station) {
             setState(() {
-              _selectedDepartureStation = selection;
-              stations = stations
-                  .where((station) =>
-                      station.stationRef!.id != selection.stationRef!.id)
-                  .toList();
+              _selectedDepartureStation = station;
+              // Reset destination if it's the same as the new departure
+              if (_selectedDestinationStation == station) {
+                _selectedDestinationStation = null;
+              }
             });
-          },
-          fieldViewBuilder: (BuildContext context,
-              TextEditingController textEditingController,
-              FocusNode focusNode,
-              VoidCallback onFieldSubmitted) {
-            if (_selectedDepartureStation != null &&
-                textEditingController.text.isEmpty) {
-              textEditingController.text = _selectedDepartureStation!.name;
-            }
-            return TextField(
-              controller: textEditingController,
-              focusNode: focusNode,
-              decoration: InputDecoration(
-                  labelText: 'Station de Depart',
-                  prefixIcon: const Icon(Icons.my_location_rounded,
-                      color: Colors.green, size: 18),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.black)),
-                  hintText: 'Tapez pour rechercher....'),
-            );
-          },
-          optionsViewBuilder: (BuildContext context,
-              AutocompleteOnSelected<StationModel> onSelected,
-              Iterable<StationModel> options) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                elevation: 4.0,
-                child: Container(
-                  width: MediaQuery.of(context).size.width - 80,
-                  constraints: const BoxConstraints(maxHeight: 200.0),
-                  child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: options.length,
-                      shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        final StationModel option = options.elementAt(index);
-                        return ListTile(
-                          title: Text(option.name),
-                          onTap: () {
-                            onSelected(option);
-                          },
-                        );
-                      }),
-                ),
-              ),
-            );
           },
         ),
         const SizedBox(height: 20),
-        Autocomplete<StationModel>(
-          optionsBuilder: (TextEditingValue textEditingValue) {
-            if (textEditingValue.text.isEmpty) {
-              return const Iterable<StationModel>.empty();
-            }
-            return stations.where((StationModel station) {
-              return station.name
-                  .toLowerCase()
-                  .contains(textEditingValue.text.toLowerCase());
-            });
-          },
-          displayStringForOption: (StationModel station) => station.name,
-          onSelected: (StationModel selection) {
+        StationSelectionField(
+          stations: stations,
+          selectedStation: _selectedDestinationStation,
+          excludeStation: _selectedDepartureStation,
+          label: 'Station d\'arrivée',
+          onSelected: (station) {
             setState(() {
-              _selectedDestinationStation = selection;
+              _selectedDestinationStation = station;
             });
-          },
-          fieldViewBuilder: (BuildContext context,
-              TextEditingController textEditingController,
-              FocusNode focusNode,
-              VoidCallback onFieldSubmitted) {
-            if (_selectedDestinationStation != null &&
-                textEditingController.text.isEmpty) {
-              textEditingController.text = _selectedDestinationStation!.name;
-            }
-            return TextField(
-              controller: textEditingController,
-              focusNode: focusNode,
-              decoration: InputDecoration(
-                  labelText: 'Station de Destination',
-                  prefixIcon:
-                      const Icon(Icons.place, color: Colors.black, size: 18),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Colors.black)),
-                  hintText: 'Tapez pour rechercher....'),
-            );
-          },
-          optionsViewBuilder: (BuildContext context,
-              AutocompleteOnSelected<StationModel> onSelected,
-              Iterable<StationModel> options) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                elevation: 4.0,
-                child: Container(
-                  width: MediaQuery.of(context).size.width - 80,
-                  constraints: const BoxConstraints(maxHeight: 200.0),
-                  child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: options.length,
-                      shrinkWrap: true,
-                      itemBuilder: (BuildContext context, int index) {
-                        final StationModel option = options.elementAt(index);
-                        return ListTile(
-                          title: Text(option.name),
-                          onTap: () {
-                            onSelected(option);
-                          },
-                        );
-                      }),
-                ),
-              ),
-            );
           },
         ),
         const SizedBox(height: 20),

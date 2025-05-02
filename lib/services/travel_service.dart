@@ -30,7 +30,10 @@ class TravelService {
     return _firestore.collection('Travel').snapshots().asyncMap(
       (QuerySnapshot travelQuerySnapshot) async {
         List<TravelModel> travels = [];
+
         for (QueryDocumentSnapshot travelDoc in travelQuerySnapshot.docs) {
+          print(TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>));
+          print("\n\n\n");
           TravelModel travel =
               TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>);
           travel.travelReference = travelDoc.reference;
@@ -85,7 +88,7 @@ class TravelService {
       travel.travelReference = travelDoc.reference;
       // Now you have both travel and station data
 
-      if(travel.remainingSeats > 0) {
+      if (travel.remainingSeats > 0) {
         travels.add(travel);
       }
     }
@@ -117,10 +120,10 @@ class TravelService {
   }
 
   Future<void> decrementRemainingSeats(String travelId) async {
-    await _firestore.collection('Travel').doc(travelId).update({
-      'remaining_seats': FieldValue.increment(-1)
-    });
-    
+    await _firestore
+        .collection('Travel')
+        .doc(travelId)
+        .update({'remaining_seats': FieldValue.increment(-1)});
   }
 
   Future<bool> deleteTravel(String travelId) async {

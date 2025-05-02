@@ -6,6 +6,7 @@ import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AdminChauffeurManagementPage extends StatefulWidget {
   const AdminChauffeurManagementPage({super.key});
@@ -85,7 +86,16 @@ class _AdminChauffeurManagementPageState
         ],
       ),
       body: chauffeurs.isEmpty
-          ? const Center(child: Text('Aucun chauffeur pour l\'instant'))
+          ? Center(
+              child: Text(
+              'Aucun chauffeur pour l\'instant',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                fontFamily: GoogleFonts.poppins().fontFamily,
+                color: Colors.grey,
+              ),
+            ))
           : ListView.builder(
               itemCount: chauffeurs.length,
               itemBuilder: (context, index) {

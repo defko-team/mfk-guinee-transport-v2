@@ -262,7 +262,8 @@ class _StationsPageState extends State<StationsPage> {
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Erreur lors de la modification: ${e.toString()}'),
+                      content: Text(
+                          'Erreur lors de la modification: ${e.toString()}'),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -302,6 +303,7 @@ class _StationsPageState extends State<StationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: BaseAppBar(
         title: 'Gestion des Gares',
         actions: [

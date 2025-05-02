@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mfk_guinee_transport/components/admin/driver_assignment_dialog.dart';
@@ -43,7 +44,7 @@ class _AdminReservationsManagementPageState
     if (reservation.status == ReservationStatus.canceled) {
       try {
         await ReservationService().updateReservation(reservation);
-        
+
         // Send notification to user about cancellation
         final user = await UserService().getUserById(reservation.userId);
         if (user != null && user.fcmToken != null) {
@@ -55,12 +56,11 @@ class _AdminReservationsManagementPageState
 
           if (notificationStatus) {
             await NotificationsService().createNotification(
-              idUser: reservation.userId,
-              context: "Annulation de réservation",
-              message: "Votre réservation a été annulée",
-              status: false,
-              dateHeure: DateTime.now()
-            );
+                idUser: reservation.userId,
+                context: "Annulation de réservation",
+                message: "Votre réservation a été annulée",
+                status: false,
+                dateHeure: DateTime.now());
           }
         }
 
@@ -254,8 +254,10 @@ class _AdminReservationsManagementPageState
                   ? 'Aucune réservation trouvée'
                   : 'Aucune réservation ${filterStatus?.toLowerCase() ?? ''} trouvée',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+                fontFamily: GoogleFonts.poppins().fontFamily,
               ),
             ),
           ],
@@ -376,9 +378,21 @@ class _AdminReservationsManagementPageState
                     return Center(child: Text('Error: ${snapshot.error}'));
                   }
 
+                  String? filterStatus = _tabs[_tabController.index];
+
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                        child: Text('Aucune réservation trouvée'));
+                    return Center(
+                        child: Text(
+                      filterStatus == 'Tous'
+                          ? 'Aucune réservation trouvée'
+                          : 'Aucune réservation ${filterStatus.toLowerCase()} trouvée',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                      ),
+                    ));
                   }
 
                   return TabBarView(

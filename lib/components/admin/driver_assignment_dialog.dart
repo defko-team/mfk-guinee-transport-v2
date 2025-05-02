@@ -193,16 +193,6 @@ class _CarAssignmentDialogState extends State<CarAssignmentDialog> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text('Annuler'),
                 ),
-                TextButton(
-                  onPressed: () {
-                    widget.onDecline();
-                    Navigator.of(context).pop();
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.red,
-                  ),
-                  child: const Text('Décliner'),
-                ),
                 const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: selectedCar == null
