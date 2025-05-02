@@ -24,22 +24,34 @@ class ReservationService {
 
       print('Reservation saved successfully!');
       String? adminFcmToken = await AuthService().getAdminFcmToken();
-      if (adminFcmToken != null) {
-        final notificationStatus = await NotificationsService()
-            .sendNotification(
-            adminFcmToken,
-            "Nouvelle Reservation",
-            "Un client vient de faire une reservation");
+      if (adminFcmToken != null && adminFcmToken.isNotEmpty) {
+        try {
+          final notificationStatus = await NotificationsService()
+              .sendNotification(
+              adminFcmToken,
+              "Nouvelle Reservation",
+              "Un client vient de faire une reservation");
 
-        print("Notification to admin ${notificationStatus}");
-        if (notificationStatus) {
-          await NotificationsService().createNotification(
-              idUser: 'admin',
-              context: 'Nouvelle reservation 👋',
-              message: "Un client vient de faire une nouvelle reservation",
-              status: false,
-              dateHeure: DateTime.now());
+          print("Notification to admin: $notificationStatus");
+          
+          if (notificationStatus) {
+            await NotificationsService().createNotification(
+                idUser: 'admin',
+                context: 'Nouvelle reservation 👋',
+                message: "Un client vient de faire une nouvelle reservation",
+                status: false,
+                dateHeure: DateTime.now());
+          } else {
+            // If notification failed, update the admin's FCM token
+            print("Failed to send notification. Admin FCM token may be invalid.");
+            // You might want to implement a method to refresh the token
+            // await updateAdminFcmToken();
+          }
+        } catch (e) {
+          print("Error sending notification to admin: $e");
         }
+      } else {
+        print("Admin FCM token is null or empty. Cannot send notification.");
       }
       return reservationWithId;
     } catch (e) {

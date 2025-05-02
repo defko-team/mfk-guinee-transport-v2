@@ -66,11 +66,11 @@ class UserService {
         .set(account.toMap());
   }
 
-  Future<List<UserModel>> getChauffeurs() async {
+  Future<List<UserModel>> getUsersByRole(UserRole role) async {
     try {
       QuerySnapshot querySnapshot = await _firestore
           .collection('Users')
-          .where('role', isEqualTo: 'Chauffeur')
+          .where('role', isEqualTo: role.name)
           .get();
           
       return querySnapshot.docs
@@ -82,29 +82,41 @@ class UserService {
     }
   }
 
-  Stream<List<UserModel>> getUsersByRoleStream(String role) {
+  Stream<List<UserModel>> getUsersByRoleStream(UserRole role) {
     return _firestore
         .collection('Users')
-        .where('role', isEqualTo: role)
+        .where('role', isEqualTo: role.name)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
             .toList());
   }
 
-  Future<List<UserModel>> getUsersByRole(String role) async {
+  /// Checks if a user exists with the given phone number
+  Future<bool> userExistsByPhone(String phoneNumber) async {
     try {
+      // Clean the phone number first to ensure consistent format
+      String cleanPhoneNumber = phoneNumber.replaceAll(' ', '');
+      
       QuerySnapshot querySnapshot = await _firestore
           .collection('Users')
-          .where('role', isEqualTo: role)
+          .where('telephone', isEqualTo: cleanPhoneNumber)
+          .limit(1)
           .get();
           
-      return querySnapshot.docs
-          .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
+      print("Phone check: ${querySnapshot.docs.length} users found with number: $cleanPhoneNumber");
+      
+      return querySnapshot.docs.isNotEmpty;
     } catch (e) {
-      print('Error getting users by role: $e');
-      return [];
+      print('Error checking if user exists by phone: $e');
+      
+      // For permission errors, handle differently
+      if (e.toString().contains('permission-denied')) {
+        print('Permission denied when checking user by phone. Proceeding anyway.');
+        return true; // Assume user exists to allow the flow to continue
+      }
+      
+      return false;
     }
   }
 }

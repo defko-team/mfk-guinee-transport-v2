@@ -29,7 +29,7 @@ class _AdminChauffeurManagementPageState
 
   Future<void> _loadChauffeurs() async {
     // Use stream to listen for real-time updates
-    _userService.getUsersByRoleStream('Chauffeur').listen((updatedChauffeurs) {
+    _userService.getUsersByRoleStream(UserRole.Chauffeur).listen((updatedChauffeurs) {
       setState(() {
         chauffeurs = updatedChauffeurs;
         _isExpanded = List<bool>.filled(chauffeurs.length, false);

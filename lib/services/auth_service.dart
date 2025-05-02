@@ -13,14 +13,6 @@ class AuthService {
 
   Future<bool> isExistingDriverNumber(String phoneNumber) async {
     try {
-      // Récupérer d'abord l'ID du rôle chauffeur
-      QuerySnapshot roleSnapshot = await _firestore
-          .collection('roles')
-          .where('nom', isEqualTo: 'Chauffeur')
-          .limit(1)
-          .get();
-
-      if (roleSnapshot.docs.isEmpty) return false;
 
       // Vérifier si un utilisateur avec ce numéro et ce rôle existe
       QuerySnapshot userSnapshot = await _firestore
@@ -430,25 +422,6 @@ class AuthService {
       await prefs.clear();
     } catch (e) {
       throw Exception('Sign out failed: ${e.toString()}');
-    }
-  }
-
-  /// Checks if a user with the given phone number exists in the database
-  Future<bool> checkUserExists(String phoneNumber) async {
-    try {
-      // Query your database to check if the user exists
-      // This implementation will depend on your database structure
-      // Example for Firestore:
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .where('phoneNumber', isEqualTo: phoneNumber)
-          .get();
-      
-      return userDoc.docs.isNotEmpty;
-    } catch (e) {
-      print('Error checking if user exists: $e');
-      // In case of error, return false to be safe
-      return false;
     }
   }
 }

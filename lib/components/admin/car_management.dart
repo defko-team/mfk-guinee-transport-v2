@@ -296,7 +296,7 @@ class _AddCarFormState extends State<AddCarForm> {
 
   Future<void> _loadChauffeurs() async {
     try {
-      final loadedChauffeurs = await _userService.getChauffeurs();
+      final loadedChauffeurs = await _userService.getUsersByRole(UserRole.Chauffeur);
       setState(() {
         chauffeurs = loadedChauffeurs;
         filteredChauffeurs = chauffeurs;
