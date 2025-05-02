@@ -37,9 +37,12 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
+    // Initialize App Check with debug token in debug mode
     await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.playIntegrity,
+      androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
     );
+
     // Configure system UI
     await _configureSystemUI();
 

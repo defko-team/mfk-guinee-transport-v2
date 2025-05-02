@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -53,6 +54,7 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: const BaseAppBar(
         title: 'Voitures',
         showBackArrow: true,
@@ -73,10 +75,15 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
           }
 
           if (voitures.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
-                'Aucune voiture pour l\'instant',
-                style: TextStyle(fontSize: 18),
+                'Aucune voiture pour l’instant',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: GoogleFonts.poppins().fontFamily,
+                  color: Colors.grey[600],
+                ),
               ),
             );
           }

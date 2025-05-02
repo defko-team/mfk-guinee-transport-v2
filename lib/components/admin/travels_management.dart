@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mfk_guinee_transport/components/admin/driver_assignment_dialog.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
@@ -111,16 +112,30 @@ class _AdminTravelManagementPageState
                     child: CircularProgressIndicator(),
                   );
                 }
-
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text('Error: ${snapshot.error}'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Error loading travels'),
+                        const SizedBox(height: 8),
+                        Text(snapshot.error.toString()),
+                      ],
+                    ),
                   );
                 }
 
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text('No travels found'),
+                  return Center(
+                    child: Text(
+                      "Aucun trajet pour le moment.\nAppuyez sur (+) pour ajouter votre premier trajet :)",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        fontFamily: GoogleFonts.poppins().fontFamily,
+                      ),
+                    ),
                   );
                 }
 

@@ -63,7 +63,7 @@ class DashboardService {
       final today = DateTime(now.year, now.month, now.day);
       final yesterday = today.subtract(const Duration(days: 1));
 
-      int totalReservations = snapshot.docs.length;
+      int totalReservations = 0;
       double totalAmount = 0;
       int todayReservations = 0;
       int yesterdayReservations = 0;
@@ -72,19 +72,26 @@ class DashboardService {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        final DateTime reservationDate =
-            (data['start_time'] as Timestamp).toDate();
-        final amount = (data['amount'] as num).toDouble();
+        final DateTime reservationDate = (data['start_time'] as Timestamp).toDate();
+        final reservationDay = DateTime(
+          reservationDate.year,
+          reservationDate.month,
+          reservationDate.day,
+        );
 
-        if (reservationDate.isAfter(today)) {
+        // Use ticket_price consistently instead of amount
+        final price = (data['ticket_price'] as num?)?.toDouble() ?? 0.0;
+
+        totalReservations++;
+        totalAmount += price;
+
+        if (reservationDay.isAtSameMomentAs(today)) {
           todayReservations++;
-          todayAmount += amount;
-        } else if (reservationDate.isAfter(yesterday) &&
-            reservationDate.isBefore(today)) {
+          todayAmount += price;
+        } else if (reservationDay.isAtSameMomentAs(yesterday)) {
           yesterdayReservations++;
-          yesterdayAmount += amount;
+          yesterdayAmount += price;
         }
-        totalAmount += amount;
       }
 
       return {
