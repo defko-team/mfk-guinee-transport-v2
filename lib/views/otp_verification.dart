@@ -5,7 +5,6 @@ import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class OtpVerification extends StatefulWidget {
   final String firstName;
@@ -113,23 +112,26 @@ class _OtpVerificationState extends State<OtpVerification> {
           .collection('Users')
           .doc(user.uid)
           .get();
-
-      // Get role ID or set default to Client role
-      final roleId = userDoc['id_role'] ?? await UserService().getDefaultClientRoleId();
       
-      // If this is a new user, update their role
-      if (userDoc['id_role'] == null) {
+      if (!userDoc.exists) {
+        if (mounted) {
+          _showErrorSnackBar('User document not found');
+        }
+        return;
+      }
+
+      // Get role directly from the user document
+      final role = userDoc['role'] ?? 'Client';
+      
+      // If this is a new user and role is missing, set default role
+      if (userDoc['role'] == null) {
         await FirebaseFirestore.instance
             .collection('Users')
             .doc(user.uid)
-            .update({'id_role': roleId});
+            .update({'role': 'Client'});
       }
 
-      final roleDoc = await FirebaseFirestore.instance
-          .collection('roles')
-          .doc(roleId)
-          .get();
-      final role = roleDoc['nom'];
+      print("role: $role");
 
       if (!mounted) return;
 

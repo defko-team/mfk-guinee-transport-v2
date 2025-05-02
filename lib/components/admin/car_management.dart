@@ -9,6 +9,7 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class AdminCarManagementPage extends StatefulWidget {
   const AdminCarManagementPage({super.key});
@@ -19,6 +20,7 @@ class AdminCarManagementPage extends StatefulWidget {
 
 class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
   List<bool> _isExpanded = [];
+  final UserService _userService = UserService();
 
   void _openAddCarBottomSheet({VoitureModel? voiture}) {
     showModalBottomSheet(
@@ -41,13 +43,7 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
 
   Future<UserModel?> _getChauffeur(String idChauffeur) async {
     try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(idChauffeur)
-          .get();
-      if (doc.exists) {
-        return UserModel.fromMap(doc.data() as Map<String, dynamic>);
-      }
+      return await _userService.getUserById(idChauffeur);
     } catch (e) {
       print('Erreur lors de la récupération du chauffeur: $e');
     }
@@ -79,7 +75,7 @@ class _AdminCarManagementPageState extends State<AdminCarManagementPage> {
           if (voitures.isEmpty) {
             return const Center(
               child: Text(
-                'Aucune voiture pour l’instant',
+                'Aucune voiture pour l\'instant',
                 style: TextStyle(fontSize: 18),
               ),
             );
@@ -286,6 +282,7 @@ class _AddCarFormState extends State<AddCarForm> {
 
   List<UserModel> chauffeurs = [];
   List<UserModel> filteredChauffeurs = [];
+  final UserService _userService = UserService();
 
   @override
   void initState() {
@@ -298,36 +295,15 @@ class _AddCarFormState extends State<AddCarForm> {
   }
 
   Future<void> _loadChauffeurs() async {
-    final chauffeurRoleId = await _getChauffeurRoleId();
-    if (chauffeurRoleId != null) {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .where('id_role', isEqualTo: chauffeurRoleId)
-          .get();
-
+    try {
+      final loadedChauffeurs = await _userService.getUsersByRole(UserRole.Chauffeur);
       setState(() {
-        chauffeurs = querySnapshot.docs.map((doc) {
-          return UserModel.fromMap(doc.data() as Map<String, dynamic>);
-        }).toList();
+        chauffeurs = loadedChauffeurs;
         filteredChauffeurs = chauffeurs;
       });
-    }
-  }
-
-  Future<String?> _getChauffeurRoleId() async {
-    try {
-      QuerySnapshot roleSnapshot = await FirebaseFirestore.instance
-          .collection('roles')
-          .where('nom', isEqualTo: 'Chauffeur')
-          .limit(1)
-          .get();
-      if (roleSnapshot.docs.isNotEmpty) {
-        return roleSnapshot.docs.first.id;
-      }
     } catch (e) {
-      print('Erreur lors de la récupération du rôle Chauffeur: $e');
+      print('Error loading chauffeurs: $e');
     }
-    return null;
   }
 
   void _initializeForEdit(VoitureModel voiture) async {
@@ -349,13 +325,7 @@ class _AddCarFormState extends State<AddCarForm> {
 
   Future<UserModel?> _getChauffeurById(String idChauffeur) async {
     try {
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(idChauffeur)
-          .get();
-      if (doc.exists) {
-        return UserModel.fromMap(doc.data() as Map<String, dynamic>);
-      }
+      return await _userService.getUserById(idChauffeur);
     } catch (e) {
       print('Erreur lors de la récupération du chauffeur: $e');
     }

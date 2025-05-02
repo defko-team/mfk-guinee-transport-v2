@@ -5,8 +5,6 @@ import 'package:mfk_guinee_transport/components/reservation_info.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
-import 'package:mfk_guinee_transport/services/auth_service.dart';
-import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:mfk_guinee_transport/services/travel_service.dart';
 

@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/components/notification_bell.dart';
 import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
 import 'package:mfk_guinee_transport/models/travel.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
@@ -22,7 +21,6 @@ class DriverHomePage extends StatefulWidget {
 class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProviderStateMixin {
   static const Color lightGrey = Color(0xFFF2F2F2);
   String? _userId;
-  final AuthService _authService = AuthService();
   late TabController _tabController;
   List<TravelModel> travels = [];
   DateTime? selectedDate;

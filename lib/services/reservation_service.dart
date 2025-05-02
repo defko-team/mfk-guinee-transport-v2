@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
-import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 
-import 'auth_service.dart';
-import 'notifications_service.dart';
 
 class ReservationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -24,24 +21,7 @@ class ReservationService {
       await docRef.set(reservationWithId.toMap());
 
       print('Reservation saved successfully!');
-      String? adminFcmToken = await AuthService().getAdminFcmToken();
-      if (adminFcmToken != null) {
-        final notificationStatus = await NotificationsService()
-            .sendNotification(
-            adminFcmToken,
-            "Nouvelle Reservation",
-            "Un client vient de faire une reservation");
-
-        print("Notification to admin ${notificationStatus}");
-        if (notificationStatus) {
-          await NotificationsService().createNotification(
-              idUser: 'admin',
-              context: 'Nouvelle reservation 👋',
-              message: "Un client vient de faire une nouvelle reservation",
-              status: false,
-              dateHeure: DateTime.now());
-        }
-      }
+      
       return reservationWithId;
     } catch (e) {
       print('Failed to save reservation: $e');

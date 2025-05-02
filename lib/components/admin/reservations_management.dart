@@ -1,13 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mfk_guinee_transport/components/admin/driver_assignment_dialog.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
-import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/models/reservation.dart';
-import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/notifications_service.dart';
 import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
@@ -49,7 +46,7 @@ class _AdminReservationsManagementPageState
         
         // Send notification to user about cancellation
         final user = await UserService().getUserById(reservation.userId);
-        if (user.fcmToken != null) {
+        if (user != null && user.fcmToken != null) {
           final notificationStatus = await NotificationsService().sendNotification(
             user.fcmToken!,
             "Annulation de réservation",
@@ -103,8 +100,10 @@ class _AdminReservationsManagementPageState
               String? driverName;
               String? driverId;
               final driver = await UserService().getUserById(car.idChauffeur);
-              driverName = '${driver.prenom} ${driver.nom}';
-              driverId = driver.idUser;
+              if (driver != null) {
+                driverName = '${driver.prenom} ${driver.nom}';
+                driverId = driver.idUser;
+              }
 
               await ReservationService().updateReservation(
                 reservation.copyWith(
@@ -114,7 +113,7 @@ class _AdminReservationsManagementPageState
                 ),
               );
               final user = await UserService().getUserById(reservation.userId);
-              if (user.fcmToken != null) {
+              if (user != null && user.fcmToken != null) {
                 final notificationStatus = await NotificationsService()
                     .sendNotification(
                         user.fcmToken!,
@@ -132,12 +131,12 @@ class _AdminReservationsManagementPageState
 
                 final driverNotificationStatus = await NotificationsService()
                     .sendNotification(
-                        driver.fcmToken!,
+                        driver?.fcmToken ?? '',
                         'Nouvelle reservation client',
                         'Un client vient de faire une reservation pour vous');
                 if (driverNotificationStatus) {
                   await NotificationsService().createNotification(
-                      idUser: driver.idUser,
+                      idUser: driver?.idUser ?? '',
                       context: 'confirmation Reservation',
                       message: 'Nouvelle reservation confirmee pour vous',
                       status: false,
@@ -173,7 +172,7 @@ class _AdminReservationsManagementPageState
           reservation.copyWith(status: ReservationStatus.confirmed),
         );
         final user = await UserService().getUserById(reservation.userId);
-        if (user.fcmToken != null) {
+        if (user != null && user.fcmToken != null) {
           print('Test notification');
           final notificationStatus = await NotificationsService()
               .sendNotification(user.fcmToken!, "Confirmation reservation",

@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mfk_guinee_transport/models/station.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/station.dart';
 
 class StationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

@@ -16,15 +16,18 @@ class HistoriqueService {
       String? carNameFilter,
       String? userId}) async {
     try {
-      UserModel currentUser = await userService.getCurrentUser();
+      UserModel? currentUser = await userService.getCurrentUser();
+      if (currentUser == null) {
+        return [];
+      }
       // Initialize query object
       Query query = reservationCollection;
 
-      if (currentUser.role?.toLowerCase() == 'client') {
+      if (currentUser.role == UserRole.Client) {
         query = query.where('user_id', isEqualTo: currentUser.idUser);
       }
 
-      if (currentUser.role?.toLowerCase() == 'admin' && userId != null) {
+      if (currentUser.role == UserRole.Admin && userId != null) {
         query = query.where('user_id', isEqualTo: userId);
       }
 

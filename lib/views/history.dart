@@ -7,7 +7,6 @@ import 'package:mfk_guinee_transport/models/user_model.dart';
 import 'package:mfk_guinee_transport/models/car.dart';
 import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/history_service.dart';
-import 'package:mfk_guinee_transport/services/reservation_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:mfk_guinee_transport/views/card_reservation.dart';
 
@@ -344,7 +343,7 @@ class _HistoryPageState extends State<HistoryPage>
                         onFiltersChanged: onFiltersChanged,
                         users: users,
                         cars: cars,
-                        isAdmin: currentUser?.role?.toLowerCase() == 'admin',
+                        isAdmin: currentUser?.role == UserRole.Admin,
                         isUpcomingTab: true,
                       ),
                       Expanded(
@@ -376,9 +375,7 @@ class _HistoryPageState extends State<HistoryPage>
                                             reservationModel: reservation,
                                             onOpenModifyReservationBottonSheet:
                                                 _openModifyReservationBottomSheet,
-                                            isAdmin: currentUser?.role
-                                                    ?.toLowerCase() ==
-                                                'admin',
+                                            isAdmin: currentUser?.role == UserRole.Admin,
                                           ),
                                         ),
                                       );
@@ -396,7 +393,7 @@ class _HistoryPageState extends State<HistoryPage>
                         onFiltersChanged: onFiltersChanged,
                         users: users,
                         cars: cars,
-                        isAdmin: currentUser?.role?.toLowerCase() == 'admin',
+                        isAdmin: currentUser?.role == UserRole.Admin,
                         isUpcomingTab: false,
                       ),
                       Expanded(
@@ -428,9 +425,7 @@ class _HistoryPageState extends State<HistoryPage>
                                             reservationModel: reservation,
                                             onOpenModifyReservationBottonSheet:
                                                 _openModifyReservationBottomSheet,
-                                            isAdmin: currentUser?.role
-                                                    ?.toLowerCase() ==
-                                                'admin',
+                                            isAdmin: currentUser?.role == UserRole.Admin,
                                           ),
                                         ),
                                       );
@@ -659,7 +654,7 @@ class _FilterBarState extends State<FilterBar> {
         items: widget.users.map((UserModel user) {
           return DropdownMenuItem<String>(
             value: user.idUser,
-            child: Text(user.nom ?? 'Unknown User'),
+            child: Text(user.nom),
           );
         }).toList(),
         onChanged: (String? newValue) {

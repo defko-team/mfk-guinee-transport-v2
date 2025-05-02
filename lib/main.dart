@@ -1,10 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mfk_guinee_transport/helper/firebase/firebase_options.dart';
 import 'package:mfk_guinee_transport/services/firebase_messaging_service.dart';
 import 'package:mfk_guinee_transport/views/splash_screen.dart';
@@ -133,7 +129,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool _isSnackbarVisible = false;
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 

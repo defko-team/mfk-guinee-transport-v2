@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
+import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:mfk_guinee_transport/views/otp_verification.dart';
 
 class Login extends StatefulWidget {
@@ -18,6 +19,7 @@ class _LoginState extends State<Login> {
   bool _isLoading = false;
   final PhoneNumber _initialNumber = PhoneNumber(isoCode: 'GN');
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
   String? _fullPhoneNumber;
 
   void _requestOtp() async {
@@ -36,7 +38,23 @@ class _LoginState extends State<Login> {
     });
 
     try {
+      // Check if user exists in database
+      bool userExists = await _userService.userExistsByPhone(_fullPhoneNumber!);
+      
+      if (!userExists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ce numéro n\'est pas enregistré. Veuillez créer un compte.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
+      // Proceed with OTP if user exists
       String? verificationId = await _authService.sendOtp(_fullPhoneNumber!);
+
+      print("verificationId: $verificationId");
 
       if (verificationId != null) {
         Navigator.push(
@@ -142,6 +160,7 @@ class _LoginState extends State<Login> {
                             selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
                             showFlags: true,
                           ),
+                          countries: const ['GN', 'SN', 'FR'],
                           locale: 'fr',
                           hintText: '',
                           ignoreBlank: false,
