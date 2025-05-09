@@ -14,6 +14,7 @@ migrate_working_dir/
 *.orig
 *.bak
 *.old
+*.gradle
 
 # IntelliJ related
 *.iml
@@ -45,7 +46,8 @@ ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 ios/ServiceDefinitions.json
 ios/Runner/GeneratedPluginRegistrant.*
-
+linux/
+macos/
 # Xcode related
 xcuserdata/
 *.xcworkspace
@@ -87,8 +89,10 @@ app.*.symbols
 *.packages
 *.pub-cache/
 *.pub/
-/build/
+build/
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
 .flutter-settings
+
+.env
