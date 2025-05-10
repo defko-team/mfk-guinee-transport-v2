@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,53 +30,56 @@ const String _kUserIdKey = "userId";
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
-
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    // Initialize Firebase
+  Future<void> _initializeAppCheck() async {
+    if (Platform.isAndroid) {
+      await FirebaseAppCheck.instance.activate(
+        // For development environment
+         androidProvider: kDebugMode
+             ? AndroidProvider.debug
+             : AndroidProvider.playIntegrity,
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('appcheck_debug_token', '9A129AB3-6D85-40DE-A896-ECAD5F141471');
+    }
+
+    else if (Platform.isIOS) {
+      await FirebaseAppCheck.instance.activate(
+          appleProvider: kDebugMode
+              ? AppleProvider.debug
+              : AppleProvider.deviceCheck
+      );
+    }
+    else if (kIsWeb) {
+      // Get this key from Firebase Console > App Check
+      const String recaptchaSiteKey = 'YOUR-ACTUAL-RECAPTCHA-KEY-HERE';
+      await FirebaseAppCheck.instance.activate(
+        webProvider: ReCaptchaV3Provider(recaptchaSiteKey),
+      );
+    }
+  }
+
+  Future<void> initializeFirebase() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // Initialize App Check with debug token in debug mode
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
-    );
+    // Configure App Check
+    await _initializeAppCheck();
+
+    // Enable automatic token refresh
+    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  }
+
+  try {
+    // Initialize Firebase
+    await initializeFirebase();
 
     // Configure system UI
     await _configureSystemUI();
 
-    // Determine home page based on auth state
-    final homePage = await _determineHomePage();
-
-    runApp(MyApp(homePage: homePage));
-  } catch (e) {
-    print('Error initializing app: $e');
-    // If there's a network error, show the NoNetwork page
-    if (e.toString().contains('Unable to resolve host')) {
-      runApp(MaterialApp(home: NoNetwork(pageToGo: '/login')));
-    } else {
-      // For other errors, you might want to show a general error page
-      runApp(MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Text('An error occurred: $e'),
-          ),
-        ),
-      ));
-    }
-  }
-}
-
-Future<void> _configureSystemUI() async {
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
     // Determine home page based on auth state
     final homePage = await _determineHomePage();
 
@@ -162,7 +167,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   // Theme configuration
   static final ThemeData _theme = ThemeData(
@@ -187,7 +192,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _initializeNotifications() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
       const androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_notification');
+      AndroidInitializationSettings('@mipmap/ic_notification');
       const initSettings = InitializationSettings(android: androidSettings);
 
       await _notificationsPlugin.initialize(initSettings);
@@ -206,7 +211,7 @@ class _MyAppState extends State<MyApp> {
       // Create the Android notification channel
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(androidChannel);
 
       debugPrint('Notification channel created');
@@ -270,178 +275,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      debugShowCheckedModeBanner: false,
-      title: 'Guinea Transport',
-      theme: _theme,
-      home: widget.homePage,
-      routes: getAppRoutes(),
-      onGenerateRoute: (settings) {
-        // Handle dynamic routes here if needed
-        return MaterialPageRoute(
-          builder: (context) => const NoNetwork(pageToGo: '/login'),
-        );
-      },
-      onUnknownRoute: (settings) {
-        // Fallback for unknown routes
-        return MaterialPageRoute(
-          builder: (context) => const NoNetwork(pageToGo: '/login'),
-        );
-      },
-Future<Widget> _determineHomePage() async {
-  final bool isConnected = await isConnectedToInternet();
-  final prefs = await SharedPreferences.getInstance();
-
-  final bool isProviderAuthenticated =
-      prefs.getBool(_kProviderAuthKey) ?? false;
-  final bool isCustomerAuthenticated =
-      prefs.getBool(_kCustomerAuthKey) ?? false;
-  final bool isDriverAuthenticated = prefs.getBool(_kDriverAuthKey) ?? false;
-
-  if (!isConnected) {
-    return const NoNetwork(pageToGo: '/login');
-  }
-
-  if (isProviderAuthenticated) {
-    return const AdminHomePage();
-  } else if (isCustomerAuthenticated) {
-    return const HomePage();
-  } else if (isDriverAuthenticated) {
-    return const DriverHomePage();
-  }
-
-  return const SplashScreen();
-}
-
-Future<void> _initFirebase() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  }
-}
-
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-}
-
-Future<bool> isConnectedToInternet() async {
-  // TODO: Implement actual network connectivity check
-  return true;
-}
-
-class MyApp extends StatefulWidget {
-  final Widget homePage;
-
-  const MyApp({super.key, required this.homePage});
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  final FlutterLocalNotificationsPlugin _notificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
-  // Theme configuration
-  static final ThemeData _theme = ThemeData(
-    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0D7643)),
-    iconTheme: const IconThemeData(size: 18.0),
-    useMaterial3: true,
-    appBarTheme: const AppBarTheme(
-      systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-    ),
-  );
-  void initState() {
-    super.initState();
-    _initializeNotifications();
-    _setupNotifications();
-  }
-
-  Future<void> _initializeNotifications() async {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      const androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_notification');
-      const initSettings = InitializationSettings(android: androidSettings);
-
-      await _notificationsPlugin.initialize(initSettings);
-
-      // Create the notification channel for Android
-      const androidChannel = AndroidNotificationChannel(
-        'high_importance_channel',
-        'High Importance Notifications',
-        description: 'This channel is used for important notifications.',
-        importance: Importance.high,
-        playSound: true,
-        enableVibration: true,
-        showBadge: true,
-      );
-
-      // Create the Android notification channel
-      await _notificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(androidChannel);
-
-      debugPrint('Notification channel created');
-    }
-  }
-
-  Future<void> _playAlertSound(String title, String body) async {
-    if (!mounted || defaultTargetPlatform != TargetPlatform.android) return;
-
-    try {
-      const androidDetails = AndroidNotificationDetails(
-        'high_importance_channel',
-        'High Importance Notifications',
-        importance: Importance.high,
-        priority: Priority.high,
-        playSound: true,
-        enableVibration: true,
-        showWhen: true,
-        icon: '@mipmap/ic_notification',
-      );
-
-      const notificationDetails = NotificationDetails(android: androidDetails);
-
-      await _notificationsPlugin.show(
-        0,
-        title,
-        body,
-        notificationDetails,
-      );
-      debugPrint('Alert sound played successfully');
-    } catch (e) {
-      debugPrint('Error playing alert sound: $e');
-    }
-  }
-  Future<void> _setupNotifications() async {
-    if (!mounted) return;
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      try {
-        final messagingService = FirebaseMessagingService();
-        await messagingService.initialize();
-        FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-        debugPrint('Notifications setup complete');
-      } catch (e) {
-        debugPrint('Error setting up notifications: $e');
-      }
-    }
-  }
-
-  void _handleForegroundMessage(RemoteMessage message) async {
-    if (!mounted) return;
-    if (message.notification != null) {
-      debugPrint('Received foreground message, playing alert...');
-      await _playAlertSound(
-        message.notification?.title ?? 'New Message',
-        message.notification?.body ?? '',
-      );
-    }
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,

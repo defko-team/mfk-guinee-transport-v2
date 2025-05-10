@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mfk_guinee_transport/models/user_model.dart';
@@ -30,8 +32,31 @@ class AuthService {
     }
   }
 
+  Future<String?> getAppCheckToken() async {
+    try {
+      // This will either get a debug token in debug mode or a real token in production
+      final token = await FirebaseAppCheck.instance.getToken();
+      print('App Check token obtained: ${token != null}');
+      return token;
+    } catch (e) {
+      print('Error getting App Check token: $e');
+
+      // In debug mode, use the stored debug token as a fallback
+      if (kDebugMode) {
+        final prefs = await SharedPreferences.getInstance();
+        final debugToken = prefs.getString('appcheck_debug_token');
+        print('Using stored debug token as fallback');
+        return debugToken;
+      }
+
+      return null;
+    }
+  }
+
   Future<String?> sendOtp(String phoneNumber) async {
     print('phoneNumber dans sendOtp: $phoneNumber');
+    String checkToken = await getAppCheckToken() ?? '';
+    print('App Check token: $checkToken');
     try {
       Completer<String?> completer = Completer<String?>();
 
