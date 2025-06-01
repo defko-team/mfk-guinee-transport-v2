@@ -183,7 +183,6 @@ class _AdminReservationsManagementPageState
         );
         final user = await UserService().getUserById(reservation.userId);
         if (user != null && user.fcmToken != null) {
-          print('Test notification');
           final notificationStatus = await NotificationsService()
               .sendNotification(user.fcmToken!, "Confirmation reservation",
               _buildReservationNotificationMessage(reservation));
