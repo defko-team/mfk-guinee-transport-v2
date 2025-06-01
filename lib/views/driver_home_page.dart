@@ -48,10 +48,12 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
     setState(() => isLoading = true);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
+    print("userId from preferences: $userId");
 
     if (userId != null) {
       setState(() {
         _userId = userId;
+        print("userId from preferences user not null: $userId");
       });
       fetchTravels();
     } else {
@@ -247,7 +249,18 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
                     icon: const Icon(Icons.filter_list, color: Colors.white),
                     onPressed: _showFilterModal,
                   ),
-                  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId!))
+                  isLoading
+                  ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    )
+                  )
+                  : _userId !=null
+                  ?  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId!))
+                  : const SizedBox.shrink(),
                 ],
               )
             ),

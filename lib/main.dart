@@ -16,7 +16,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
+//import 'package:firebase_app_check/firebase_app_check.dart';
 
 // Global navigator key for showing overlays and navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -32,34 +32,32 @@ Future<void> main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
 
-  Future<void> _initializeAppCheck() async {
-    if (Platform.isAndroid) {
-      await FirebaseAppCheck.instance.activate(
-        // For development environment
-         androidProvider: kDebugMode
-             ? AndroidProvider.debug
-             : AndroidProvider.playIntegrity,
-      );
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('appcheck_debug_token', '9A129AB3-6D85-40DE-A896-ECAD5F141471');
-    }
-
-    else if (Platform.isIOS) {
-      await FirebaseAppCheck.instance.activate(
-          appleProvider: kDebugMode
-              ? AppleProvider.debug
-              : AppleProvider.deviceCheck
-      );
-    }
-    else if (kIsWeb) {
-      // Get this key from Firebase Console > App Check
-      const String recaptchaSiteKey = 'YOUR-ACTUAL-RECAPTCHA-KEY-HERE';
-      await FirebaseAppCheck.instance.activate(
-        webProvider: ReCaptchaV3Provider(recaptchaSiteKey),
-      );
-    }
-  }
+  // Future<void> _initializeAppCheck() async {
+  //   if (Platform.isAndroid) {
+  //     await FirebaseAppCheck.instance.activate(
+  //       // For development environment
+  //           androidProvider: AndroidProvider.debug
+  //       //  androidProvider: kDebugMode
+  //       //      ? AndroidProvider.debug
+  //       //      : AndroidProvider.playIntegrity,
+  //     );
+  //   }
+  //
+  //   else if (Platform.isIOS) {
+  //     await FirebaseAppCheck.instance.activate(
+  //         appleProvider: kDebugMode
+  //             ? AppleProvider.debug
+  //             : AppleProvider.deviceCheck
+  //     );
+  //   }
+  //   else if (kIsWeb) {
+  //     // Get this key from Firebase Console > App Check
+  //     const String recaptchaSiteKey = 'YOUR-ACTUAL-RECAPTCHA-KEY-HERE';
+  //     await FirebaseAppCheck.instance.activate(
+  //       webProvider: ReCaptchaV3Provider(recaptchaSiteKey),
+  //     );
+  //   }
+  // }
 
   Future<void> initializeFirebase() async {
     await Firebase.initializeApp(
@@ -67,10 +65,10 @@ Future<void> main() async {
     );
 
     // Configure App Check
-    await _initializeAppCheck();
+   // await _initializeAppCheck();
 
     // Enable automatic token refresh
-    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+   // await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
   }
 
   try {
