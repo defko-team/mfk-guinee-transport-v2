@@ -247,7 +247,7 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
                     icon: const Icon(Icons.filter_list, color: Colors.white),
                     onPressed: _showFilterModal,
                   ),
-                  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId!))
+                  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId))
                 ],
               )
             ),

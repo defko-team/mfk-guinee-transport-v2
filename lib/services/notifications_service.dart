@@ -93,9 +93,9 @@ class NotificationsService {
     }
   }
 
-  Stream<int> getUnreadNotificationCountStream(String idUser) {
+  Stream<int> getUnreadNotificationCountStream(String? idUser) {
     print("id user from stream $idUser");
-    if (idUser.isEmpty) return Stream.value(0);
+    if (idUser == null || idUser.isEmpty) return Stream.value(0);
     return _firestore
         .collection('Notification')
         .where('id_user', isEqualTo: idUser)
