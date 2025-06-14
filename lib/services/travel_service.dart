@@ -13,7 +13,6 @@ class TravelService {
       TravelModel travel =
           TravelModel.fromMap(doc.data() as Map<String, dynamic>);
       travel.travelReference = doc.reference;
-      print(travel.toString());
       if (travel.departureStationId != null &&
           travel.destinationStationId != null) {
         travel.departureStation =
@@ -32,8 +31,6 @@ class TravelService {
         List<TravelModel> travels = [];
 
         for (QueryDocumentSnapshot travelDoc in travelQuerySnapshot.docs) {
-          print(TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>));
-          print("\n\n\n");
           TravelModel travel =
               TravelModel.fromMap(travelDoc.data() as Map<String, dynamic>);
           travel.travelReference = travelDoc.reference;

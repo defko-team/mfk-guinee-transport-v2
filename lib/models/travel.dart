@@ -18,6 +18,7 @@ class TravelModel {
   late final String? driverName;
   late final String? carName;
   late final int? nombreDePlace;
+  late final String? driverId;
 
   TravelModel(
       {this.id,
@@ -35,7 +36,8 @@ class TravelModel {
       this.airConditioned,
       this.driverName,
       this.carName,
-      this.nombreDePlace});
+      this.nombreDePlace,
+      this.driverId});
 
 Map<String, dynamic> toMap() {
   return {
@@ -56,6 +58,7 @@ Map<String, dynamic> toMap() {
     'driver_name': driverName,
     'car_name': carName,
     'nombre_de_place': nombreDePlace,
+    'driver_id': driverId,
   };
 }
 factory TravelModel.fromMap(Map<String, dynamic> map) {
@@ -81,6 +84,7 @@ factory TravelModel.fromMap(Map<String, dynamic> map) {
     driverName: map['driver_name'] ?? '',
     carName: map['car_name'] ?? '',
     nombreDePlace: map['nombre_de_place'] ?? 0,
+    driverId: map['driver_id'],
   );
 }
 

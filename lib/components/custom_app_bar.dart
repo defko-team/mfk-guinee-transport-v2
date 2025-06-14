@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:mfk_guinee_transport/views/user_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mfk_guinee_transport/services/auth_service.dart';
 
 class CurrentUserAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Widget actions;
@@ -59,6 +60,13 @@ class _CurrentUserAppBarState extends State<CurrentUserAppBar> {
                     if (snapshot.hasError ||
                         !snapshot.hasData ||
                         !snapshot.data!.exists) {
+                      // Auto-logout if user data is missing
+                      Future.microtask(() async {
+                        await AuthService().signOut();
+                        if (context.mounted) {
+                          Navigator.of(context).pushReplacementNamed('/login');
+                        }
+                      });
                       return const Center(
                           child: Text("Erreur lors du chargement des données"));
                     }
