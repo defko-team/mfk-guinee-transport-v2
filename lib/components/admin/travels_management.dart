@@ -389,7 +389,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
   Future<void> _selectDepartureDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
         context: context,
-        initialDate: DateTime.now(),
+        initialDate: _pickedDepartureDate ?? DateTime.now(),
         firstDate: DateTime.now(),
         lastDate: DateTime(2101));
 
@@ -405,8 +405,8 @@ class _AddTravelFormState extends State<AddTravelForm> {
   Future<void> _selectArrivalDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
         context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime.now(),
+        initialDate: _pickedArrivalDate ?? DateTime.now(),
+        firstDate: _pickedDepartureDate ?? DateTime.now(),
         lastDate: DateTime(2101));
 
     if (pickedDate != null) {
@@ -419,8 +419,14 @@ class _AddTravelFormState extends State<AddTravelForm> {
   }
 
   Future<void> _selectDepartureTime(BuildContext context) async {
-    final TimeOfDay? pickedTime =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final initialTime = _pickedDepartureDate != null
+        ? TimeOfDay(hour: _pickedDepartureDate!.hour, minute: _pickedDepartureDate!.minute)
+        : TimeOfDay.now();
+
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
     if (pickedTime != null && _pickedDepartureDate != null) {
       setState(() {
         final selectedDateTime = DateTime(
@@ -438,8 +444,14 @@ class _AddTravelFormState extends State<AddTravelForm> {
   }
 
   Future<void> _selectArrivalTime(BuildContext context) async {
-    final TimeOfDay? pickedTime =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final initialTime = _pickedArrivalDate != null
+        ? TimeOfDay(hour: _pickedArrivalDate!.hour, minute: _pickedArrivalDate!.minute)
+        : TimeOfDay.now();
+
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
     if (pickedTime != null && _pickedArrivalDate != null) {
       setState(() {
         final selectedArrivalDateTime = DateTime(
