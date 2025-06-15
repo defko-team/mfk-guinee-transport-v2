@@ -247,7 +247,7 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
                     icon: const Icon(Icons.filter_list, color: Colors.white),
                     onPressed: _showFilterModal,
                   ),
-                  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId!))
+                  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId))
                 ],
               )
             ),
@@ -585,6 +585,7 @@ class TravelCustomersList extends StatelessWidget {
                   final userData =
                       userSnapshot.data!.data() as Map<String, dynamic>;
                   final userName = "${userData['prenom']} ${userData['nom']}";
+                  final phoneNumber = userData['telephone'] ?? '';
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -614,6 +615,13 @@ class TravelCustomersList extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        phoneNumber,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
                         ),
                       ),
                     ),

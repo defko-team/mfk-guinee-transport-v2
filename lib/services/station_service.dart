@@ -10,7 +10,6 @@ class StationService {
   // Get all stations
   Stream<List<StationModel>> getStations() {
     return _stationsCollection.snapshots().map((snapshot) {
-      print('snapshot: ${snapshot.docs}');
       return snapshot.docs
           .map((doc) => StationModel.fromDocument(doc))
           .toList();
@@ -38,12 +37,35 @@ class StationService {
   }
 
   Future<void> createStation(StationModel station) async {
-    await _firestore.collection('Station').doc(station.id).set(station.toMap());
+    // Generate a new document reference
+    final docRef = _firestore.collection('Station').doc();
+    // Create a new StationModel with id set to the document ID
+    final stationWithId = StationModel(
+      id: docRef.id,
+      name: station.name,
+      latitude: station.latitude,
+      longitude: station.longitude,
+      address: station.address,
+      docId: docRef.id,
+      stationRef: docRef,
+    );
+    await docRef.set(stationWithId.toMap());
   }
 
   // Add new station
   Future<void> addStation(StationModel station) async {
-    await _stationsCollection.add(station.toMap());
+    // Generate a new document reference
+    final docRef = _stationsCollection.doc();
+    final stationWithId = StationModel(
+      id: docRef.id,
+      name: station.name,
+      latitude: station.latitude,
+      longitude: station.longitude,
+      address: station.address,
+      docId: docRef.id,
+      stationRef: docRef,
+    );
+    await docRef.set(stationWithId.toMap());
   }
 
   Future<void> updateStation(StationModel station) async {
