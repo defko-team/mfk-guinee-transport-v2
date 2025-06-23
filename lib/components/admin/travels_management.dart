@@ -36,6 +36,7 @@ class StationSelectionField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Autocomplete<StationModel>(
+      key: ValueKey(selectedStation?.id ?? 'none'),
       initialValue: selectedStation != null
           ? TextEditingValue(text: selectedStation!.name)
           : TextEditingValue.empty,
@@ -351,10 +352,9 @@ class _AddTravelFormState extends State<AddTravelForm> {
 
   Future<void> _initializeData() async {
     if (!_mounted) return;
-    await _loadCars();
-    await _loadStation();
+    await Future.wait([_loadCars(), _loadStation()]);
     if (_mounted && widget.travel != null) {
-      _initializeForEdit(widget.travel!);
+      await _initializeForEdit(widget.travel!);
     }
   }
 
@@ -389,7 +389,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
   Future<void> _selectDepartureDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
         context: context,
-        initialDate: DateTime.now(),
+        initialDate: _pickedDepartureDate ?? DateTime.now(),
         firstDate: DateTime.now(),
         lastDate: DateTime(2101));
 
@@ -405,8 +405,8 @@ class _AddTravelFormState extends State<AddTravelForm> {
   Future<void> _selectArrivalDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
         context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime.now(),
+        initialDate: _pickedArrivalDate ?? DateTime.now(),
+        firstDate: _pickedDepartureDate ?? DateTime.now(),
         lastDate: DateTime(2101));
 
     if (pickedDate != null) {
@@ -419,8 +419,14 @@ class _AddTravelFormState extends State<AddTravelForm> {
   }
 
   Future<void> _selectDepartureTime(BuildContext context) async {
-    final TimeOfDay? pickedTime =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final initialTime = _pickedDepartureDate != null
+        ? TimeOfDay(hour: _pickedDepartureDate!.hour, minute: _pickedDepartureDate!.minute)
+        : TimeOfDay.now();
+
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
     if (pickedTime != null && _pickedDepartureDate != null) {
       setState(() {
         final selectedDateTime = DateTime(
@@ -438,8 +444,14 @@ class _AddTravelFormState extends State<AddTravelForm> {
   }
 
   Future<void> _selectArrivalTime(BuildContext context) async {
-    final TimeOfDay? pickedTime =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final initialTime = _pickedArrivalDate != null
+        ? TimeOfDay(hour: _pickedArrivalDate!.hour, minute: _pickedArrivalDate!.minute)
+        : TimeOfDay.now();
+
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
     if (pickedTime != null && _pickedArrivalDate != null) {
       setState(() {
         final selectedArrivalDateTime = DateTime(
@@ -468,23 +480,49 @@ class _AddTravelFormState extends State<AddTravelForm> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  void _initializeForEdit(TravelModel travel) {
+  Future<void> _initializeForEdit(TravelModel travel) async {
+
+    // Pre-fill stations by ID and update controllers inside setState
+    setState(() {
+      final foundDeparture = stations.where((station) => station.id == travel.departureStationId);
+      if (foundDeparture.isNotEmpty) {
+        _selectedDepartureStation = foundDeparture.first;
+        _departureDateController.text = _selectedDepartureStation?.name ?? '';
+      }
+      final foundArrival = stations.where((station) => station.id == travel.destinationStationId);
+      if (foundArrival.isNotEmpty) {
+        _selectedDestinationStation = foundArrival.first;
+        _arrivalDateController.text = _selectedDestinationStation?.name ?? '';
+      }
+    });
+    // Pre-fill car by driverId
+    if (cars.isNotEmpty && travel.driverId != null) {
+      setState(() {
+        _selectedVoiture = cars.firstWhere(
+          (car) => car.idChauffeur == travel.driverId,
+          orElse: () => cars.first,
+        );
+      });
+    } else {
+      setState(() {
+        _selectedVoiture = null;
+      });
+    }
+    // Fetch driver from DB by driverId
+    if (travel.driverId != null) {
+      final driver = await UserService().getUserById(travel.driverId!);
+      setState(() {
+        _selectedDriver = driver;
+      });
+    } else {
+      setState(() {
+        _selectedDriver = null;
+      });
+    }
     setState(() {
       isUpdate = true;
       currentTravelReference = travel.travelReference;
       _tecketPriceController.text = travel.ticketPrice.toString();
-      _selectedDepartureStation = travel.departureStation!;
-      _selectedDestinationStation = travel.destinationStation!;
-      if (cars.isNotEmpty) {
-        _selectedVoiture = cars.firstWhere(
-          (car) => car.marque.toLowerCase() == travel.carName!.toLowerCase(),
-        );
-      }
-      _selectedDriver = UserModel.fromMap({
-        "prenom": travel.driverName!.split(" ")[0],
-        "nom": travel.driverName!.split(" ")[1],
-      });
-
       _departureDateController.text =
           DateFormat('yyyy-MM-dd').format(travel.startTime);
       _departureTimeController.text =
@@ -495,6 +533,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
           DateFormat('yyyy-MM-dd').format(travel.arrivalTime!);
       _arrivalTimeController.text =
           DateFormat('HH:mm').format(travel.arrivalTime!);
+      aircondtioned = travel.airConditioned;
     });
   }
 
@@ -526,19 +565,16 @@ class _AddTravelFormState extends State<AddTravelForm> {
             await CarService().getDriverNameById(_selectedVoiture!.idChauffeur),
         remainingSeats: _selectedVoiture!.nombreDePlace,
         nombreDePlace: _selectedVoiture!.nombreDePlace,
-        carName: _selectedVoiture!.marque);
+        carName: _selectedVoiture!.marque,
+        driverId: _selectedDriver!.idUser);
 
     if (isUpdate!) {
-      print(travel.toString());
       TravelService().updateTravel(travel);
       Navigator.of(context).pop();
     } else {
       final String? response = await TravelService().createTravel(travel);
       if (response != null) {
-        print('creation du trajet : $response');
-      } else {
-        print('erreur lors de la creation du trajet');
-      }
+      } 
       Navigator.of(context).pop();
     }
   }

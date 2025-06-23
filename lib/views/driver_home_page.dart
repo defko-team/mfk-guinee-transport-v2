@@ -632,6 +632,7 @@ class TravelCustomersList extends StatelessWidget {
                   final userData =
                       userSnapshot.data!.data() as Map<String, dynamic>;
                   final userName = "${userData['prenom']} ${userData['nom']}";
+                  final phoneNumber = userData['telephone'] ?? '';
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -661,6 +662,13 @@ class TravelCustomersList extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        phoneNumber,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
                         ),
                       ),
                     ),
