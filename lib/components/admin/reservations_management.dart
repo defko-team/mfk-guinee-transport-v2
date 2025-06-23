@@ -104,7 +104,8 @@ class _AdminReservationsManagementPageState
       await showDialog(
         context: context,
         builder: (context) => CarAssignmentDialog(
-          onCarSelected: (car) async {
+          onCarSelected: (car, price) async {
+            print('Price ${price}');
             try {
               // Get driver info if car has assigned driver
               String? driverName;
@@ -119,11 +120,13 @@ class _AdminReservationsManagementPageState
                 reservation.copyWith(
                   status: ReservationStatus.confirmed,
                   driverName: driverName,
+                  ticketPrice: price,
                   carName: car.marque,
                 ),
               );
               reservation.carName = car.marque;
               reservation.driverName = driverName;
+              reservation.ticketPrice = price;
               final user = await UserService().getUserById(reservation.userId);
               if (user != null && user.fcmToken != null) {
                 final notificationStatus = await NotificationsService()
@@ -140,15 +143,14 @@ class _AdminReservationsManagementPageState
                 }
 
                 final driverNotificationStatus = await NotificationsService()
-                    .sendNotification(
-                        driver?.fcmToken ?? '',
-                        'Nouvelle reservation client',
-                        'Un client vient de faire une reservation pour vous');
+                .sendReservationUpdate(fcmToken: driver!.fcmToken!, reservation: reservation);
+
                 if (driverNotificationStatus) {
                   await NotificationsService().createNotification(
                       idUser: driver?.idUser ?? '',
-                      context: 'confirmation Reservation',
-                      message: 'Nouvelle reservation confirmee pour vous',
+                      context: 'confirmation Reservation de Mr/Mme ${user.prenom} ${user.nom}',
+                      message: NotificationStringBuilder.forReservation(reservation, locale: 'fr_FR',)
+                          .buildForStatus(ReservationStatus.confirmed).body,
                       status: false,
                       dateHeure: DateTime.now());
                 }

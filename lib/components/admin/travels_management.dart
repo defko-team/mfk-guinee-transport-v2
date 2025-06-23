@@ -597,7 +597,7 @@ class _AddTravelFormState extends State<AddTravelForm> {
               onPressed: () => showDialog(
                 context: context,
                 builder: (context) => CarAssignmentDialog(
-                  onCarSelected: (car) async {
+                  onCarSelected: (car, price) async {
                     final driver =
                         await UserService().getUserById(car.idChauffeur);
                     setState(() {

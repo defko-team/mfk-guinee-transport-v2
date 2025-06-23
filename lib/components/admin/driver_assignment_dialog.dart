@@ -5,10 +5,9 @@ import 'package:mfk_guinee_transport/services/car_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 
 class CarAssignmentDialog extends StatefulWidget {
-  final Function(VoitureModel car) onCarSelected;
+  final Function(VoitureModel car, int price) onCarSelected;
   final Function() onDecline; // Ajoutez cette ligne
-
-  const CarAssignmentDialog({
+  CarAssignmentDialog({
     super.key,
     required this.onCarSelected,
     required this.onDecline,
@@ -20,6 +19,7 @@ class CarAssignmentDialog extends StatefulWidget {
 
 class _CarAssignmentDialogState extends State<CarAssignmentDialog> {
   VoitureModel? selectedCar;
+  int price = 0; // Ajoutez cette ligne pour stocker le prix
   List<VoitureModel> cars = [];
   bool isLoading = true;
   String? errorMessage;
@@ -67,6 +67,55 @@ class _CarAssignmentDialogState extends State<CarAssignmentDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                const Icon(Icons.attach_money, size: 28, color: Colors.green),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Prix de la réservation',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
+                        decoration: InputDecoration(
+                          hintText: 'Entrez le prix en FCFA',
+                          prefixText: 'FCFA ',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: AppColors.green, width: 2),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            price = int.tryParse(value) ?? 0;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             Row(
               children: [
                 const Icon(Icons.directions_car, size: 28),
@@ -179,6 +228,7 @@ class _CarAssignmentDialogState extends State<CarAssignmentDialog> {
                       onTap: () {
                         setState(() {
                           selectedCar = car;
+                          price = price;
                         });
                       },
                     );
@@ -198,7 +248,7 @@ class _CarAssignmentDialogState extends State<CarAssignmentDialog> {
                   onPressed: selectedCar == null
                       ? null
                       : () {
-                          widget.onCarSelected(selectedCar!);
+                          widget.onCarSelected(selectedCar!, price);
                           Navigator.of(context).pop();
                         },
                   style: ElevatedButton.styleFrom(
