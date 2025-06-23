@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 class ReservationModel {
   String? id;
   final String? departureStation;

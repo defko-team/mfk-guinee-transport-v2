@@ -5,6 +5,7 @@ import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OtpVerification extends StatefulWidget {
   final String firstName;
@@ -105,14 +106,22 @@ class _OtpVerificationState extends State<OtpVerification> {
 
   Future<void> _handlePostVerificationNavigation() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      // Get userId from SharedPreferences (stored during verification)
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? userId = prefs.getString("userId");
+
+      if (userId == null) {
+        if (mounted) {
+          _showErrorSnackBar('User ID not found');
+        }
+        return;
+      }
 
       final userDoc = await FirebaseFirestore.instance
           .collection('Users')
-          .doc(user.uid)
+          .doc(userId)
           .get();
-      
+
       if (!userDoc.exists) {
         if (mounted) {
           _showErrorSnackBar('User document not found');
@@ -122,12 +131,12 @@ class _OtpVerificationState extends State<OtpVerification> {
 
       // Get role directly from the user document
       final role = userDoc['role'] ?? 'Client';
-      
+
       // If this is a new user and role is missing, set default role
       if (userDoc['role'] == null) {
         await FirebaseFirestore.instance
             .collection('Users')
-            .doc(user.uid)
+            .doc(userId)
             .update({'role': 'Client'});
       }
 
@@ -137,32 +146,16 @@ class _OtpVerificationState extends State<OtpVerification> {
 
       switch (role) {
         case 'Client':
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/customerHome',
-            (route) => false,
-          );
+          Navigator.pushNamedAndRemoveUntil(context, '/customerHome', (route) => false);
           break;
         case 'Admin':
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/providerHome',
-            (route) => false,
-          );
+          Navigator.pushNamedAndRemoveUntil(context, '/providerHome', (route) => false);
           break;
         case 'Chauffeur':
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/driverHome',
-            (route) => false,
-          );
+          Navigator.pushNamedAndRemoveUntil(context, '/driverHome', (route) => false);
           break;
         default:
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/login',
-            (route) => false,
-          );
+          Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       }
     } catch (e) {
       if (mounted) {

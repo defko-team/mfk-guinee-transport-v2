@@ -11,6 +11,8 @@ import 'package:mfk_guinee_transport/helper/constants/colors.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:intl/intl.dart';
 
+import 'driver/driver_dashboard.dart';
+
 class DriverHomePage extends StatefulWidget {
   const DriverHomePage({super.key});
 
@@ -44,21 +46,55 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
     super.dispose();
   }
 
+  // Future<void> _loadUserInfo() async {
+  //   setState(() => isLoading = true);
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? userId = prefs.getString("userId");
+  //   print("userId from preferences: $userId");
+  //   if (userId != null) {
+  //     setState(() {
+  //       _userId = userId;
+  //       print("userId from preferences user not null: $userId");
+  //     });
+  //     fetchTravels();
+  //   } else {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('Utilisateur non trouvé')),
+  //       );
+  //     }
+  //   }
+  //   setState(() => isLoading = false);
+  // }
+
   Future<void> _loadUserInfo() async {
     setState(() => isLoading = true);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
+    print("userId from preferences: $userId");
 
     if (userId != null) {
       setState(() {
         _userId = userId;
+        print("userId from preferences user not null: $userId");
       });
-      fetchTravels();
+
+      // Redirection vers DriverDashboard
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DriverDashboard(driverId: "h1b2myI9YLcEqtbEq0uOhqt6lHY2"),
+          ),
+        );
+      }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Utilisateur non trouvé')),
         );
+        // Optionnel: rediriger vers la page de login
+        // Navigator.pushReplacementNamed(context, '/login');
       }
     }
     setState(() => isLoading = false);
@@ -67,7 +103,7 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
   void fetchTravels() async {
     if (_userId == null) return;
     
-    print('🔍 Début fetchTravels avec userId: $_userId');
+    print('Début fetchTravels avec userId: $_userId');
     setState(() => isLoading = true);
     try {
       var userDoc = await FirebaseFirestore.instance
@@ -75,28 +111,28 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
           .doc(_userId)
           .get();
       
-      print('👤 Document utilisateur existe: ${userDoc.exists}');
-      print('👤 Données utilisateur complètes: ${userDoc.data()}');
+      print('Document utilisateur existe: ${userDoc.exists}');
+      print('Données utilisateur complètes: ${userDoc.data()}');
 
       String prenom = userDoc.data()?['prenom'] ?? '';
       String nom = userDoc.data()?['nom'] ?? '';
       String driverName = '$prenom $nom'.trim();
       
-      print('👤 Nom du conducteur construit: $driverName');
+      print('Nom du conducteur construit: $driverName');
       
       var query = FirebaseFirestore.instance
           .collection('Travel')
           .where('driver_name', isEqualTo: driverName);
 
-      print('📅 Tab actif: ${_tabController.index}');
+      print('Tab actif: ${_tabController.index}');
       DateTime now = DateTime.now();
-      print('⏰ Date actuelle: $now');
+      print('Date actuelle: $now');
 
       var snapshot = await query.get();
-      print('📊 Nombre de documents trouvés: ${snapshot.docs.length}');
+      print('Nombre de documents trouvés: ${snapshot.docs.length}');
       
       if (snapshot.docs.isNotEmpty) {
-        print('📄 Premier document trouvé: ${snapshot.docs.first.data()}');
+        print('Premier document trouvé: ${snapshot.docs.first.data()}');
       }
       
       if (mounted) {
@@ -104,14 +140,14 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
           travels = snapshot.docs.map((doc) {
             Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
             data['id'] = doc.id;
-            print('🎯 Document trouvé - ID: ${doc.id}');
-            print('📄 Données du document: ${doc.data()}');
+            print('Document trouvé - ID: ${doc.id}');
+            print(' Données du document: ${doc.data()}');
             return TravelModel.fromMap(data);
           }).where((travel) {
             // Filtrer par date selon l'onglet actif
             if (_tabController.index == 0) {
               // afficher travel start time
-              print('📅 Date de departure: ${travel.startTime}');
+              print('Date de departure: ${travel.startTime}');
               // Trajets à venir (aujourd'hui et futur)
               return travel.startTime.isAfter(DateTime(now.year, now.month, now.day)) || 
                      travel.startTime.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
@@ -138,7 +174,7 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
               ? a.startTime.compareTo(b.startTime)  // Croissant pour les trajets à venir
               : b.startTime.compareTo(a.startTime)); // Décroissant pour l'historique
 
-          print('✅ Nombre final de trajets: ${travels.length}');
+          print('Nombre final de trajets: ${travels.length}');
           isLoading = false;
         });
       }
@@ -247,7 +283,18 @@ class _DriverHomePageState extends State<DriverHomePage> with SingleTickerProvid
                     icon: const Icon(Icons.filter_list, color: Colors.white),
                     onPressed: _showFilterModal,
                   ),
-                  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId))
+                  isLoading
+                  ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    )
+                  )
+                  : _userId !=null
+                  ?  NotificationBell(unReadNotificationCount: NotificationsService().getUnreadNotificationCountStream(_userId!))
+                  : const SizedBox.shrink(),
                 ],
               )
             ),

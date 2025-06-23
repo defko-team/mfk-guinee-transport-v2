@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:mfk_guinee_transport/components/NotificationStringBuilder.dart';
 import 'package:mfk_guinee_transport/components/admin/driver_assignment_dialog.dart';
 import 'package:mfk_guinee_transport/components/base_app_bar.dart';
 import 'package:mfk_guinee_transport/helper/constants/colors.dart';
@@ -37,6 +38,15 @@ class _AdminReservationsManagementPageState
     'Annulées': ReservationStatus.canceled
   };
 
+  String _buildReservationNotificationMessage(ReservationModel reservation) {
+    final statusLabel = ReservationModel.getLabelFromStatus(reservation.status);
+    final departureTime = DateFormat('dd/MM/yyyy à HH:mm').format(reservation.startTime);
+
+    return "Votre réservation ${reservation.departureStation} → ${reservation.destinationStation} "
+        "du $departureTime est maintenant $statusLabel. "
+        "${reservation.remainingSeats} places restantes.";
+  }
+  
   void onOpenModifyReservationBottonSheet({
     required ReservationModel reservation,
   }) async {
@@ -94,7 +104,8 @@ class _AdminReservationsManagementPageState
       await showDialog(
         context: context,
         builder: (context) => CarAssignmentDialog(
-          onCarSelected: (car) async {
+          onCarSelected: (car, price) async {
+            print('Price ${price}');
             try {
               // Get driver info if car has assigned driver
               String? driverName;
@@ -109,36 +120,37 @@ class _AdminReservationsManagementPageState
                 reservation.copyWith(
                   status: ReservationStatus.confirmed,
                   driverName: driverName,
+                  ticketPrice: price,
                   carName: car.marque,
                 ),
               );
+              reservation.carName = car.marque;
+              reservation.driverName = driverName;
+              reservation.ticketPrice = price;
               final user = await UserService().getUserById(reservation.userId);
               if (user != null && user.fcmToken != null) {
                 final notificationStatus = await NotificationsService()
-                    .sendNotification(
-                        user.fcmToken!,
-                        "Confirmation reservation",
-                        "Votre reservation a ete mise a jour");
+                    .sendReservationUpdate(fcmToken: user.fcmToken!, reservation: reservation);
                 if (notificationStatus) {
                   await NotificationsService().createNotification(
                       idUser: reservation.userId,
                       context: "Confirmation de reservation",
                       message:
-                          "Votre reservation a ete mise a jour avec succes",
+                      NotificationStringBuilder.forReservation(reservation, locale: 'fr_FR',)
+                        .buildForStatus(ReservationStatus.confirmed).body,
                       status: false,
                       dateHeure: DateTime.now());
                 }
 
                 final driverNotificationStatus = await NotificationsService()
-                    .sendNotification(
-                        driver?.fcmToken ?? '',
-                        'Nouvelle reservation client',
-                        'Un client vient de faire une reservation pour vous');
+                .sendReservationUpdate(fcmToken: driver!.fcmToken!, reservation: reservation);
+
                 if (driverNotificationStatus) {
                   await NotificationsService().createNotification(
                       idUser: driver?.idUser ?? '',
-                      context: 'confirmation Reservation',
-                      message: 'Nouvelle reservation confirmee pour vous',
+                      context: 'confirmation Reservation de Mr/Mme ${user.prenom} ${user.nom}',
+                      message: NotificationStringBuilder.forReservation(reservation, locale: 'fr_FR',)
+                          .buildForStatus(ReservationStatus.confirmed).body,
                       status: false,
                       dateHeure: DateTime.now());
                 }
@@ -173,16 +185,15 @@ class _AdminReservationsManagementPageState
         );
         final user = await UserService().getUserById(reservation.userId);
         if (user != null && user.fcmToken != null) {
-          print('Test notification');
           final notificationStatus = await NotificationsService()
               .sendNotification(user.fcmToken!, "Confirmation reservation",
-                  "Votre reservation a ete mise a jour");
+              _buildReservationNotificationMessage(reservation));
 
           if (notificationStatus) {
             await NotificationsService().createNotification(
                 idUser: reservation.userId,
                 context: "Confirmation de reservation",
-                message: "Votre reservation a ete mise a jour avec succes",
+                message: _buildReservationNotificationMessage(reservation),
                 status: true,
                 dateHeure: DateTime.now());
           }

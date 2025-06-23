@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +16,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
+//import 'package:firebase_app_check/firebase_app_check.dart';
 
 // Global navigator key for showing overlays and navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -28,20 +30,50 @@ const String _kUserIdKey = "userId";
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
-
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    // Initialize Firebase
+  // Future<void> _initializeAppCheck() async {
+  //   if (Platform.isAndroid) {
+  //     await FirebaseAppCheck.instance.activate(
+  //       // For development environment
+  //           androidProvider: AndroidProvider.debug
+  //       //  androidProvider: kDebugMode
+  //       //      ? AndroidProvider.debug
+  //       //      : AndroidProvider.playIntegrity,
+  //     );
+  //   }
+  //
+  //   else if (Platform.isIOS) {
+  //     await FirebaseAppCheck.instance.activate(
+  //         appleProvider: kDebugMode
+  //             ? AppleProvider.debug
+  //             : AppleProvider.deviceCheck
+  //     );
+  //   }
+  //   else if (kIsWeb) {
+  //     // Get this key from Firebase Console > App Check
+  //     const String recaptchaSiteKey = 'YOUR-ACTUAL-RECAPTCHA-KEY-HERE';
+  //     await FirebaseAppCheck.instance.activate(
+  //       webProvider: ReCaptchaV3Provider(recaptchaSiteKey),
+  //     );
+  //   }
+  // }
+
+  Future<void> initializeFirebase() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // Initialize App Check with debug token in debug mode
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
-    );
+    // Configure App Check
+   // await _initializeAppCheck();
+
+    // Enable automatic token refresh
+   // await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  }
+
+  try {
+    // Initialize Firebase
+    await initializeFirebase();
 
     // Configure system UI
     await _configureSystemUI();
@@ -133,7 +165,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   // Theme configuration
   static final ThemeData _theme = ThemeData(
@@ -158,7 +190,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _initializeNotifications() async {
     if (defaultTargetPlatform == TargetPlatform.android) {
       const androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_notification');
+      AndroidInitializationSettings('@mipmap/ic_notification');
       const initSettings = InitializationSettings(android: androidSettings);
 
       await _notificationsPlugin.initialize(initSettings);
@@ -177,7 +209,7 @@ class _MyAppState extends State<MyApp> {
       // Create the Android notification channel
       await _notificationsPlugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(androidChannel);
 
       debugPrint('Notification channel created');

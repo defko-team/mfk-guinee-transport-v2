@@ -11,7 +11,6 @@ import 'package:mfk_guinee_transport/services/notifications_service.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   Future<bool> isExistingDriverNumber(String phoneNumber) async {
     try {
 
@@ -31,78 +30,59 @@ class AuthService {
   }
 
   Future<String?> sendOtp(String phoneNumber) async {
-    print('phoneNumber dans sendOtp: $phoneNumber');
-    try {
-      Completer<String?> completer = Completer<String?>();
+    if (!phoneNumber.startsWith('+')) {
+      throw Exception('Le numéro de téléphone doit commencer par le code pays (+xxx)');
+    }
 
-      await _auth.verifyPhoneNumber(
+    print('Envoi OTP au numéro: $phoneNumber');
+    Completer<String?> completer = Completer<String?>();
+
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          // Auto-verification completed (usually on Android)
+        timeout: const Duration(seconds: 120),
+
+        verificationCompleted: (credential) async {
           try {
-            await _auth.signInWithCredential(credential);
-            if (!completer.isCompleted) {
-              completer.complete(null); // No verification ID needed
-            }
+            await FirebaseAuth.instance.signInWithCredential(credential);
+            completer.complete(null);
           } catch (e) {
-            print('Erreur lors de la connexion automatique: $e');
-            if (!completer.isCompleted) {
-              completer.completeError(e);
-            }
+            completer.completeError(e);
           }
         },
-        verificationFailed: (FirebaseAuthException e) {
-          print('Échec de la vérification: ${e.code} - ${e.message}');
-          
-          String errorMessage = 'Échec de la vérification';
-          
-          // Personnaliser les messages d'erreur
+
+        verificationFailed: (e) {
+          String errorMessage;
           switch (e.code) {
             case 'invalid-phone-number':
-              errorMessage = 'Le numéro de téléphone est invalide. Veuillez vérifier le format.';
+              errorMessage = 'Numéro de téléphone invalide';
               break;
             case 'too-many-requests':
-              errorMessage = 'Trop de tentatives. Veuillez réessayer plus tard.';
-              break;
-            case 'quota-exceeded':
-              errorMessage = 'Quota dépassé. Veuillez contacter le support.';
+              errorMessage = 'Trop de tentatives';
               break;
             default:
-              errorMessage = 'Erreur de vérification: ${e.message}';
+              errorMessage = 'Erreur: ${e.message}';
           }
-          
-          if (!completer.isCompleted) {
-            completer.completeError(Exception(errorMessage));
-          }
+          completer.completeError(Exception(errorMessage));
         },
-        codeSent: (String verificationId, int? resendToken) {
-          print('Code envoyé, verificationId: $verificationId');
-          if (!completer.isCompleted) {
-            completer.complete(verificationId);
-          }
+
+        codeSent: (verificationId, _) {
+          completer.complete(verificationId);
         },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          print('Délai d\'attente expiré pour la récupération automatique du code');
+
+        codeAutoRetrievalTimeout: (verificationId) {
           if (!completer.isCompleted) {
             completer.complete(verificationId);
           }
         },
-        timeout: const Duration(seconds: 120),
       );
 
       return await completer.future;
     } catch (e) {
-      print('Erreur dans sendOtp: $e');
-      
-      // Vérifier si le numéro de téléphone est au bon format
-      if (!phoneNumber.startsWith('+')) {
-        throw Exception('Le numéro de téléphone doit commencer par le code pays (+xxx)');
-      }
-      
+      print('Erreur: $e');
       rethrow;
     }
   }
-
   Future<void> verifyOtpAndRegisterUser({
     required String otp,
     required String prenom,
@@ -129,6 +109,8 @@ class AuthService {
         print('Tentative de connexion avec les credentials...');
         userCredential = await _auth.signInWithCredential(credential);
         print('Connexion réussie avec userId: ${userCredential.user?.uid}');
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString("userId", userCredential.user!.uid);
       } on FirebaseAuthException catch (authError) {
         print('Erreur FirebaseAuth: ${authError.code} - ${authError.message}');
         if (authError.code == 'session-expired') {

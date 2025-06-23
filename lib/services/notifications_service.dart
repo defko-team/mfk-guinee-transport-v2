@@ -10,6 +10,8 @@ import 'package:mfk_guinee_transport/services/auth_service.dart';
 import 'package:mfk_guinee_transport/services/user_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+import '../components/NotificationStringBuilder.dart';
+
 class NotificationsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final UserService userService = UserService();
@@ -44,6 +46,30 @@ class NotificationsService {
       return false;
     }
   }
+
+  Future<bool> sendReservationUpdate({
+    required String fcmToken,
+    required ReservationModel reservation,
+    String locale = 'fr_FR',
+  }) async {
+    final payload = NotificationStringBuilder
+        .forReservation(reservation, locale: locale)
+        .buildForStatus(reservation.status);
+
+    return await sendNotification(fcmToken, payload.title, payload.body);
+  }
+
+  Future<bool> sendDepartureReminder({
+    required String fcmToken,
+    required ReservationModel reservation,
+    required NotificationsService notificationService,
+  }) async {
+    final payload = NotificationStringBuilder.buildDepartureReminder(reservation);
+
+    return await sendNotification(fcmToken, payload.title, payload.body);
+  }
+
+
 
   Future<bool> _sendNotificationViaHttp(
       String fcmToken, String title, String body) async {
