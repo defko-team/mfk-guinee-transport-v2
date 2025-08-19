@@ -2,6 +2,8 @@
 
 ### Please don't put comment in the code until it is very needed : make your code fully understandable and it will be ok.
 
+### Use media queries in components or Grid
+
 ### At least add a docstring !
 
 => create or add your class / file into the appropriate module

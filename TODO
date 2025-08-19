@@ -4,3 +4,67 @@
 [!] => add github action code for main branch
 [x] => firebase should be tested on android to see if it works
 [x] => Somebody should generate the proper icons for android and ios
+
+
+=========================== AUTH Functionnality  ===========================
+
+
+Auth main functionnalities details : 
+
+- create the login page with phone number and OTP 
+
+- create the registering page with all user infos
+
+======> Checkpoint log submitted data in console
+
+- create a default admin account with all permissions : Admin Role
+
+- create a controller to handle role creation and account and registration
+
+- create a controller that handle the OTP and log-in
+
+=======> Checkpoint tests
+
+- link all that with the app state when user is logged in
+
+- Create a controller that redirect to home page based on user role
+
+- Create a sign-out method and test local data are cleaned
+
+- We need a model of user, account and role data to better map data
+
+=======> Checkpoint merging
+
+Bonus :
+
+- Test all working in ios
+- Test in android if i have the time
+- Transition animation 
+- Loading animation
+- Show errors if any
+- show dialog or pop ups
+
+
+
+in login this is the logic : 
+
+ => first we will check if the user is already resgisterd in or not by checking the current user phone number in the firebase database.
+ => if the user is already registered then we will send the otp to the user's phone number and then we will verify the otp and then we will sign in the user.
+ => if he is not registered we will send him to the register page with the message that you are not registered yet please register first.
+
+
+in register this is the logic : 
+
+=> first we will check if the user is already registered or not by checking the current user phone number in the firebase database.
+=> if the user is already registered then we will send the otp to the user's phone number and then we will verify the otp and then we will sign in the user.
+=> if he is not registered we will register the user with the phone number, first name, last name and then we will send the otp to the user's phone number and then we will verify the otp and then we will sign in the user.
+=> By default the user will be registered as a customer.
+=> By default account status will be active.
+=> By default photo_profil will be null.
+=> For date_creation we will use the current date and time.
+
+in signout this is the logic :
+
+=> we will sign out the user from firebase.
+=> we will clear the shared preferences data.
+=> we will send the user to the login page.

@@ -1,0 +1,125 @@
+import 'package:flutter/material.dart';
+
+import 'package:mfk_guinee_transport/components/custom_app_bar.dart';
+
+import 'package:mfk_guinee_transport/components/customer_home_page.dart';
+
+import 'package:mfk_guinee_transport/components/notification_bell.dart';
+
+import 'package:mfk_guinee_transport/models/station.dart';
+
+import 'package:mfk_guinee_transport/services/notifications_service.dart';
+
+import 'package:mfk_guinee_transport/services/station_service.dart';
+
+import 'package:mfk_guinee_transport/views/available_cars.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+class CustomerHomePage extends StatefulWidget {
+  const CustomerHomePage({super.key});
+
+  @override
+  State<CustomerHomePage> createState() => _CustomerHomePageState();
+}
+
+class _CustomerHomePageState extends State<CustomerHomePage> {
+  static const Color lightGrey = Color(0xFFF2F2F2);
+
+  String? _userId;
+
+  StationModel? selectedDeparture;
+
+  StationModel? selectedArrival;
+
+  int selectedTransportTypeIndex = 0;
+
+  List<StationModel> locations = [];
+
+  final StationService _stationService = StationService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadUserInfo();
+
+    _loadingStation();
+  }
+
+  Future<void> _loadingStation() async {
+    List<StationModel> data = await _stationService.getAllStations();
+
+    setState(() {
+      locations = data;
+    });
+  }
+
+  Future<void> _loadUserInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? userId = prefs.getString("userId");
+
+    if (userId != null) {
+      setState(() {
+        _userId = userId;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Utilisateur non trouvé')),
+      );
+    }
+  }
+
+  void _onSearch() {
+    if (selectedDeparture != null &&
+        selectedArrival != null &&
+        selectedTransportTypeIndex != -1) {
+      // Here you can handle the search logic
+
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (content) => AvailableCarsPage(
+              travelSearchInfo: {
+                'selectedDeparture': selectedDeparture?.id,
+                'selectedArrival': selectedArrival?.id,
+                'type': selectedTransportTypeIndex,
+                'userId': _userId,
+              },
+            ),
+          ));
+
+      // You might want to navigate to another page or make a request with the gathered data
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context)
+            .unfocus(); // Unfocus the text fields when tapping outside
+      },
+      child: Scaffold(
+        backgroundColor: lightGrey,
+        appBar: _userId == null
+            ? null
+            : CurrentUserAppBar(
+                actions: NotificationBell(
+                    unReadNotificationCount: NotificationsService()
+                        .getUnreadNotificationCountStream(_userId ?? ''))),
+        body: _userId == null
+            ? const Center(child: CircularProgressIndicator())
+            : CustomerHome(
+                userId: _userId,
+                locations: locations,
+              ),
+      ),
+    );
+  }
+}
